@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Constitutional Archive Admin Portal</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Upload Archive File</h1>
+    <form id="uploadForm" action="http://localhost:3000/upload" method="POST" enctype="multipart/form-data">
+      <input type="file" name="archiveFile" required />
+      <button type="submit">Upload</button>
+    </form>
+    <div id="response"></div>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
