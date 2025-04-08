@@ -1,23 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Constitutional Archive Admin Portal</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <title>Constitution Vault</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="container">
-    <h1>Add a Book</h1>
-    <form id="uploadForm" action="http://localhost:3000/books" method="POST" enctype="multipart/form-data">
-      <input type="text" name="name" placeholder="Book Name" required /><br>
-      <input type="number" name="year" placeholder="Year" required /><br>
-      <input type="text" name="writer" placeholder="Writer" required /><br>
-      <input type="text" name="subject" placeholder="Subject" required /><br>
-      <input type="file" name="document" required /><br>
-      <button type="submit">Upload Book</button>
-    </form>
-    <div id="response"></div>
+    <div class="sidebar">
+      <div>
+        <h1>Constitution Vault</h1>
+        <div class="features">
+          <button onclick="window.location.href='add.html'">Add Documents</button>
+          <button onclick="deleteSelectedBooks()">Delete Documents</button>
+        </div>
+      </div>
+      <button class="logout">🔴 Log Out</button>
+    </div>
+    <div class="main">
+      <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="Search..." />
+        <button onclick="searchBooks()">🔍</button>
+      </div>
+      <div id="bookList" class="book-list"></div>
+    </div>
   </div>
-  <script src="script.js"></script>
+  <script src="index.js"></script>
 </body>
 </html>

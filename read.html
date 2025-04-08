@@ -1,0 +1,20 @@
+<!-- public/read.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Read Book</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1 id="bookTitle">📖 Reading Book...</h1>
+    <iframe id="pdfViewer"></iframe>
+    <div style="text-align: center;">
+      <button onclick="window.history.back()">← Back to Library</button>
+      <button onclick="window.location.href='add.html'" style="margin-left: 1rem;">+ Add Book</button>
+    </div>
+  </div>
+  <script src="read.js"></script>
+</body>
+</html>
