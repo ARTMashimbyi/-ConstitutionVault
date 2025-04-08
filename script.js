@@ -9,6 +9,7 @@ document.getElementById('uploadForm').addEventListener('submit', function (e) {
       .then(res => res.text())
       .then(msg => {
         document.getElementById('response').innerText = msg;
+        this.reset(); // Reset the form after successful upload
       })
       .catch(err => {
         document.getElementById('response').innerText = 'Upload failed.';
