@@ -2,44 +2,47 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Admin Add Constitutional Data</title>
-    <link rel="stylesheet" href="style.css" />
+    <title>ConstitutionVault | Admin Upload</title>
+    <link rel="stylesheet" href="admin-add.css" />
   </head>
   <body>
     <header>
-      <h1>Admin: Upload Constitutional Archive Data</h1>
+      <h1>ConstitutionVault Admin Portal</h1>
     </header>
     <main>
-      <form
-        id="uploadForm"
-        action="http://localhost:3000/upload"
-        method="POST"
-        enctype="multipart/form-data"
-      >
-        <fieldset>
-          <legend>Add Document</legend>
+      <section>
+        <h2>Upload Constitutional Archive Data</h2>
+        <form
+          id="uploadForm"
+          action="http://localhost:3000/upload"
+          method="POST"
+          enctype="multipart/form-data"
+        >
+          <fieldset>
+            <legend>Add Document</legend>
 
-          <label for="file">Document</label>
-          <input type="file" id="file" name="file" required />
+            <label for="file">Document</label>
+            <input type="file" id="file" name="file" required />
 
-          <label for="title">Title</label>
-          <input type="text" id="title" name="title" required />
+            <label for="title">Title</label>
+            <input type="text" id="title" name="title" required />
 
-          <label for="date">Date</label>
-          <input type="date" id="date" name="date" required />
+            <label for="date">Date</label>
+            <input type="date" id="date" name="date" required />
 
-          <label for="region">Region</label>
-          <input type="text" id="region" name="region" required />
+            <label for="region">Region</label>
+            <input type="text" id="region" name="region" required />
 
-          <label for="type">Type</label>
-          <input type="text" id="type" name="type" required />
+            <label for="type">Type</label>
+            <input type="text" id="type" name="type" required />
 
-          <button type="submit">Upload</button>
-        </fieldset>
-      </form>
+            <button type="submit">Upload</button>
+          </fieldset>
+        </form>
+      </section>
     </main>
     <footer>
-      <p>&copy; Your Organization</p>
+      <p>&copy; 2025 ConstitutionVault | All Rights Reserved</p>
     </footer>
     <script src="script.js"></script>
   </body>
