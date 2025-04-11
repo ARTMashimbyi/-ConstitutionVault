@@ -1,5 +1,4 @@
 {
-<<<<<<< HEAD
   "devDependencies": {
     "jest": "^29.7.0",
     "jsdom": "^26.0.0",
@@ -11,9 +10,5 @@
   "dependencies": {
     "express": "^5.1.0",
     "multer": "^1.4.5-lts.2"
-=======
-  "dependencies": {
-    "firebase": "^11.6.0"
->>>>>>> 0e885e8 (User sign up with OAuth integration)
   }
 }
