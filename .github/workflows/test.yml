@@ -10,10 +10,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
 
-      - name: Set up Node
+      - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 18
@@ -21,15 +19,14 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Force install Jest
+      - name: Install Jest explicitly
         run: npm install --save-dev jest jest-environment-jsdom
 
-      - name: Run tests
-        run: npm test
+      - name: Run tests with npx
+        run: npx jest --coverage
 
       - name: Upload results to Codecov
         uses: codecov/codecov-action@v5
         with:
           slug: ARTMashimbyi/-ConstitutionVault
-          # Uncomment below line ONLY if the repo is private
-          token: ${{ secrets.CODECOV_TOKEN }}
+          token: ${{ secrets.CODECOV_TOKEN }} # Only if your repo is private
