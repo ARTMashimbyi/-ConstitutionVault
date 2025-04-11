@@ -1,14 +1,13 @@
-name: Run tests and upload coverage
+name: Run Tests and Upload Coverage
 
 on: push
 
 jobs:
   test:
-    name: Run tests and collect coverage
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Set up Node.js
@@ -19,14 +18,14 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Install Jest explicitly
-        run: npm install --save-dev jest jest-environment-jsdom
+      - name: Make Jest binary executable (for Linux)
+        run: chmod +x ./node_modules/.bin/jest
 
-      - name: Run tests with npx
+      - name: Run tests with coverage
         run: npx jest --coverage
 
-      - name: Upload results to Codecov
+      - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
         with:
+          token: ${{ secrets.CODECOV_TOKEN }} # (only needed for private repos)
           slug: ARTMashimbyi/-ConstitutionVault
-          token: ${{ secrets.CODECOV_TOKEN }} # Only if your repo is private
