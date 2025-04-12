@@ -12,7 +12,8 @@
     "jsdom": "^26.0.0"
   },
   "scripts": {
-    "test": "jest --coverage"
+    "test": "jest --coverage",
+    "build": "echo 'Nothing to build'"
   },
   "jest": {
     "testEnvironment": "jsdom"
