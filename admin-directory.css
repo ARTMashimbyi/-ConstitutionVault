@@ -1,0 +1,184 @@
+/* Global Reset and Font */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Open Sans', sans-serif;
+}
+
+/* Body Styling */
+body {
+  background: #f4f6f9;
+  color: #333;
+}
+
+/* Header Styling */
+header {
+  background: #003366;
+  color: #fff;
+  text-align: center;
+  padding: 1rem;
+}
+
+header h1 {
+  font-size: 1.8rem;
+}
+
+/* Navigation Styling */
+nav {
+  background-color: #ffffff;
+  padding: 0.5rem 1rem;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+nav a {
+  color: #003366;
+  font-weight: bold;
+  text-decoration: none;
+  margin: 0 1rem;
+}
+
+nav a:hover {
+  text-decoration: underline;
+  color: #0055aa;
+}
+
+/* Main Content Styling */
+main {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  align-items: center;
+  padding: 2rem;
+  /* Use a solid background color instead of a URL to avoid resolution errors */
+  background: #003366;
+}
+
+/* Section Styling */
+section {
+  background: rgba(255, 255, 255, 0.9);
+  padding: 2rem;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 600px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+  margin-bottom: 1rem;
+}
+
+section h2 {
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+  color: #003366;
+}
+
+/* Document Directory Controls Styling (using fieldset) */
+fieldset.controls {
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+fieldset.controls legend {
+  font-weight: 600;
+  color: #003366;
+}
+
+fieldset.controls label {
+  font-weight: bold;
+  color: #003366;
+  margin-right: 0.5rem;
+}
+
+fieldset.controls select {
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font: inherit;
+  margin-right: 1rem;
+}
+
+/* Search Input Styling */
+#searchInput {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font: inherit;
+  margin-bottom: 1rem;
+}
+
+/* Document List Styling */
+#documentList {
+  list-style: none;
+  padding: 0;
+}
+
+#documentList li {
+  background: #fff;
+  border: 1px solid #ccc;
+  padding: 0.75rem;
+  margin-bottom: 0.5rem;
+  border-radius: 4px;
+}
+
+/* Fallback Section Styling */
+#fallback-section {
+  width: 100%;
+  max-width: 600px;
+}
+
+/* Country Info & Bordering Countries Sections */
+#country-info,
+#bordering-countries {
+  margin-top: 1rem;
+}
+
+/* Country Card Styling */
+.country-card {
+  background: #fff;
+  border: 1px solid #ccc;
+  padding: 0.75rem;
+  margin-bottom: 0.5rem;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.country-card img.flag {
+  max-width: 100%;
+  height: auto;
+  margin-top: 0.5rem;
+}
+
+/* Notification for General Messages */
+#notification {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  background: #d4edda;
+  color: #155724;
+  padding: 1rem;
+  border-radius: 4px;
+  font-weight: bold;
+  display: none;
+}
+
+/* Footer Styling */
+footer {
+  text-align: center;
+  background: #003366;
+  color: #fff;
+  padding: 1rem;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+}
+
+footer p {
+  font-size: 0.9rem;
+  margin: 0;
+}

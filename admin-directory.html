@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>ConstitutionVault Admin Portal | Media Directory</title>
+    <link rel="stylesheet" href="admin-directory.css" />
+  </head>
+  <body>
+    <header>
+      <h1>ConstitutionVault Admin Portal</h1>
+      <nav>
+        <!-- Updated navigation text to reflect multi-type upload -->
+        <a href="admin-add.html">Upload New File</a>
+      </nav>
+    </header>
+    <main>
+      <!-- Document/Media Directory Section -->
+      <section id="directory-section">
+        <!-- Controls for Sorting and Filtering -->
+        <fieldset class="controls">
+          <legend>Sort &amp; Filter</legend>
+          <label for="sortSelect">Sort by:</label>
+          <select id="sortSelect">
+            <option value="date">Date (Newest First)</option>
+            <option value="title">Title (A-Z)</option>
+          </select>
+          <label for="continentFilter">Filter by Continent:</label>
+          <select id="continentFilter">
+            <option value="all">All Continents</option>
+            <option value="Africa">Africa</option>
+            <option value="Asia">Asia</option>
+            <option value="Europe">Europe</option>
+            <option value="North America">North America</option>
+            <option value="South America">South America</option>
+            <option value="Oceania">Oceania</option>
+          </select>
+        </fieldset>
+        <!-- Single Search Input -->
+        <label for="searchInput" class="visually-hidden">Search Files</label>
+        <input
+          id="searchInput"
+          type="text"
+          placeholder="Search files, metadata, institution, or country"
+        />
+        <!-- Unordered List for File Entries -->
+        <ul id="documentList"></ul>
+      </section>
+
+      <!-- Fallback Section for Extra Country/Institution Information -->
+      <section id="fallback-section">
+        <h2>Additional Information</h2>
+        <section id="country-info"></section>
+        <section id="bordering-countries"></section>
+      </section>
+
+      <!-- Notification for General Messages -->
+      <p id="notification" style="display: none"></p>
+    </main>
+    <footer>
+      <p>&copy; 2025 ConstitutionVault | All Rights Reserved</p>
+    </footer>
+    <script src="admin-directory.js"></script>
+  </body>
+</html>

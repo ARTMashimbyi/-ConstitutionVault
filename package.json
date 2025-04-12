@@ -1,9 +1,14 @@
 {
   "devDependencies": {
     "jest": "^29.7.0",
-    "jsdom": "^26.0.0"
+    "jsdom": "^26.0.0",
+    "supertest": "^7.1.0"
   },
   "scripts": {
     "test": "jest"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "multer": "^1.4.5-lts.2"
   }
 }

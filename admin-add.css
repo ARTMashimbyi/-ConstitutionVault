@@ -11,6 +11,7 @@ body {
   color: #333;
 }
 
+/* Header styling */
 header {
   background: #003366; /* Dark blue banner */
   color: #fff;
@@ -19,26 +20,28 @@ header {
 }
 
 header h1 {
-  margin: 0;
   font-size: 1.8rem;
 }
 
+/* Main content styling */
 main {
   display: flex;
   justify-content: center;
   align-items: flex-start;
   min-height: calc(100vh - 80px);
   padding: 2rem;
-  background: url('https://via.placeholder.com/1200x800/003366/ffffff?text=Background+Image') no-repeat center/cover;
+  /* Removed placeholder URL reference */
+  background: #003366; /* Simple solid color background */
 }
 
+/* Section styling */
 section {
   background: rgba(255, 255, 255, 0.9);
   padding: 2rem;
   border-radius: 8px;
   width: 100%;
   max-width: 600px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
 }
 
 section h2 {
@@ -47,6 +50,7 @@ section h2 {
   color: #003366;
 }
 
+/* Form styling */
 form {
   display: flex;
   flex-direction: column;
@@ -97,6 +101,7 @@ button[type="submit"]:hover {
   background: #002244;
 }
 
+/* Footer styling */
 footer {
   text-align: center;
   background: #003366;
@@ -109,6 +114,42 @@ footer {
 }
 
 footer p {
-  margin: 0;
   font-size: 0.9rem;
+  margin: 0;
+}
+
+/* Navigation styling */
+nav {
+  background-color: #ffffff; /* White background for contrast */
+  padding: 0.5rem 1rem;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+nav a {
+  color: #003366; /* Dark blue text */
+  font-weight: bold;
+  text-decoration: none;
+  margin: 0 1rem;
+}
+
+nav a:hover {
+  text-decoration: underline;
+  color: #0055aa;
+}
+
+/* Upload status notification styling */
+#uploadStatus {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  background: #d4edda; /* Light green background for success */
+  color: #155724;      /* Dark green text */
+  padding: 1rem;
+  border-radius: 4px;
+  font-weight: bold;
+  margin-top: 1rem;
+  display: none;
 }

@@ -8,42 +8,76 @@
   <body>
     <header>
       <h1>ConstitutionVault Admin Portal</h1>
+      <!-- Navigation: Link to Directory Page -->
+      <nav>
+        <a href="admin-directory.html">View Uploaded Documents</a>
+      </nav>
     </header>
     <main>
       <section>
         <h2>Upload Constitutional Archive Data</h2>
         <form
           id="uploadForm"
-          action="http://localhost:3000/upload"
+          action="http://localhost:3000/constitutionalDocuments"
           method="POST"
           enctype="multipart/form-data"
         >
           <fieldset>
-            <legend>Add Document</legend>
+            <legend>Add File</legend>
 
-            <label for="file">Document</label>
-            <input type="file" id="file" name="file" required />
+            <!-- File Type Selection (if already implemented) -->
+            <label for="fileType">File Type</label>
+            <select id="fileType" name="fileType" required>
+              <option value="document">Document/PDF</option>
+              <option value="video">Video</option>
+              <option value="image">Image</option>
+              <option value="audio">Audio</option>
+            </select>
 
+            <!-- File input with a note below -->
+            <label for="document" id="fileLabel">Upload File</label>
+            <input type="file" id="document" name="document" required />
+            <p class="max-size-note">Maximum file size allowed: 100 MB</p>
+
+            <!-- Basic metadata -->
             <label for="title">Title</label>
             <input type="text" id="title" name="title" required />
 
             <label for="date">Date</label>
             <input type="date" id="date" name="date" required />
 
-            <label for="region">Region</label>
-            <input type="text" id="region" name="region" required />
+            <!-- New structured metadata -->
+            <label for="continent">Continent</label>
+            <input type="text" id="continent" name="continent" required />
 
-            <label for="type">Type</label>
-            <input type="text" id="type" name="type" required />
+            <label for="country">Country</label>
+            <input type="text" id="country" name="country" required />
+
+            <label for="institution">Institution/Place</label>
+            <input type="text" id="institution" name="institution" />
+
+            <label for="author" id="authorLabel">Author</label>
+            <input type="text" id="author" name="author" />
+
+            <label for="category">Category</label>
+            <input type="text" id="category" name="category" />
+
+            <label for="keywords">Keywords (comma separated)</label>
+            <input type="text" id="keywords" name="keywords" />
 
             <button type="submit">Upload</button>
           </fieldset>
         </form>
+        <!-- A paragraph to display upload status -->
+        <p
+          id="uploadStatus"
+          style="display: none; color: green; font-weight: bold"
+        ></p>
       </section>
     </main>
     <footer>
       <p>&copy; 2025 ConstitutionVault | All Rights Reserved</p>
     </footer>
-    <script src="script.js"></script>
+    <script src="admin-add.js"></script>
   </body>
 </html>
