@@ -21,12 +21,14 @@ jobs:
 
       - name: Make Jest binary executable (for Linux)
         run: chmod +x ./node_modules/.bin/jest
+        working-directory: ./public
 
       - name: Run tests with coverage
         run: npx jest --coverage
+        working-directory: ./public
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
         with:
-          token: ${{ secrets.CODECOV_TOKEN }} # (only needed for private repos)
+          token: ${{ secrets.CODECOV_TOKEN }} # only needed for private repos
           slug: ARTMashimbyi/-ConstitutionVault
