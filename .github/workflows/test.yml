@@ -17,6 +17,7 @@ jobs:
 
       - name: Install dependencies
         run: npm install
+        working-directory: ./public
 
       - name: Make Jest binary executable (for Linux)
         run: chmod +x ./node_modules/.bin/jest
