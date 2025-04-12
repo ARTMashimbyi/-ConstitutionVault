@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Constitution Vault</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <div class="sidebar">
+      <div>
+        <h1>Constitution Vault</h1>
+        <div class="features">
+          <button onclick="window.location.href='add.html'">Add Documents</button>
+          <button onclick="deleteSelectedBooks()">Delete Documents</button>
+        </div>
+      </div>
+      <button class="logout">🔴 Log Out</button>
+    </div>
+    <div class="main">
+      <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="Search..." />
+        <button onclick="searchBooks()">🔍</button>
+      </div>
+      <div id="bookList" class="book-list"></div>
+    </div>
+  </div>
+  <script src="index.js"></script>
+</body>
+</html>
