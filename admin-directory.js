@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
+<<<<<<< HEAD
   // --- (Optional) Document synonyms for local search (if you want to keep them here)
   const docSynonyms = {
     "us": "united states"
@@ -12,11 +13,24 @@ document.addEventListener('DOMContentLoaded', () => {
   const notification = document.getElementById('notification');
   const sortSelect = document.getElementById('sortSelect');       // Sorting dropdown
   const regionFilter = document.getElementById('continentFilter');  // Continent filter dropdown
+=======
+  // --- docSynonyms for local file search ---
+  const docSynonyms = {
+    "us": "united states",
+  };
+
+  const documentList = document.getElementById('documentList');
+  const searchInput = document.getElementById('searchInput');
+  const notification = document.getElementById('notification');
+  const sortSelect = document.getElementById('sortSelect');
+  const regionFilter = document.getElementById('continentFilter');
+>>>>>>> 9ac089b (update with modal)
 
   // --- Elements for fallback country data ---
   const countryInfoSection = document.getElementById('country-info');
   const borderingSection = document.getElementById('bordering-countries');
 
+<<<<<<< HEAD
   let allDocuments = []; // Local documents fetched from backend
 
   // Instantiate external classes (from CountryData.js and CountryInfoService.js)
@@ -29,13 +43,28 @@ document.addEventListener('DOMContentLoaded', () => {
   const adminDeletion = new AdminDirectoryDeletion("http://localhost:3000/constitutionalDocuments");
 
   // Utility: Show a temporary notification message
+=======
+  // --- Modal elements ---
+  const deleteModal = document.querySelector('.deleteModal');
+  const yesBtn = document.querySelector('.yesBtn');
+  const noBtn = document.querySelector('.noBtn');
+  
+  let allDocuments = [];
+  let currentDocToDelete = null;
+
+  // Utility: Show a notification
+>>>>>>> 9ac089b (update with modal)
   function showNotification(message, duration = 5000) {
     notification.innerText = message;
     notification.style.display = "block";
     setTimeout(() => { notification.style.display = "none"; }, duration);
   }
 
+<<<<<<< HEAD
   // Fetch local documents from the backend
+=======
+  // Fetch local documents
+>>>>>>> 9ac089b (update with modal)
   async function fetchDocuments() {
     try {
       const res = await fetch('http://localhost:3000/constitutionalDocuments');
@@ -47,6 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+<<<<<<< HEAD
   /**
    * Filters documents using a raw, lowercased query.
    * Each token (optionally replaced via docSynonyms) must appear in the combined document fields.
@@ -128,6 +158,11 @@ document.addEventListener('DOMContentLoaded', () => {
    * Renders the list of local documents.
    * Instead of handling deletion inline, we use the AdminDirectoryDeletion module.
    */
+=======
+  // ... (keep all your existing filter, sort, and render utility functions)
+
+  // Modified renderDocuments function to include delete buttons
+>>>>>>> 9ac089b (update with modal)
   function renderDocuments(docs) {
     documentList.innerHTML = "";
     docs.forEach(doc => {
@@ -137,6 +172,10 @@ document.addEventListener('DOMContentLoaded', () => {
       li.style.padding = '0.5rem';
       li.style.borderRadius = '4px';
 
+<<<<<<< HEAD
+=======
+      // Your existing document rendering code
+>>>>>>> 9ac089b (update with modal)
       let infoHTML = `
         <p><strong>Title:</strong> ${doc.title}</p>
         <p><strong>Date:</strong> ${doc.date}</p>
@@ -158,6 +197,7 @@ document.addEventListener('DOMContentLoaded', () => {
       infoHTML += renderFilePreview(doc);
       li.innerHTML = infoHTML;
 
+<<<<<<< HEAD
       // Create a Delete button and use the AdminDirectoryDeletion module to attach the handler.
       const deleteBtn = document.createElement('button');
       deleteBtn.innerText = "Delete";
@@ -169,11 +209,22 @@ document.addEventListener('DOMContentLoaded', () => {
         updateDisplayedDocuments();
       });
       
+=======
+      // Add delete button
+      const deleteBtn = document.createElement('button');
+      deleteBtn.textContent = 'Delete';
+      deleteBtn.classList.add('deleteBtn'); // Add class for styling
+      deleteBtn.addEventListener('click', () => {
+        currentDocToDelete = doc;
+        deleteModal.style.display = 'flex';
+      });
+>>>>>>> 9ac089b (update with modal)
       li.appendChild(deleteBtn);
       documentList.appendChild(li);
     });
   }
 
+<<<<<<< HEAD
   /**
    * Main update function: Filters, sorts, and renders local documents,
    * then updates the fallback Additional Information section.
@@ -284,10 +335,57 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Attach event listeners.
+=======
+  // Setup modal event handlers
+  function setupDeleteModal() {
+    yesBtn.addEventListener('click', async () => {
+      if (currentDocToDelete) {
+        try {
+          const response = await fetch(`http://localhost:3000/constitutionalDocuments/${currentDocToDelete.id}`, {
+            method: 'DELETE'
+          });
+          
+          if (response.ok) {
+            showNotification('Document deleted successfully');
+            allDocuments = await fetchDocuments();
+            updateDisplayedDocuments();
+          } else {
+            const errorData = await response.json();
+            throw new Error(errorData.error || "Failed to delete document");
+          }
+        } catch (error) {
+          showNotification('Error deleting document: ' + error.message);
+        } finally {
+          deleteModal.style.display = 'none';
+          currentDocToDelete = null;
+        }
+      }
+    });
+
+    noBtn.addEventListener('click', () => {
+      deleteModal.style.display = 'none';
+      currentDocToDelete = null;
+    });
+  }
+
+  // Initialization
+  async function initDocuments() {
+    allDocuments = await fetchDocuments();
+    updateDisplayedDocuments();
+    setupDeleteModal();
+  }
+
+  // Event listeners
+>>>>>>> 9ac089b (update with modal)
   searchInput.addEventListener('input', updateDisplayedDocuments);
   if (sortSelect) sortSelect.addEventListener('change', updateDisplayedDocuments);
   if (regionFilter) regionFilter.addEventListener('change', updateDisplayedDocuments);
 
+<<<<<<< HEAD
   // Start initialization.
   initDocuments();
 });
+=======
+  initDocuments();
+});
+>>>>>>> 9ac089b (update with modal)
