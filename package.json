@@ -5,12 +5,7 @@
     "supertest": "^7.1.0"
   },
   "scripts": {
-<<<<<<< HEAD
     "test": "jest"
-=======
-    "test": "jest --coverage",
-    "build": "echo 'Nothing to build'"
->>>>>>> 87ecac7 (deploy)
   },
   "dependencies": {
     "express": "^5.1.0",
