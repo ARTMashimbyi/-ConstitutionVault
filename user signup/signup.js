@@ -1,8 +1,8 @@
 const googleBtn = document.getElementById("google-signup");
 
 googleBtn?.addEventListener("click", () => {
-  const clientId = "271321648137-0atssob6ov56ctba0nuff6eocmgm2mdm.apps.googleusercontent.com"; // got this fro OAuth
-  const redirectUri = "http://localhost:3000/oauth-callback.html"; // Must match what's set in Google Cloud
+  const clientId = "271321648137-0atssob6ov56ctba0nuff6eocmgm2mdm.apps.googleusercontent.com"; // got this from OAuth
+  const redirectUri = "http://localhost:3000/user%20signup/oauth-callback.html"; 
   const scope = "openid email profile";
   const responseType = "code"; 
 
