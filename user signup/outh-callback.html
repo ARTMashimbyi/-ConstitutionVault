@@ -10,11 +10,20 @@
     const code = urlParams.get("code");
 
     if (code) {
-      // In the next step, we’ll POST this to your backend
-      console.log("Authorization code:", code);
-
-      // TEMPORARY: Just show the code
-      document.body.innerHTML += `<p>Code: ${code}</p>`;
+      fetch("https://constitution-vault-backend-1234.azurewebsites.net/api/oauthGoogle", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code })  // Send code to backend
+      })
+      .then(res => res.json())
+      .then(data => {
+        console.log("User info:", data);
+        document.body.innerHTML += `<p>Welcome, ${data.name}</p>`;
+      })
+      .catch(err => {
+        console.error("Error during login:", err);
+        document.body.innerHTML += "<p>Error logging in. Please try again.</p>";
+      });
     } else {
       document.body.innerHTML += "<p>Something went wrong. No code found.</p>";
     }
