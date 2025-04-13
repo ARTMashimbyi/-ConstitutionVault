@@ -59,6 +59,16 @@
     <footer>
       <p>&copy; 2025 ConstitutionVault | All Rights Reserved</p>
     </footer>
+
+    <!-- 
+      Include additional module scripts before the main admin-directory script.
+      Ensure that CountryData.js (which contains CountryAliases and CountryFacts)
+      and NLPTools.js (which contains QueryEnhancer and LanguageSupport) are loaded so
+      that admin-directory.js can use them.
+    -->
+    <script src="CountryData.js"></script>
+    <!-- <script src="NLPTools.js"></script> -->
+    <script src="CountryInfoService.js"></script>
     <script src="admin-directory.js"></script>
   </body>
 </html>
