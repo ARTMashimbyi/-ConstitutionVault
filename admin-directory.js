@@ -1,20 +1,17 @@
 document.addEventListener('DOMContentLoaded', () => {
-  // --- docSynonyms for local file search ---
+  // --- (Optional) Document synonyms for local search (if you want to keep them here)
   const docSynonyms = {
-    // Add synonyms -> canonical forms
-    "us": "united states",
-    // "uk": "united kingdom",
-    // "u.s.a.": "united states",
-    // "de": "germany",
-    // etc.
+    "us": "united states"
+    
+    // Add further synonyms if needed.
   };
 
   // --- Elements for local documents ---
   const documentList = document.getElementById('documentList');
   const searchInput = document.getElementById('searchInput');
   const notification = document.getElementById('notification');
-  const sortSelect = document.getElementById('sortSelect');
-  const regionFilter = document.getElementById('continentFilter');
+  const sortSelect = document.getElementById('sortSelect');       // Sorting dropdown
+  const regionFilter = document.getElementById('continentFilter');  // Continent filter dropdown
 
   // --- Elements for fallback country data ---
   const countryInfoSection = document.getElementById('country-info');
@@ -22,19 +19,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let allDocuments = []; // Local documents fetched from backend
 
-  // Instantiate classes from your other JS files
-  const countryAliases = new CountryAliases();  // from CountryData.js
-  const countryFacts = new CountryFacts();      // from CountryData.js
-  const countryInfoService = new CountryInfoService(); // from CountryInfoService.js
+  // Instantiate external classes (from CountryData.js and CountryInfoService.js)
+  const countryAliases = new CountryAliases();   // Provides alias mapping and canonical conversions.
+  const countryFacts = new CountryFacts();
+  const countryInfoService = new CountryInfoService();
 
-  // Utility: Show a notification
+  // Instantiate the deletion module from AdminDirectoryDeletion.js.
+  // Provide the base URL for deletion API calls.
+  const adminDeletion = new AdminDirectoryDeletion("http://localhost:3000/constitutionalDocuments");
+
+  // Utility: Show a temporary notification message
   function showNotification(message, duration = 5000) {
     notification.innerText = message;
     notification.style.display = "block";
     setTimeout(() => { notification.style.display = "none"; }, duration);
   }
 
-  // Fetch local documents
+  // Fetch local documents from the backend
   async function fetchDocuments() {
     try {
       const res = await fetch('http://localhost:3000/constitutionalDocuments');
@@ -47,28 +48,16 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /**
-   * filterDocuments:
-   * 1. Converts query to lowercased tokens.
-   * 2. Replaces tokens with docSynonyms if available.
-   * 3. Matches each token in the combined doc fields.
-   * 4. Applies region filter if user selected it.
+   * Filters documents using a raw, lowercased query.
+   * Each token (optionally replaced via docSynonyms) must appear in the combined document fields.
    */
   function filterDocuments(docs, query, region) {
     let filtered = docs;
     if (query) {
-      // Lowercase and split into tokens.
       const normalizedQuery = query.toLowerCase().trim();
       let tokens = normalizedQuery.split(/\s+/).filter(Boolean);
-
-      // Replace tokens with synonyms if found.
-      tokens = tokens.map(token => {
-        // If the token is in docSynonyms, use its canonical form
-        if (docSynonyms[token]) {
-          return docSynonyms[token];
-        }
-        return token;
-      });
-
+      // Replace tokens with synonyms if available.
+      tokens = tokens.map(token => docSynonyms[token] || token);
       if (tokens.length === 0) {
         filtered = [];
       } else {
@@ -81,25 +70,22 @@ document.addEventListener('DOMContentLoaded', () => {
             doc.category,
             doc.keywords
           ].filter(Boolean).join(" ").toLowerCase();
-
-          // All tokens must appear in combined.
           return tokens.every(token => combined.includes(token));
         });
       }
     }
-
-    // Region filter
     if (region && region.toLowerCase() !== 'all') {
       filtered = filtered.filter(doc => {
         const docContinent = (doc.continent || "").toLowerCase();
         return docContinent === region.toLowerCase();
       });
     }
-
     return filtered;
   }
 
-  // Sort documents by date or title.
+  /**
+   * Sorts documents based on date (newest first) or title (alphabetical).
+   */
   function sortDocuments(docs) {
     if (!sortSelect) return docs;
     const sortBy = sortSelect.value;
@@ -111,33 +97,37 @@ document.addEventListener('DOMContentLoaded', () => {
     return docs;
   }
 
-  // Renders a file preview if applicable.
+  /**
+   * Renders a file preview based on the fileType.
+   */
   function renderFilePreview(doc) {
     const type = doc.fileType ? doc.fileType.toLowerCase() : 'document';
     const fileURL = `http://localhost:3000/uploads/${doc.document}`;
-    switch (type) {
-      case 'video':
-        return `
-          <video width="400" controls>
-            <source src="${fileURL}" type="video/mp4">
-            Your browser does not support the video tag.
-          </video>
-        `;
-      case 'image':
-        return `<img src="${fileURL}" alt="${doc.title}" width="400">`;
-      case 'audio':
-        return `
-          <audio controls>
-            <source src="${fileURL}" type="audio/mpeg">
-            Your browser does not support the audio element.
-          </audio>
-        `;
-      default:
-        return `<p><a href="${fileURL}" target="_blank">View File</a></p>`;
+    if (type === 'video') {
+      return `
+        <video width="400" controls>
+          <source src="${fileURL}" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+      `;
+    } else if (type === 'image') {
+      return `<img src="${fileURL}" alt="${doc.title}" width="400">`;
+    } else if (type === 'audio') {
+      return `
+        <audio controls>
+          <source src="${fileURL}" type="audio/mpeg">
+          Your browser does not support the audio element.
+        </audio>
+      `;
+    } else {
+      return `<p><a href="${fileURL}" target="_blank">View File</a></p>`;
     }
   }
 
-  // Render local documents
+  /**
+   * Renders the list of local documents.
+   * Instead of handling deletion inline, we use the AdminDirectoryDeletion module.
+   */
   function renderDocuments(docs) {
     documentList.innerHTML = "";
     docs.forEach(doc => {
@@ -168,34 +158,26 @@ document.addEventListener('DOMContentLoaded', () => {
       infoHTML += renderFilePreview(doc);
       li.innerHTML = infoHTML;
 
-      // Delete button
+      // Create a Delete button and use the AdminDirectoryDeletion module to attach the handler.
       const deleteBtn = document.createElement('button');
       deleteBtn.innerText = "Delete";
       deleteBtn.style.marginTop = "1rem";
-      deleteBtn.addEventListener('click', async () => {
-        if (confirm(`Are you sure you want to delete "${doc.title}"?`)) {
-          try {
-            const res = await fetch(`http://localhost:3000/constitutionalDocuments/${doc.id}`, { method: 'DELETE' });
-            if (res.ok) {
-              alert("File deleted successfully.");
-              allDocuments = await fetchDocuments();
-              updateDisplayedDocuments();
-            } else {
-              const errorData = await res.json();
-              alert(errorData.error || "Failed to delete file.");
-            }
-          } catch (error) {
-            console.error("Error deleting file:", error);
-            alert("Error deleting file.");
-          }
-        }
+      
+      // Attach the delete handler using our deletion module.
+      adminDeletion.attachDeleteHandler(deleteBtn, doc.title, doc.id, async () => {
+        allDocuments = await fetchDocuments();
+        updateDisplayedDocuments();
       });
+      
       li.appendChild(deleteBtn);
       documentList.appendChild(li);
     });
   }
 
-  // The main update function: filter, sort, and render local docs; then fallback for country info.
+  /**
+   * Main update function: Filters, sorts, and renders local documents,
+   * then updates the fallback Additional Information section.
+   */
   async function updateDisplayedDocuments() {
     const rawQuery = searchInput.value.trim();
     const region = regionFilter ? regionFilter.value : "";
@@ -204,12 +186,12 @@ document.addEventListener('DOMContentLoaded', () => {
     filteredDocs = sortDocuments(filteredDocs);
     renderDocuments(filteredDocs);
 
-    // If no local documents are found, show a message
+    // If no local documents are found, display a message.
     if (rawQuery !== "" && filteredDocs.length === 0) {
       documentList.innerHTML = `<li>No matching files found.</li>`;
     }
 
-    // For Additional Information, convert rawQuery to canonical name
+    // For Additional Information, use CountryAliases to convert raw query to a canonical name.
     if (rawQuery !== "") {
       const canonicalQuery = countryAliases.getCanonicalName(rawQuery);
       fetchCountryData(canonicalQuery);
@@ -219,7 +201,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Fetch country data with CountryInfoService
+  /**
+   * Fetches country data using CountryInfoService and displays it.
+   */
   async function fetchCountryData(query) {
     try {
       const country = await countryInfoService.getCountryInfo(query);
@@ -235,7 +219,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Display fallback country information + custom facts
+  /**
+   * Displays country information and custom facts.
+   */
   function displayCountryInfo(country) {
     if (!country) return;
     const capital = country.capital ? country.capital[0] : "N/A";
@@ -263,7 +249,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Display bordering countries
+  /**
+   * Displays bordering countries using CountryInfoService.
+   */
   async function displayBorderCountries(borders) {
     borderingSection.innerHTML = "<h3>Bordering Countries:</h3>";
     try {
@@ -289,16 +277,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Initialization: fetch docs + update UI
+  // Initialization: Fetch local documents and update the UI.
   async function initDocuments() {
     allDocuments = await fetchDocuments();
     updateDisplayedDocuments();
   }
 
-  // Attach event listeners
+  // Attach event listeners.
   searchInput.addEventListener('input', updateDisplayedDocuments);
   if (sortSelect) sortSelect.addEventListener('change', updateDisplayedDocuments);
   if (regionFilter) regionFilter.addEventListener('change', updateDisplayedDocuments);
 
+  // Start initialization.
   initDocuments();
 });
