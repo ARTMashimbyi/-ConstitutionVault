@@ -1,7 +1,25 @@
 {
+  "name": "-constitutionvault",
+  "version": "1.0.0",
+  "description": "This is the frontend for **Constitution Vault**, a document management web application",
+  "main": "index.js",
   "dependencies": {
     "firebase": "^11.6.0",
     "google-auth-library": "^9.15.1",
     "mssql": "^11.0.1"
-  }
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "jsdom": "^26.0.0"
+  },
+  "scripts": {
+    "test": "jest --coverage"
+  },
+  "jest": {
+    "testEnvironment": "jsdom"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
 }
