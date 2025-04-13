@@ -1,9 +1,12 @@
-// public/script.js
 document.getElementById('uploadForm').addEventListener('submit', function (e) {
   e.preventDefault();
   const formData = new FormData(this);
 
-  fetch(this.action, {
+  const API_BASE_URL = window.location.hostname.includes('localhost')
+    ? 'http://localhost:3000'
+    : 'https://constitutionvault-eehxb8e0hgfphxb6.southafricanorth-01.azurewebsites.net';
+
+  fetch(`${API_BASE_URL}/upload`, {
     method: 'POST',
     body: formData
   })

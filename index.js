@@ -1,8 +1,11 @@
-// public/index.js
+const API_BASE_URL = window.location.hostname.includes('localhost')
+  ? 'http://localhost:3000'
+  : 'https://constitutionvault-eehxb8e0hgfphxb6.southafricanorth-01.azurewebsites.net';
+
 document.addEventListener('DOMContentLoaded', async () => {
   const bookList = document.getElementById('bookList');
   try {
-    const res = await fetch('http://localhost:3000/books');
+    const res = await fetch(`${API_BASE_URL}/books`);
     const books = await res.json();
 
     if (books.length === 0) {
