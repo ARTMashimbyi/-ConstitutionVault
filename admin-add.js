@@ -1,7 +1,12 @@
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => { 
   const uploadForm = document.getElementById('uploadForm');
   const statusElem = document.getElementById('uploadStatus');
   const fileInput = document.getElementById('document');
+  
+  // New: Get elements for dynamic UI updating
+  const fileTypeSelect = document.getElementById('fileType');
+  const fileLabel = document.getElementById('fileLabel');
+  const authorLabel = document.getElementById('authorLabel');
 
   // Maximum file size in bytes (100 MB)
   const MAX_FILE_SIZE = 100 * 1024 * 1024;
@@ -15,6 +20,43 @@ document.addEventListener('DOMContentLoaded', () => {
     }, duration);
   }
 
+  // Add a change event listener to the fileType dropdown so UI updates dynamically.
+  if (fileTypeSelect) {
+    fileTypeSelect.addEventListener('change', function (e) {
+      const selectedType = e.target.value;
+      // Update the file input label and the accepted file types.
+      switch(selectedType) {
+        case 'video':
+          fileLabel.textContent = 'Upload Video';
+          fileInput.setAttribute('accept', 'video/*');
+          if (authorLabel) {
+            authorLabel.textContent = 'Creator';
+          }
+          break;
+        case 'image':
+          fileLabel.textContent = 'Upload Image';
+          fileInput.setAttribute('accept', 'image/*');
+          if (authorLabel) {
+            authorLabel.textContent = 'Photographer';
+          }
+          break;
+        case 'audio':
+          fileLabel.textContent = 'Upload Audio';
+          fileInput.setAttribute('accept', 'audio/*');
+          if (authorLabel) {
+            authorLabel.textContent = 'Artist';
+          }
+          break;
+        default:
+          fileLabel.textContent = 'Upload File';
+          fileInput.setAttribute('accept', 'application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+          if (authorLabel) {
+            authorLabel.textContent = 'Author';
+          }
+      }
+    });
+  }
+  
   // Optional: Verify file size when a file is selected.
   fileInput.addEventListener('change', function () {
     const file = fileInput.files[0];

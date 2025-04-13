@@ -1,43 +1,40 @@
 document.addEventListener('DOMContentLoaded', () => {
+  // --- docSynonyms for local file search ---
+  const docSynonyms = {
+    // Add synonyms -> canonical forms
+    "us": "united states",
+    // "uk": "united kingdom",
+    // "u.s.a.": "united states",
+    // "de": "germany",
+    // etc.
+  };
+
   // --- Elements for local documents ---
   const documentList = document.getElementById('documentList');
   const searchInput = document.getElementById('searchInput');
   const notification = document.getElementById('notification');
-  const sortSelect = document.getElementById('sortSelect');       // Optional sorting drop-down
-  const regionFilter = document.getElementById('continentFilter');  // Using continent drop-down
-  
+  const sortSelect = document.getElementById('sortSelect');
+  const regionFilter = document.getElementById('continentFilter');
+
   // --- Elements for fallback country data ---
   const countryInfoSection = document.getElementById('country-info');
   const borderingSection = document.getElementById('bordering-countries');
 
-  let allDocuments = []; // All local documents fetched from the backend
+  let allDocuments = []; // Local documents fetched from backend
 
-  // --- Synonym Mapping for common abbreviations ---
-  const synonymMapping = {
-    "mit": "massachusetts institute of technology",
-    "wits": "university of the witwatersrand",
-    "harvard": "harvard university",
-    "us": "united states",
-    "usa": "united states"
-    // Add more mappings as needed.
-  };
+  // Instantiate classes from your other JS files
+  const countryAliases = new CountryAliases();  // from CountryData.js
+  const countryFacts = new CountryFacts();      // from CountryData.js
+  const countryInfoService = new CountryInfoService(); // from CountryInfoService.js
 
-  // Normalize the query using the mapping
-  function normalizeQuery(query) {
-    const lowerQuery = query.toLowerCase().trim();
-    return synonymMapping[lowerQuery] || lowerQuery;
-  }
-
-  // Utility: Show a temporary notification message
+  // Utility: Show a notification
   function showNotification(message, duration = 5000) {
     notification.innerText = message;
     notification.style.display = "block";
-    setTimeout(() => {
-      notification.style.display = "none";
-    }, duration);
+    setTimeout(() => { notification.style.display = "none"; }, duration);
   }
 
-  // Fetch local constitutional documents (or files) from backend
+  // Fetch local documents
   async function fetchDocuments() {
     try {
       const res = await fetch('http://localhost:3000/constitutionalDocuments');
@@ -49,43 +46,60 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Filter documents based on search query and continent filter.
+  /**
+   * filterDocuments:
+   * 1. Converts query to lowercased tokens.
+   * 2. Replaces tokens with docSynonyms if available.
+   * 3. Matches each token in the combined doc fields.
+   * 4. Applies region filter if user selected it.
+   */
   function filterDocuments(docs, query, region) {
     let filtered = docs;
-    
-    // Apply search query filter, if provided.
     if (query) {
-      const normalized = normalizeQuery(query);
-      filtered = filtered.filter(doc => {
-        const title = doc.title ? doc.title.toLowerCase() : "";
-        const continent = doc.continent ? doc.continent.toLowerCase() : "";
-        const country = doc.country ? doc.country.toLowerCase() : "";
-        const institution = doc.institution ? doc.institution.toLowerCase() : "";
-        const category = doc.category ? doc.category.toLowerCase() : "";
-        const keywords = doc.keywords ? doc.keywords.toLowerCase() : "";
-        return (
-          title.includes(normalized) ||
-          continent.includes(normalized) ||
-          country.includes(normalized) ||
-          institution.includes(normalized) ||
-          category.includes(normalized) ||
-          keywords.includes(normalized)
-        );
+      // Lowercase and split into tokens.
+      const normalizedQuery = query.toLowerCase().trim();
+      let tokens = normalizedQuery.split(/\s+/).filter(Boolean);
+
+      // Replace tokens with synonyms if found.
+      tokens = tokens.map(token => {
+        // If the token is in docSynonyms, use its canonical form
+        if (docSynonyms[token]) {
+          return docSynonyms[token];
+        }
+        return token;
       });
+
+      if (tokens.length === 0) {
+        filtered = [];
+      } else {
+        filtered = docs.filter(doc => {
+          const combined = [
+            doc.title,
+            doc.continent,
+            doc.country,
+            doc.institution,
+            doc.category,
+            doc.keywords
+          ].filter(Boolean).join(" ").toLowerCase();
+
+          // All tokens must appear in combined.
+          return tokens.every(token => combined.includes(token));
+        });
+      }
     }
-    
-    // Apply continent filter if selected (not "all").
+
+    // Region filter
     if (region && region.toLowerCase() !== 'all') {
       filtered = filtered.filter(doc => {
-        const docContinent = doc.continent ? doc.continent.toLowerCase() : "";
+        const docContinent = (doc.continent || "").toLowerCase();
         return docContinent === region.toLowerCase();
       });
     }
-    
+
     return filtered;
   }
 
-  // Sort documents based on the sortSelect drop-down (if present)
+  // Sort documents by date or title.
   function sortDocuments(docs) {
     if (!sortSelect) return docs;
     const sortBy = sortSelect.value;
@@ -97,12 +111,10 @@ document.addEventListener('DOMContentLoaded', () => {
     return docs;
   }
 
-  // Render file preview based on fileType. Make comparison case-insensitive.
+  // Renders a file preview if applicable.
   function renderFilePreview(doc) {
-    // Use lowercase for file type and extension checks.
     const type = doc.fileType ? doc.fileType.toLowerCase() : 'document';
     const fileURL = `http://localhost:3000/uploads/${doc.document}`;
-    
     switch (type) {
       case 'video':
         return `
@@ -121,12 +133,11 @@ document.addEventListener('DOMContentLoaded', () => {
           </audio>
         `;
       default:
-        // Default for "document" or unrecognized types.
         return `<p><a href="${fileURL}" target="_blank">View File</a></p>`;
     }
   }
 
-  // Render documents (or files) with metadata and file preview.
+  // Render local documents
   function renderDocuments(docs) {
     documentList.innerHTML = "";
     docs.forEach(doc => {
@@ -136,7 +147,6 @@ document.addEventListener('DOMContentLoaded', () => {
       li.style.padding = '0.5rem';
       li.style.borderRadius = '4px';
 
-      // Build info block.
       let infoHTML = `
         <p><strong>Title:</strong> ${doc.title}</p>
         <p><strong>Date:</strong> ${doc.date}</p>
@@ -155,22 +165,17 @@ document.addEventListener('DOMContentLoaded', () => {
       if (doc.keywords) {
         infoHTML += `<p><strong>Keywords:</strong> ${doc.keywords}</p>`;
       }
-      
-      // Append file preview.
       infoHTML += renderFilePreview(doc);
-
       li.innerHTML = infoHTML;
 
-      // Add Delete Button.
+      // Delete button
       const deleteBtn = document.createElement('button');
       deleteBtn.innerText = "Delete";
       deleteBtn.style.marginTop = "1rem";
       deleteBtn.addEventListener('click', async () => {
         if (confirm(`Are you sure you want to delete "${doc.title}"?`)) {
           try {
-            const res = await fetch(`http://localhost:3000/constitutionalDocuments/${doc.id}`, {
-              method: 'DELETE'
-            });
+            const res = await fetch(`http://localhost:3000/constitutionalDocuments/${doc.id}`, { method: 'DELETE' });
             if (res.ok) {
               alert("File deleted successfully.");
               allDocuments = await fetchDocuments();
@@ -186,60 +191,58 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
       li.appendChild(deleteBtn);
-
       documentList.appendChild(li);
     });
   }
 
-  // Update displayed documents by filtering and sorting.
+  // The main update function: filter, sort, and render local docs; then fallback for country info.
   async function updateDisplayedDocuments() {
-    const query = searchInput.value.trim();
+    const rawQuery = searchInput.value.trim();
     const region = regionFilter ? regionFilter.value : "";
-    let filteredDocs = filterDocuments(allDocuments, query, region);
+
+    let filteredDocs = filterDocuments(allDocuments, rawQuery, region);
     filteredDocs = sortDocuments(filteredDocs);
+    renderDocuments(filteredDocs);
 
-    // Clear fallback sections.
-    if (countryInfoSection) countryInfoSection.innerHTML = "";
-    if (borderingSection) borderingSection.innerHTML = "";
+    // If no local documents are found, show a message
+    if (rawQuery !== "" && filteredDocs.length === 0) {
+      documentList.innerHTML = `<li>No matching files found.</li>`;
+    }
 
-    if (filteredDocs.length === 0 && query !== "") {
-      documentList.innerHTML = `<li>No local files found matching your search.</li>`;
-      fetchCountryData(query);
+    // For Additional Information, convert rawQuery to canonical name
+    if (rawQuery !== "") {
+      const canonicalQuery = countryAliases.getCanonicalName(rawQuery);
+      fetchCountryData(canonicalQuery);
     } else {
-      renderDocuments(filteredDocs);
+      countryInfoSection.innerHTML = "";
+      borderingSection.innerHTML = "";
     }
   }
 
-  // --- Fallback Country Search Functions ---
+  // Fetch country data with CountryInfoService
   async function fetchCountryData(query) {
-    let countryName = query;
-    if (synonymMapping[countryName.toLowerCase()]) {
-      countryName = synonymMapping[countryName.toLowerCase()];
-    }
     try {
-      const response = await fetch(`https://restcountries.com/v3.1/name/${countryName}?fullText=true`);
-      if (!response.ok) {
-        throw new Error("Country not found");
-      }
-      const data = await response.json();
-      const country = data[0];
+      const country = await countryInfoService.getCountryInfo(query);
       displayCountryInfo(country);
-      if (country.borders && country.borders.length > 0) {
+      if (country && country.borders && country.borders.length > 0) {
         displayBorderCountries(country.borders);
       } else {
         borderingSection.innerHTML = "<p>No bordering countries found.</p>";
       }
     } catch (error) {
-      countryInfoSection.innerHTML = `<p>No local files or country info found. ${error.message}</p>`;
+      countryInfoSection.innerHTML = `<p>No country information found for "${query}". ${error.message}</p>`;
+      borderingSection.innerHTML = "";
     }
   }
 
+  // Display fallback country information + custom facts
   function displayCountryInfo(country) {
+    if (!country) return;
     const capital = country.capital ? country.capital[0] : "N/A";
     const population = country.population ? country.population.toLocaleString() : "N/A";
-    const region = country.region;
-    const flagUrl = country.flags && country.flags.png ? country.flags.png : "";
-    
+    const region = country.region || "N/A";
+    const flagUrl = (country.flags && country.flags.png) || "";
+
     countryInfoSection.innerHTML = `
       <h2>${country.name.common}</h2>
       <p><strong>Capital:</strong> ${capital}</p>
@@ -247,20 +250,31 @@ document.addEventListener('DOMContentLoaded', () => {
       <p><strong>Region:</strong> ${region}</p>
       ${flagUrl ? `<p><img src="${flagUrl}" alt="Flag of ${country.name.common}" class="flag"></p>` : ""}
     `;
+
+    const facts = countryFacts.getFacts(country.name.common);
+    if (facts) {
+      countryInfoSection.innerHTML += `
+        <p><em>Independence Year:</em> ${facts.independenceYear}</p>
+        <p><em>Motto:</em> ${facts.motto}</p>
+        <p><em>Famous For:</em> ${facts.famousFor}</p>
+        <p><em>Languages:</em> ${facts.languages.join(', ')}</p>
+        <p><em>Additional Info:</em> ${facts.additionalInfo}</p>
+      `;
+    }
   }
 
+  // Display bordering countries
   async function displayBorderCountries(borders) {
     borderingSection.innerHTML = "<h3>Bordering Countries:</h3>";
-    for (let code of borders) {
-      try {
-        const response = await fetch(`https://restcountries.com/v3.1/alpha/${code}`);
-        if (!response.ok) {
-          throw new Error("Border country not found");
-        }
-        const data = await response.json();
-        const borderCountry = data[0];
+    try {
+      const borderCountries = await countryInfoService.getBorderCountries(borders);
+      if (borderCountries.length === 0) {
+        borderingSection.innerHTML = "<p>No bordering countries found.</p>";
+        return;
+      }
+      borderCountries.forEach(borderCountry => {
         const borderCountryName = borderCountry.name.common;
-        const borderFlagUrl = borderCountry.flags && borderCountry.flags.png ? borderCountry.flags.png : "";
+        const borderFlagUrl = (borderCountry.flags && borderCountry.flags.png) || "";
         const countryCard = document.createElement('article');
         countryCard.classList.add('country-card');
         countryCard.innerHTML = `
@@ -268,26 +282,23 @@ document.addEventListener('DOMContentLoaded', () => {
           ${borderFlagUrl ? `<img src="${borderFlagUrl}" alt="Flag of ${borderCountryName}" class="flag">` : ""}
         `;
         borderingSection.appendChild(countryCard);
-      } catch (error) {
-        console.error("Error fetching border country data:", error);
-      }
+      });
+    } catch (error) {
+      console.error("Error fetching border countries:", error);
+      borderingSection.innerHTML = `<p>${error.message}</p>`;
     }
   }
 
-  // --- Initialization ---
+  // Initialization: fetch docs + update UI
   async function initDocuments() {
     allDocuments = await fetchDocuments();
     updateDisplayedDocuments();
   }
 
-  // Attach event listeners for search, sorting, and region filtering.
+  // Attach event listeners
   searchInput.addEventListener('input', updateDisplayedDocuments);
-  if (sortSelect) {
-    sortSelect.addEventListener('change', updateDisplayedDocuments);
-  }
-  if (regionFilter) {
-    regionFilter.addEventListener('change', updateDisplayedDocuments);
-  }
+  if (sortSelect) sortSelect.addEventListener('change', updateDisplayedDocuments);
+  if (regionFilter) regionFilter.addEventListener('change', updateDisplayedDocuments);
 
   initDocuments();
 });
