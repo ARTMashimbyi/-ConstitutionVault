@@ -1,34 +1,18 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>User Sign Up</title>
-
-  <!-- Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-
-  <!-- CSS -->
-  <link rel="stylesheet" href="style.css" />
-
-  <!-- Google Identity Services -->
+  <title>OAuth Callback</title>
   <meta name="google-signin-client_id" content="271321648137-cuohkf3httmdgvgv256jm5hlkbj1kenu.apps.googleusercontent.com">
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
-  <header>
-    <h2 class="app-name">Constitution Vault</h2>
-  </header>
-
-  <h1>Sign Up</h1>
-  <p>Create an account</p>
-
-  <button id="google-signin-btn">Sign up with Google</button>
+  <h2>Logging you in...</h2>
 
   <script>
     function handleCredentialResponse(response) {
       const idToken = response.credential;
 
+      // Send ID token directly to backend for verification
       fetch("https://constitution-vault-backend-1234.azurewebsites.net/api/oauthGoogle", {
         method: "POST",
         headers: {
@@ -39,14 +23,14 @@
       .then(res => res.json())
       .then(data => {
         if (data.success) {
-          alert("✅ Login successful. Token stored in DB!");
+          document.body.innerHTML += `<p>✅ Login successful. Token stored in DB!</p>`;
         } else {
-          alert("❌ Login failed: " + data.message);
+          document.body.innerHTML += `<p>❌ Login failed: ${data.message}</p>`;
         }
       })
       .catch((err) => {
         console.error("Network error:", err);
-        alert("❌ Login failed: Request error.");
+        document.body.innerHTML += "<p>❌ Login failed: Request error.</p>";
       });
     }
 
@@ -56,10 +40,8 @@
         callback: handleCredentialResponse
       });
 
-      document.getElementById("google-signin-btn").addEventListener("click", () => {
-        // Show the One Tap popup manually
-        google.accounts.id.prompt();
-      });
+      // Automatically show One Tap UI
+      google.accounts.id.prompt();
     };
   </script>
 </body>

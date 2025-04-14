@@ -1,12 +1,14 @@
 const googleBtn = document.getElementById("google-signup");
 
 googleBtn?.addEventListener("click", () => {
-  const clientId = "271321648137-0atssob6ov56ctba0nuff6eocmgm2mdm.apps.googleusercontent.com"; // got this from OAuth
-  const redirectUri = "http://localhost:3000/user%20signup/oauth-callback.html"; 
-  const scope = "openid email profile";
-  const responseType = "code"; 
+  const clientId = "271321648137-cuohkf3httmdgvgv256jm5hlkbj1kenu.apps.googleusercontent.com"; // Your OAuth client ID
+  const redirectUri = "http://localhost:3000/oauth-callback.html"; // Change to your frontend domain
+  const scope = "openid email profile"; // Define the permissions you need
+  const responseType = "code"; // The response type for OAuth2 flow
 
-  const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=${responseType}&scope=${encodeURIComponent(scope)}`;
+  const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=${responseType}&scope=${encodeURIComponent(scope)}&access_type=offline&prompt=consent`;
 
+  // Redirect to Google sign-in screen
   window.location.href = authUrl;
 });
+
