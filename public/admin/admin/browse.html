@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Constitutional Archive | Browse Documents</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="browse.css">
+</head>
+<body>
+  <header>
+    <h1>Constitutional Archive Management</h1>
+    <nav>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="browse.html" class="active">Browse Archives</a></li>
+        <li><a href="upload.html">Upload Documents</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <section class="browse-container">
+      <h2>Browse Constitutional Archives</h2>
+      
+      <div class="browse-controls">
+        <div class="search-box">
+          <input type="text" id="searchInput" placeholder="Search archives...">
+          <button id="searchButton">Search</button>
+        </div>
+        
+        <div class="filter-controls">
+          <select id="filterLevel">
+            <option value="">All Levels</option>
+            <option value="fonds">Fonds</option>
+            <option value="series">Series</option>
+            <option value="subseries">Subseries</option>
+            <option value="file">File</option>
+            <option value="item">Item</option>
+          </select>
+          
+          <select id="filterContinent">
+            <option value="">All Continents</option>
+            <option value="Africa">Africa</option>
+            <option value="Asia">Asia</option>
+            <option value="Europe">Europe</option>
+            <option value="North America">North America</option>
+            <option value="South America">South America</option>
+            <option value="Australia/Oceania">Australia/Oceania</option>
+            <option value="Antarctica">Antarctica</option>
+          </select>
+          
+          <select id="filterCategory">
+            <option value="">All Categories</option>
+            <option value="constitution">Constitution</option>
+            <option value="amendment">Amendment</option>
+            <option value="treaty">Treaty</option>
+            <option value="court_decision">Court Decision</option>
+            <option value="legislation">Legislation</option>
+            <option value="historical_document">Historical Document</option>
+            <option value="correspondence">Correspondence</option>
+            <option value="academic">Academic Work</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="archive-structure">
+        <div class="archive-tree">
+          <h3>Archive Hierarchy</h3>
+          <div id="hierarchyTree" class="tree-container">
+            <!-- Will be populated by JavaScript -->
+            <p class="loading-message">Loading archives...</p>
+          </div>
+        </div>
+        
+        <div class="archive-list">
+          <h3>Documents</h3>
+          <div id="documentsList" class="documents-container">
+            <!-- Will be populated by JavaScript -->
+            <p class="loading-message">Select a container or use search to view documents</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 Constitutional Archive Management System</p>
+  </footer>
+
+  <script src="browse.js"></script>
+</body>
+</html>

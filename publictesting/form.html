@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Constitutional Archive - Admin Portal</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .user-controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        .user-controls span {
+            font-size: 0.9rem;
+        }
+        
+        .logout-btn {
+            background-color: transparent;
+            border: 1px solid white;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .logout-btn:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .container {
+            display: flex;
+            min-height: calc(100vh - 70px);
+        }
+        
+        .sidebar {
+            width: 300px;
+            background-color: #ecf0f1;
+            padding: 1rem;
+            overflow-y: auto;
+            border-right: 1px solid #ddd;
+        }
+        
+        .directory-tree {
+            margin-top: 1rem;
+        }
+        
+        .directory-tree ul {
+            list-style-type: none;
+            padding-left: 1.5rem;
+        }
+        
+        .directory-tree li {
+            margin: 0.5rem 0;
+        }
+        
+        .directory {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            padding: 0.5rem;
+            transition: background-color 0.2s;
+            border-radius: 4px;
+        }
+        
+        .directory:hover {
+            background-color: #ddd;
+        }
+        
+        .directory.active {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        .directory-icon {
+            margin-right: 0.5rem;
+            font-size: 1.2rem;
+        }
+        
+        .main-content {
+            flex-grow: 1;
+            padding: 2rem;
+        }
+        
+        .path-nav {
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            background-color: #fff;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .path-nav span {
+            margin: 0 0.5rem;
+            color: #7f8c8d;
+        }
+        
+        .path-nav a {
+            color: #3498db;
+            text-decoration: none;
+        }
+        
+        .path-nav a:hover {
+            text-decoration: underline;
+        }
+        
+        .actions {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+        
+        .search-bar {
+            position: relative;
+            width: 60%;
+        }
+        
+        .search-bar input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #7f8c8d;
+        }
+        
+        .btn {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn:hover {
+            background-color: #2980b9;
+        }
+        
+        .btn-secondary {
+            background-color: #95a5a6;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #7f8c8d;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .content-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .item-card {
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+        
+        .item-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .item-icon {
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f9f9f9;
+            font-size: 3rem;
+            color: #7f8c8d;
+        }
+        
+        .item-details {
+            padding: 1rem;
+        }
+        
+        .item-name {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .item-meta {
+            font-size: 0.8rem;
+            color: #7f8c8d;
+        }
+        
+        .folder-icon {
+            color: #f39c12;
+        }
+        
+        .file-icon {
+            color: #3498db;
+        }
+        
+        .document-icon {
+            color: #e74c3c;
+        }
+        
+        .image-icon {
+            color: #2ecc71;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 3rem 0;
+            color: #7f8c8d;
+        }
+        
+        .empty-state p {
+            margin-top: 1rem;
+            font-size: 1.1rem;
+        }
+        
+        .modal-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            display: none;
+        }
+        
+        .modal {
+            background-color: white;
+            border-radius: 8px;
+            width: 400px;
+            padding: 2rem;
+        }
+        
+        .modal h2 {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Constitutional Archive Admin</h1>
+        <div class="user-controls">
+            <span>Welcome, Admin</span>
+            <button class="logout-btn">Logout</button>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="sidebar">
+            <h2>Archive Directory</h2>
+            <div class="directory-tree">
+                <ul id="root-directory">
+                    <!-- Directory structure will be populated by JavaScript -->
+                </ul>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div class="path-nav" id="path-navigation">
+                <a href="#">Root</a>
+                <!-- Path navigation will be populated by JavaScript -->
+            </div>
+            
+            <div class="actions">
+                <div class="search-bar">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" placeholder="Search in current directory...">
+                </div>
+                
+                <div class="btn-group">
+                    <button class="btn" id="new-dir-btn">
+                        <span>New Directory</span>
+                    </button>
+                    <button class="btn" id="upload-btn">
+                        <span>Upload Files</span>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="content-grid" id="content-grid">
+                <!-- Content will be populated by JavaScript -->
+            </div>
+            
+            <!-- Empty state for empty directories -->
+            <div class="empty-state" id="empty-state" style="display:none;">
+                <div style="font-size: 4rem;">📂</div>
+                <p>This directory is empty.</p>
+                <button class="btn" style="margin: 1rem auto;">Upload Files</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- New Directory Modal -->
+    <div class="modal-bg" id="new-dir-modal">
+        <div class="modal">
+            <h2>Create New Directory</h2>
+            <form id="new-dir-form">
+                <div class="form-group">
+                    <label for="dir-name">Directory Name</label>
+                    <input type="text" id="dir-name" placeholder="Enter directory name" required>
+                </div>
+                <div class="form-group">
+                    <label for="dir-description">Description (Optional)</label>
+                    <input type="text" id="dir-description" placeholder="Brief description of this directory">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" id="cancel-dir-btn">Cancel</button>
+                    <button type="submit" class="btn">Create</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Mock data for directories and files
+        const archiveData = {
+            root: {
+                name: "Root",
+                type: "directory",
+                path: "/",
+                children: ["constitutions", "legal_documents", "historical_archives"]
+            },
+            constitutions: {
+                name: "Constitutions",
+                type: "directory",
+                path: "/constitutions",
+                children: ["us_constitution", "international_constitutions"]
+            },
+            us_constitution: {
+                name: "US Constitution",
+                type: "directory",
+                path: "/constitutions/us_constitution",
+                children: ["original_document", "amendments"]
+            },
+            original_document: {
+                name: "Original Document",
+                type: "file",
+                fileType: "pdf",
+                path: "/constitutions/us_constitution/original_document",
+                size: "1.2 MB",
+                lastModified: "2023-05-15",
+                metadata: {
+                    title: "United States Constitution - Original Document",
+                    year: "1787",
+                    description: "The original text of the United States Constitution",
+                    authors: ["Constitutional Convention"],
+                    tags: ["founding document", "constitutional law", "US history"]
+                }
+            },
+            amendments: {
+                name: "Amendments",
+                type: "directory", 
+                path: "/constitutions/us_constitution/amendments",
+                children: ["bill_of_rights", "13th_amendment"]
+            },
+            bill_of_rights: {
+                name: "Bill of Rights",
+                type: "file",
+                fileType: "pdf",
+                path: "/constitutions/us_constitution/amendments/bill_of_rights",
+                size: "0.8 MB",
+                lastModified: "2023-05-15",
+                metadata: {
+                    title: "Bill of Rights",
+                    year: "1791",
+                    description: "The first ten amendments to the United States Constitution",
+                    authors: ["James Madison"],
+                    tags: ["amendments", "constitutional law", "civil liberties"]
+                }
+            },
+            "13th_amendment": {
+                name: "13th Amendment",
+                type: "file",
+                fileType: "pdf",
+                path: "/constitutions/us_constitution/amendments/13th_amendment",
+                size: "0.3 MB",
+                lastModified: "2023-06-20",
+                metadata: {
+                    title: "13th Amendment",
+                    year: "1865",
+                    description: "Constitutional amendment abolishing slavery",
+                    authors: ["38th United States Congress"],
+                    tags: ["amendments", "abolition", "civil war"]
+                }
+            },
+            international_constitutions: {
+                name: "International Constitutions",
+                type: "directory",
+                path: "/constitutions/international_constitutions",
+                children: ["french_constitution", "german_basic_law"]
+            },
+            french_constitution: {
+                name: "French Constitution",
+                type: "file",
+                fileType: "pdf",
+                path: "/constitutions/international_constitutions/french_constitution",
+                size: "1.5 MB",
+                lastModified: "2023-07-10",
+                metadata: {
+                    title: "Constitution of the Fifth French Republic",
+                    year: "1958",
+                    description: "The current constitution of France",
+                    authors: ["Constitutional Committee"],
+                    tags: ["France", "constitutional law", "Fifth Republic"]
+                }
+            },
+            german_basic_law: {
+                name: "German Basic Law",
+                type: "file",
+                fileType: "pdf",
+                path: "/constitutions/international_constitutions/german_basic_law",
+                size: "1.7 MB",
+                lastModified: "2023-07-12",
+                metadata: {
+                    title: "Basic Law for the Federal Republic of Germany",
+                    year: "1949",
+                    description: "The constitution of Germany",
+                    authors: ["Parliamentary Council"],
+                    tags: ["Germany", "constitutional law", "post-war"]
+                }
+            },
+            legal_documents: {
+                name: "Legal Documents",
+                type: "directory",
+                path: "/legal_documents",
+                children: ["supreme_court_decisions", "treaties"]
+            },
+            supreme_court_decisions: {
+                name: "Supreme Court Decisions",
+                type: "directory",
+                path: "/legal_documents/supreme_court_decisions",
+                children: ["marbury_v_madison", "brown_v_board"]
+            },
+            marbury_v_madison: {
+                name: "Marbury v. Madison",
+                type: "file",
+                fileType: "pdf",
+                path: "/legal_documents/supreme_court_decisions/marbury_v_madison",
+                size: "0.9 MB",
+                lastModified: "2023-08-05",
+                metadata: {
+                    title: "Marbury v. Madison",
+                    year: "1803",
+                    description: "Landmark Supreme Court case establishing judicial review",
+                    authors: ["Chief Justice John Marshall"],
+                    tags: ["Supreme Court", "judicial review", "landmark case"]
+                }
+            },
+            brown_v_board: {
+                name: "Brown v. Board of Education",
+                type: "file",
+                fileType: "pdf",
+                path: "/legal_documents/supreme_court_decisions/brown_v_board",
+                size: "1.1 MB",
+                lastModified: "2023-08-10",
+                metadata: {
+                    title: "Brown v. Board of Education",
+                    year: "1954",
+                    description: "Supreme Court case ruling segregation in public schools unconstitutional",
+                    authors: ["Chief Justice Earl Warren"],
+                    tags: ["Supreme Court", "segregation", "civil rights", "education"]
+                }
+            },
+            treaties: {
+                name: "Treaties",
+                type: "directory",
+                path: "/legal_documents/treaties",
+                children: ["treaty_of_paris", "un_charter"]
+            },
+            treaty_of_paris: {
+                name: "Treaty of Paris",
+                type: "file",
+                fileType: "pdf",
+                path: "/legal_documents/treaties/treaty_of_paris",
+                size: "0.7 MB",
+                lastModified: "2023-09-15",
+                metadata: {
+                    title: "Treaty of Paris",
+                    year: "1783",
+                    description: "Treaty ending the American Revolutionary War",
+                    authors: ["Benjamin Franklin", "John Adams", "John Jay"],
+                    tags: ["treaty", "American Revolution", "diplomacy"]
+                }
+            },
+            un_charter: {
+                name: "UN Charter",
+                type: "file",
+                fileType: "pdf",
+                path: "/legal_documents/treaties/un_charter",
+                size: "1.3 MB",
+                lastModified: "2023-09-20",
+                metadata: {
+                    title: "Charter of the United Nations",
+                    year: "1945",
+                    description: "Foundational treaty of the United Nations",
+                    authors: ["United Nations Conference on International Organization"],
+                    tags: ["UN", "treaty", "international law", "international organization"]
+                }
+            },
+            historical_archives: {
+                name: "Historical Archives",
+                type: "directory",
+                path: "/historical_archives",
+                children: ["declaration_of_independence", "federalist_papers"]
+            },
+            declaration_of_independence: {
+                name: "Declaration of Independence",
+                type: "file",
+                fileType: "pdf",
+                path: "/historical_archives/declaration_of_independence",
+                size: "0.6 MB",
+                lastModified: "2023-10-05",
+                metadata: {
+                    title: "Declaration of Independence",
+                    year: "1776",
+                    description: "Document declaring independence of the thirteen American colonies",
+                    authors: ["Thomas Jefferson", "Continental Congress"],
+                    tags: ["American Revolution", "founding document", "US history"]
+                }
+            },
+            federalist_papers: {
+                name: "Federalist Papers",
+                type: "file",
+                fileType: "pdf",
+                path: "/historical_archives/federalist_papers",
+                size: "2.5 MB",
+                lastModified: "2023-10-10",
+                metadata: {
+                    title: "The Federalist Papers",
+                    year: "1787-1788",
+                    description: "Collection of 85 articles advocating for the ratification of the US Constitution",
+                    authors: ["Alexander Hamilton", "James Madison", "John Jay"],
+                    tags: ["constitutional history", "US history", "federalism"]
+                }
+            }
+        };
+
+        // Current path for navigation
+        let currentPath = "/";
+        let currentPathSegments = [];
+
+        // Function to build directory tree
+        function buildDirectoryTree() {
+            const rootUl = document.getElementById('root-directory');
+            rootUl.innerHTML = '';
+            
+            // Add root directory
+            const rootLi = document.createElement('li');
+            rootLi.innerHTML = `<div class="directory active" data-path="/">
+                                <span class="directory-icon">📁</span>
+                                <span>Root</span>
+                            </div>`;
+            rootUl.appendChild(rootLi);
+            
+            // Add first level directories
+            const rootChildren = archiveData.root.children;
+            if (rootChildren && rootChildren.length > 0) {
+                const childrenUl = document.createElement('ul');
+                rootLi.appendChild(childrenUl);
+                
+                rootChildren.forEach(childId => {
+                    const child = archiveData[childId];
+                    if (child) {
+                        const childLi = document.createElement('li');
+                        childLi.innerHTML = `<div class="directory" data-path="${child.path}">
+                                            <span class="directory-icon">📁</span>
+                                            <span>${child.name}</span>
+                                        </div>`;
+                        childrenUl.appendChild(childLi);
+                        
+                        // Add second level directories recursively
+                        if (child.type === 'directory' && child.children && child.children.length > 0) {
+                            buildSubDirectories(childLi, child.children);
+                        }
+                    }
+                });
+            }
+            
+            // Add click event listeners to directories
+            document.querySelectorAll('.directory').forEach(dir => {
+                dir.addEventListener('click', function() {
+                    const path = this.getAttribute('data-path');
+                    navigateToPath(path);
+                    
+                    // Update active directory
+                    document.querySelectorAll('.directory').forEach(d => d.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+        }
+        
+        // Recursively build subdirectories
+        function buildSubDirectories(parentLi, children) {
+            const childrenUl = document.createElement('ul');
+            parentLi.appendChild(childrenUl);
+            
+            children.forEach(childId => {
+                const child = archiveData[childId];
+                if (child && child.type === 'directory') {
+                    const childLi = document.createElement('li');
+                    childLi.innerHTML = `<div class="directory" data-path="${child.path}">
+                                        <span class="directory-icon">📁</span>
+                                        <span>${child.name}</span>
+                                    </div>`;
+                    childrenUl.appendChild(childLi);
+                    
+                    // Continue recursion
+                    if (child.children && child.children.length > 0) {
+                        buildSubDirectories(childLi, child.children);
+                    }
+                }
+            });
+        }
+        
+        // Function to navigate to a specific path
+        function navigateToPath(path) {
+            currentPath = path;
+            currentPathSegments = path.split('/').filter(segment => segment !== '');
+            
+            // Update path navigation
+            updatePathNavigation();
+            
+            // Update content grid
+            updateContentGrid();
+        }
+        
+        // Update the path navigation breadcrumb
+        function updatePathNavigation() {
+            const pathNav = document.getElementById('path-navigation');
+            pathNav.innerHTML = '<a href="#" data-path="/">Root</a>';
+            
+            let currentBuildPath = '';
+            currentPathSegments.forEach((segment, index) => {
+                currentBuildPath += '/' + segment;
+                pathNav.innerHTML += '<span>/</span>';
+                
+                // Find the proper name for this path segment
+                let displayName = segment;
+                Object.keys(archiveData).forEach(key => {
+                    if (archiveData[key].path === currentBuildPath) {
+                        displayName = archiveData[key].name;
+                    }
+                });
+                
+                if (index === currentPathSegments.length - 1) {
+                    // Last segment (current directory)
+                    pathNav.innerHTML += `<span>${displayName}</span>`;
+                } else {
+                    // Navigable segment
+                    pathNav.innerHTML += `<a href="#" data-path="${currentBuildPath}">${displayName}</a>`;
+                }
+            });
+            
+            // Add click event listeners to path links
+            document.querySelectorAll('#path-navigation a').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const path = this.getAttribute('data-path');
+                    navigateToPath(path);
+                    
+                    // Update active directory in sidebar
+                    document.querySelectorAll('.directory').forEach(dir => {
+                        if (dir.getAttribute('data-path') === path) {
+                            document.querySelectorAll('.directory').forEach(d => d.classList.remove('active'));
+                            dir.classList.add('active');
+                        }
+                    });
+                });
+            });
+        }
+        
+        // Update the content grid based on current path
+        function updateContentGrid() {
+            const contentGrid = document.getElementById('content-grid');
+            const emptyState = document.getElementById('empty-state');
+            contentGrid.innerHTML = '';
+            
+            // Find current directory
+            let currentDir = findDirectoryByPath(currentPath);
+            
+            if (currentDir && currentDir.children && currentDir.children.length > 0) {
+                emptyState.style.display = 'none';
+                contentGrid.style.display = 'grid';
+                
+                // Add all child items (directories and files)
+                currentDir.children.forEach(childId => {
+                    const child = archiveData[childId];
+                    if (child) {
+                        let icon = '';
+                        if (child.type === 'directory') {
+                            icon = '<div class="item-icon"><span class="folder-icon">📁</span></div>';
+                        } else if (child.fileType === 'pdf') {
+                            icon = '<div class="item-icon"><span class="document-icon">📄</span></div>';
+                        } else if (['jpg', 'png', 'gif', 'jpeg'].includes(child.fileType)) {
+                            icon = '<div class="item-icon"><span class="image-icon">🖼️</span></div>';
+                        } else {
+                            icon = '<div class="item-icon"><span class="file-icon">📝</span></div>';
+                        }
+                        
+                        const itemCard = document.createElement('div');
+                        itemCard.className = 'item-card';
+                        itemCard.setAttribute('data-id', childId);
+                        itemCard.innerHTML = `
+                            ${icon}
+                            <div class="item-details">
+                                <div class="item-name">${child.name}</div>
+                                <div class="item-meta">
+                                    ${child.type === 'file' ? `${child.fileType.toUpperCase()} · ${child.size}` : 'Directory'}
+                                </div>
+                            </div>
+                        `;
+                        contentGrid.appendChild(itemCard);
+                        
+                        // Add click event
+                        itemCard.addEventListener('click', function() {
+                            const id = this.getAttribute('data-id');
+                            const item = archiveData[id];
+                            
+                            if (item.type === 'directory') {
+                                navigateToPath(item.path);
+                            } else {
+                                // Navigate to file view page
+                                window.location.href = `file-view.html?id=${id}`;
+                            }
+                        });
+                    }
+                });
+            } else {
+                // Show empty state
+                contentGrid.style.display = 'none';
+                emptyState.style.display = 'block';
+            }
+        }
+        
+        // Helper function to find a directory by path
+        function findDirectoryByPath(path) {
+            let result = null;
+            Object.keys(archiveData).forEach(key => {
+                if (archiveData[key].path === path && archiveData[key].type === 'directory') {
+                    result = archiveData[key];
+                }
+            });
+            return result;
+        }
+        
+        // Handle "New Directory" button click
+        const newDirBtn = document.getElementById('new-dir-btn');
+        const newDirModal = document.getElementById('new-dir-modal');
+        const cancelDirBtn = document.getElementById('cancel-dir-btn');
+        const newDirForm = document.getElementById('new-dir-form');
+        
+        newDirBtn.addEventListener('click', function() {
+            newDirModal.style.display = 'flex';
+        });
+        
+        cancelDirBtn.addEventListener('click', function() {
+            newDirModal.style.display = 'none';
+        });
+        
+        newDirForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const dirName = document.getElementById('dir-name').value;
+            const dirDescription = document.getElementById('dir-description').value;
+            
+            // Generate a unique ID for the new directory
+            const dirId = dirName.toLowerCase().replace(/\s+/g, '_') + '_' + Date.now();
+            
+            // Create new directory object
+            const newDir = {
+                name: dirName,
+                type: 'directory',
+                path: currentPath === '/' ? `/${dirId}` : `${currentPath}/${dirId}`,
+                children: []
+            };
+            
+            // Add to archive data
+            archiveData[dirId] = newDir;
+            
+            // Find parent directory and add new dir to its children
+            const parentDir = findDirectoryByPath(currentPath);
+            if (parentDir) {
+                if (!parentDir.children) {
+                    parentDir.children = [];
+                }
+                parentDir.children.push(dirId);
+            }
+            
+            // Close modal
+            newDirModal.style.display = 'none';
+            
+            // Refresh directory tree and content
+            buildDirectoryTree();
+            updateContentGrid();
+            
+            // Reset form
+            document.getElementById('dir-name').value = '';
+            document.getElementById('dir-description').value = '';
+        });
+        
+        // Handle "Upload Files" button click
+        const uploadBtn = document.getElementById('upload-btn');
+        uploadBtn.addEventListener('click', function() {
+            window.location.href = `upload.html?path=${encodeURIComponent(currentPath)}`;
+        });
+        
+        // Initialize the page
+        buildDirectoryTree();
+        updatePathNavigation();
+        updateContentGrid();
+    </script>
+</body>
+</html>

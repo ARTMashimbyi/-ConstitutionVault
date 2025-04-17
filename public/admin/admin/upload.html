@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Constitutional Archive | Document Upload</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <h1>Constitutional Archive Management</h1>
+    <nav>
+      <ul>
+        <li><a href="index.html" class="active">Home</a></li>
+        <li><a href="browse.html">Browse Archives</a></li>
+        <li><a href="upload.html">Upload Documents</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <section class="upload-container">
+      <h2>Upload Archival Document</h2>
+      
+      <form id="uploadForm" action="/api/archives/upload" method="POST" enctype="multipart/form-data">
+        <div class="form-group">
+          <h3>Document Type & Location</h3>
+          
+          <div class="form-row">
+            <div class="form-field">
+              <label for="file_type">Document Type*</label>
+              <select id="file_type" name="file_type" required>
+                <option value="">Select Type</option>
+                <option value="text">Text Document</option>
+                <option value="image">Image</option>
+                <option value="audio">Audio Recording</option>
+                <option value="video">Video</option>
+                <option value="pdf">PDF</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            
+            <div class="form-field">
+              <label for="archival_level">Archival Level*</label>
+              <select id="archival_level" name="archival_level" required>
+                <option value="">Select Level</option>
+                <option value="fonds">Fonds (Collection)</option>
+                <option value="series">Series</option>
+                <option value="subseries">Subseries</option>
+                <option value="file">File</option>
+                <option value="item">Item</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="form-field" id="parentContainer">
+            <label for="parent_id">Parent Container</label>
+            <select id="parent_id" name="parent_id">
+              <option value="">None (Top Level)</option>
+              <!-- Will be populated by JavaScript -->
+            </select>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <h3>Document Details</h3>
+          
+          <div class="form-field">
+            <label for="document">Select File*</label>
+            <input type="file" id="document" name="document" required>
+          </div>
+          
+          <div class="form-field">
+            <label for="title">Title*</label>
+            <input type="text" id="title" name="title" required>
+          </div>
+          
+          <div class="form-field">
+            <label for="description">Description</label>
+            <textarea id="description" name="description" rows="3"></textarea>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-field">
+              <label for="date_created">Document Date*</label>
+              <input type="date" id="date_created" name="date_created" required>
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <h3>Geographic & Institutional Information</h3>
+          
+          <div class="form-row">
+            <div class="form-field">
+              <label for="continent">Continent*</label>
+              <select id="continent" name="continent" required>
+                <option value="">Select Continent</option>
+                <option value="Africa">Africa</option>
+                <option value="Asia">Asia</option>
+                <option value="Europe">Europe</option>
+                <option value="North America">North America</option>
+                <option value="South America">South America</option>
+                <option value="Australia/Oceania">Australia/Oceania</option>
+                <option value="Antarctica">Antarctica</option>
+              </select>
+            </div>
+            
+            <div class="form-field">
+              <label for="country">Country*</label>
+              <input type="text" id="country" name="country" required>
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-field">
+              <label for="institution">Institution/Organization</label>
+              <input type="text" id="institution" name="institution">
+            </div>
+            
+            <div class="form-field">
+              <label for="author">Author/Creator</label>
+              <input type="text" id="author" name="author">
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <h3>Classification & Keywords</h3>
+          
+          <div class="form-row">
+            <div class="form-field">
+              <label for="category">Category</label>
+              <select id="category" name="category">
+                <option value="">Select Category</option>
+                <option value="constitution">Constitution</option>
+                <option value="amendment">Amendment</option>
+                <option value="treaty">Treaty</option>
+                <option value="court_decision">Court Decision</option>
+                <option value="legislation">Legislation</option>
+                <option value="historical_document">Historical Document</option>
+                <option value="correspondence">Correspondence</option>
+                <option value="academic">Academic Work</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            
+            <div class="form-field">
+              <label for="keywords">Keywords (comma separated)</label>
+              <input type="text" id="keywords" name="keywords" placeholder="e.g., democracy, rights, suffrage">
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-actions">
+          <button type="button" id="resetButton">Reset Form</button>
+          <button type="submit" id="submitButton">Upload Document</button>
+        </div>
+      </form>
+      
+      <div id="uploadStatus" class="status-message"></div>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 Constitutional Archive Management System</p>
+  </footer>
+
+  <script src="upload.js"></script>
+</body>
+</html>

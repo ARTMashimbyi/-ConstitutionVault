@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document Viewer | Constitutional Archive</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="view.css">
+</head>
+<body>
+  <header>
+    <h1>Constitutional Archive Management</h1>
+    <nav>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="browse.html">Browse Archives</a></li>
+        <li><a href="upload.html">Upload Documents</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <section class="viewer-container">
+      <div id="loading" class="loading-indicator">Loading document...</div>
+      
+      <div id="documentViewer" class="document-viewer" style="display:none;">
+        <div class="document-header">
+          <div class="header-content">
+            <h2 id="docTitle">Document Title</h2>
+            <div class="document-metadata">
+              <div id="docBasicInfo" class="basic-info">
+                <!-- Basic document info will go here -->
+              </div>
+              
+              <div class="metadata-grid" id="metadataGrid">
+                <!-- Metadata will go here -->
+              </div>
+            </div>
+          </div>
+          
+          <div class="header-actions">
+            <button id="downloadButton" class="action-button">
+              <span class="icon">↓</span> Download
+            </button>
+            <button id="deleteButton" class="action-button danger">
+              <span class="icon">🗑</span> Delete
+            </button>
+            <a href="browse.html" class="action-button secondary">
+              <span class="icon">←</span> Back to Browse
+            </a>
+          </div>
+        </div>
+        
+        <div class="document-content">
+          <div id="contentContainer" class="content-container">
+            <!-- Document content will be displayed here -->
+          </div>
+        </div>
+      </div>
+      
+      <div id="errorMessage" class="error-message" style="display:none;">
+        <!-- Error messages will be displayed here -->
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 Constitutional Archive Management System</p>
+  </footer>
+
+  <script src="view.js"></script>
+</body>
+</html>
