@@ -2,7 +2,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- (Optional) Document synonyms for local search (if you want to keep them here)
   const docSynonyms = {
     "us": "united states"
-    
     // Add further synonyms if needed.
   };
 
@@ -12,17 +11,32 @@ document.addEventListener('DOMContentLoaded', () => {
   const notification = document.getElementById('notification');
   const sortSelect = document.getElementById('sortSelect');       // Sorting dropdown
   const regionFilter = document.getElementById('continentFilter');  // Continent filter dropdown
+  const directoryTree = document.getElementById('directoryTree');  // Directory tree container
+  const currentPath = document.getElementById('currentPath');      // Current path display
 
   // --- Elements for fallback country data ---
   const countryInfoSection = document.getElementById('country-info');
   const borderingSection = document.getElementById('bordering-countries');
 
+  // --- Modal elements ---
+  const newFolderModal = document.getElementById('newFolderModal');
+  const createFolderBtn = document.getElementById('createFolderBtn');
+  const createFolderSubmit = document.getElementById('createFolderSubmit');
+  const cancelFolderCreate = document.getElementById('cancelFolderCreate');
+  const folderNameInput = document.getElementById('folderName');
+  const modalClose = document.querySelector('.close');
+
   let allDocuments = []; // Local documents fetched from backend
+  let currentDirectory = '/'; // Current directory path
+  let directoryStructure = {}; // Directory structure object
 
   // Instantiate external classes (from CountryData.js and CountryInfoService.js)
   const countryAliases = new CountryAliases();   // Provides alias mapping and canonical conversions.
   const countryFacts = new CountryFacts();
   const countryInfoService = new CountryInfoService();
+  
+  // Instantiate the directory manager from DirectoryManager.js
+  const directoryManager = new DirectoryManager();
 
   // Instantiate the deletion module from AdminDirectoryDeletion.js.
   // Provide the base URL for deletion API calls.
@@ -47,12 +61,88 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // Fetch directory structure from backend
+  async function fetchDirectoryStructure() {
+    try {
+      const res = await fetch('http://localhost:3000/directoryStructure');
+      const structure = await res.json();
+      return structure;
+    } catch (error) {
+      console.error("Error fetching directory structure:", error);
+      return { root: [] }; // Default structure with just a root
+    }
+  }
+
+  // Save directory structure to backend
+  async function saveDirectoryStructure(structure) {
+    try {
+      const res = await fetch('http://localhost:3000/directoryStructure', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(structure),
+      });
+      return await res.json();
+    } catch (error) {
+      console.error("Error saving directory structure:", error);
+      showNotification("Failed to save directory structure");
+      return false;
+    }
+  }
+
+  // Create a new directory
+  async function createDirectory(path, name) {
+    const newPath = path === '/' ? `/${name}` : `${path}/${name}`;
+    const success = await directoryManager.createDirectory(newPath);
+    
+    if (success) {
+      directoryStructure = await fetchDirectoryStructure();
+      renderDirectoryTree();
+      showNotification(`Folder "${name}" created successfully`);
+      return true;
+    }
+    
+    showNotification("Failed to create folder");
+    return false;
+  }
+
+  // Move a document to a different directory
+  async function moveDocument(documentId, newPath) {
+    try {
+      const res = await fetch(`http://localhost:3000/constitutionalDocuments/${documentId}/move`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ path: newPath }),
+      });
+      
+      if (res.ok) {
+        allDocuments = await fetchDocuments();
+        updateDisplayedDocuments();
+        return true;
+      }
+      
+      return false;
+    } catch (error) {
+      console.error("Error moving document:", error);
+      return false;
+    }
+  }
+
   /**
    * Filters documents using a raw, lowercased query.
    * Each token (optionally replaced via docSynonyms) must appear in the combined document fields.
+   * Also filters by current directory path.
    */
   function filterDocuments(docs, query, region) {
-    let filtered = docs;
+    // First filter by current directory
+    let filtered = docs.filter(doc => {
+      const docPath = doc.directoryPath || '/';
+      return currentDirectory === '/' || docPath === currentDirectory || docPath.startsWith(`${currentDirectory}/`);
+    });
+    
     if (query) {
       const normalizedQuery = query.toLowerCase().trim();
       let tokens = normalizedQuery.split(/\s+/).filter(Boolean);
@@ -61,7 +151,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (tokens.length === 0) {
         filtered = [];
       } else {
-        filtered = docs.filter(doc => {
+        filtered = filtered.filter(doc => {
           const combined = [
             doc.title,
             doc.continent,
@@ -74,12 +164,14 @@ document.addEventListener('DOMContentLoaded', () => {
         });
       }
     }
+    
     if (region && region.toLowerCase() !== 'all') {
       filtered = filtered.filter(doc => {
         const docContinent = (doc.continent || "").toLowerCase();
         return docContinent === region.toLowerCase();
       });
     }
+    
     return filtered;
   }
 
@@ -126,10 +218,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /**
    * Renders the list of local documents.
-   * Instead of handling deletion inline, we use the AdminDirectoryDeletion module.
    */
   function renderDocuments(docs) {
     documentList.innerHTML = "";
+    
+    // Update the current path display
+    currentPath.textContent = `Location: ${currentDirectory}`;
+    
     docs.forEach(doc => {
       const li = document.createElement('li');
       li.style.marginBottom = '1rem';
@@ -142,7 +237,9 @@ document.addEventListener('DOMContentLoaded', () => {
         <p><strong>Date:</strong> ${doc.date}</p>
         <p><strong>Continent:</strong> ${doc.continent}</p>
         <p><strong>Country:</strong> ${doc.country}</p>
+        <p><strong>Directory:</strong> ${doc.directoryPath || '/'}</p>
       `;
+      
       if (doc.institution) {
         infoHTML += `<p><strong>Institution:</strong> ${doc.institution}</p>`;
       }
@@ -158,19 +255,107 @@ document.addEventListener('DOMContentLoaded', () => {
       infoHTML += renderFilePreview(doc);
       li.innerHTML = infoHTML;
 
-      // Create a Delete button and use the AdminDirectoryDeletion module to attach the handler.
+      // Create action buttons container
+      const actionDiv = document.createElement('div');
+      actionDiv.style.marginTop = "1rem";
+      actionDiv.style.display = "flex";
+      actionDiv.style.gap = "10px";
+      
+      // Create Move button
+      const moveBtn = document.createElement('button');
+      moveBtn.innerText = "Move";
+      moveBtn.addEventListener('click', () => {
+        // Show directory selector modal or context menu for moving
+        showMoveDocumentDialog(doc);
+      });
+      
+      // Create Delete button
       const deleteBtn = document.createElement('button');
       deleteBtn.innerText = "Delete";
-      deleteBtn.style.marginTop = "1rem";
       
-      // Attach the delete handler using our deletion module.
+      // Attach the delete handler using our deletion module
       adminDeletion.attachDeleteHandler(deleteBtn, doc.title, doc.id, async () => {
         allDocuments = await fetchDocuments();
         updateDisplayedDocuments();
       });
       
-      li.appendChild(deleteBtn);
+      actionDiv.appendChild(moveBtn);
+      actionDiv.appendChild(deleteBtn);
+      li.appendChild(actionDiv);
       documentList.appendChild(li);
+    });
+  }
+
+  /**
+   * Shows a dialog to move a document to a different directory
+   */
+  function showMoveDocumentDialog(doc) {
+    // This is a simple implementation - you might want to create a more sophisticated dialog
+    const newPath = prompt("Enter the destination directory path:", doc.directoryPath || '/');
+    
+    if (newPath !== null) {
+      moveDocument(doc.id, newPath).then(success => {
+        if (success) {
+          showNotification(`Moved "${doc.title}" to ${newPath}`);
+        } else {
+          showNotification("Failed to move document");
+        }
+      });
+    }
+  }
+
+  /**
+   * Renders the directory tree structure
+   */
+  function renderDirectoryTree() {
+    directoryTree.innerHTML = "";
+    
+    // Create the root directory node
+    const rootNode = document.createElement('div');
+    rootNode.className = currentDirectory === '/' ? 'folder open' : 'folder';
+    rootNode.textContent = 'Root Directory';
+    rootNode.addEventListener('click', () => {
+      currentDirectory = '/';
+      updateDisplayedDocuments();
+      renderDirectoryTree();
+    });
+    
+    directoryTree.appendChild(rootNode);
+    
+    // Create the directory tree from the structure
+    const rootUl = document.createElement('ul');
+    renderDirectoryNode(rootUl, directoryStructure.root || [], '/');
+    directoryTree.appendChild(rootUl);
+  }
+
+  /**
+   * Recursively renders a directory node and its children
+   */
+  function renderDirectoryNode(parentElement, directories, parentPath) {
+    directories.forEach(dir => {
+      const li = document.createElement('li');
+      const fullPath = parentPath === '/' ? `/${dir.name}` : `${parentPath}/${dir.name}`;
+      
+      const folderDiv = document.createElement('div');
+      folderDiv.className = currentDirectory === fullPath ? 'folder open' : 'folder';
+      folderDiv.textContent = dir.name;
+      folderDiv.addEventListener('click', (e) => {
+        e.stopPropagation();
+        currentDirectory = fullPath;
+        updateDisplayedDocuments();
+        renderDirectoryTree();
+      });
+      
+      li.appendChild(folderDiv);
+      
+      // If this directory has children, render them recursively
+      if (dir.children && dir.children.length > 0) {
+        const ul = document.createElement('ul');
+        renderDirectoryNode(ul, dir.children, fullPath);
+        li.appendChild(ul);
+      }
+      
+      parentElement.appendChild(li);
     });
   }
 
@@ -187,8 +372,12 @@ document.addEventListener('DOMContentLoaded', () => {
     renderDocuments(filteredDocs);
 
     // If no local documents are found, display a message.
-    if (rawQuery !== "" && filteredDocs.length === 0) {
-      documentList.innerHTML = `<li>No matching files found.</li>`;
+    if (filteredDocs.length === 0) {
+      if (rawQuery !== "") {
+        documentList.innerHTML = `<li>No matching files found for "${rawQuery}".</li>`;
+      } else {
+        documentList.innerHTML = `<li>No files found in this directory.</li>`;
+      }
     }
 
     // For Additional Information, use CountryAliases to convert raw query to a canonical name.
@@ -277,10 +466,62 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Initialization: Fetch local documents and update the UI.
+  // Modal event handlers
+  function openNewFolderModal() {
+    newFolderModal.style.display = "block";
+    folderNameInput.value = "";
+    folderNameInput.focus();
+  }
+
+  function closeNewFolderModal() {
+    newFolderModal.style.display = "none";
+  }
+
+  async function handleCreateFolder() {
+    const folderName = folderNameInput.value.trim();
+    if (!folderName) {
+      alert("Please enter a folder name");
+      return;
+    }
+    
+    const success = await createDirectory(currentDirectory, folderName);
+    if (success) {
+      closeNewFolderModal();
+    }
+  }
+
+  // Attach modal event listeners
+  createFolderBtn.addEventListener('click', openNewFolderModal);
+  modalClose.addEventListener('click', closeNewFolderModal);
+  cancelFolderCreate.addEventListener('click', closeNewFolderModal);
+  createFolderSubmit.addEventListener('click', handleCreateFolder);
+  
+  // Close modal if clicked outside
+  window.addEventListener('click', (event) => {
+    if (event.target === newFolderModal) {
+      closeNewFolderModal();
+    }
+  });
+
+  // Initialization: Fetch local documents and directory structure, then update the UI.
   async function initDocuments() {
-    allDocuments = await fetchDocuments();
+    // Fetch documents and directory structure in parallel
+    const [docs, structure] = await Promise.all([
+      fetchDocuments(),
+      fetchDirectoryStructure()
+    ]);
+    
+    allDocuments = docs;
+    directoryStructure = structure;
+    
+    renderDirectoryTree();
     updateDisplayedDocuments();
+    
+    // Store the directory structure in local storage for other pages to access
+    localStorage.setItem('directoryStructure', JSON.stringify(directoryStructure));
+    
+    // Share the structure with the DirectoryManager
+    directoryManager.setDirectoryStructure(directoryStructure);
   }
 
   // Attach event listeners.

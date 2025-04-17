@@ -4,47 +4,140 @@
     <meta charset="UTF-8" />
     <title>ConstitutionVault Admin Portal | Media Directory</title>
     <link rel="stylesheet" href="admin-directory.css" />
+    <style>
+      .directory-structure {
+        border-right: 1px solid #ccc;
+        padding-right: 15px;
+        margin-right: 15px;
+        min-width: 250px;
+      }
+      .directory-structure ul {
+        list-style-type: none;
+        padding-left: 20px;
+      }
+      .directory-structure li {
+        margin: 5px 0;
+        cursor: pointer;
+      }
+      .directory-structure .folder {
+        font-weight: bold;
+        color: #333;
+      }
+      .directory-structure .folder:before {
+        content: "📁 ";
+      }
+      .directory-structure .folder.open:before {
+        content: "📂 ";
+      }
+      .directory-container {
+        display: flex;
+      }
+      .file-container {
+        flex-grow: 1;
+      }
+      .actions-bar {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 15px;
+        align-items: center;
+      }
+      .current-path {
+        background: #f5f5f5;
+        padding: 8px;
+        border-radius: 4px;
+        margin-bottom: 10px;
+        border-left: 4px solid #007bff;
+      }
+      #newFolderModal {
+        display: none;
+        position: fixed;
+        z-index: 1;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.4);
+      }
+      .modal-content {
+        background-color: #fefefe;
+        margin: 15% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 300px;
+        border-radius: 5px;
+      }
+      .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+      }
+      .close:hover {
+        color: black;
+      }
+    </style>
   </head>
   <body>
     <header>
       <h1>ConstitutionVault Admin Portal</h1>
       <nav>
-        <!-- Updated navigation text to reflect multi-type upload -->
         <a href="admin-add.html">Upload New File</a>
       </nav>
     </header>
     <main>
-      <!-- Document/Media Directory Section -->
-      <section id="directory-section">
-        <!-- Controls for Sorting and Filtering -->
-        <fieldset class="controls">
-          <legend>Sort &amp; Filter</legend>
-          <label for="sortSelect">Sort by:</label>
-          <select id="sortSelect">
-            <option value="date">Date (Newest First)</option>
-            <option value="title">Title (A-Z)</option>
-          </select>
-          <label for="continentFilter">Filter by Continent:</label>
-          <select id="continentFilter">
-            <option value="all">All Continents</option>
-            <option value="Africa">Africa</option>
-            <option value="Asia">Asia</option>
-            <option value="Europe">Europe</option>
-            <option value="North America">North America</option>
-            <option value="South America">South America</option>
-            <option value="Oceania">Oceania</option>
-          </select>
-        </fieldset>
-        <!-- Single Search Input -->
-        <label for="searchInput" class="visually-hidden">Search Files</label>
-        <input
-          id="searchInput"
-          type="text"
-          placeholder="Search files, metadata, institution, or country"
-        />
-        <!-- Unordered List for File Entries -->
-        <ul id="documentList"></ul>
-      </section>
+      <!-- Directory Structure Section -->
+      <div class="directory-container">
+        <aside class="directory-structure">
+          <h3>Directory Structure</h3>
+          <button id="createFolderBtn">Create New Folder</button>
+          <div id="directoryTree">
+            <!-- Directory tree will be populated here -->
+          </div>
+        </aside>
+        
+        <!-- Document/Media Directory Section -->
+        <section id="directory-section" class="file-container">
+          <div class="current-path" id="currentPath">
+            Location: /
+          </div>
+          
+          <div class="actions-bar">
+            <!-- Controls for Sorting and Filtering -->
+            <fieldset class="controls">
+              <legend>Sort &amp; Filter</legend>
+              <label for="sortSelect">Sort by:</label>
+              <select id="sortSelect">
+                <option value="date">Date (Newest First)</option>
+                <option value="title">Title (A-Z)</option>
+              </select>
+              <label for="continentFilter">Filter by Continent:</label>
+              <select id="continentFilter">
+                <option value="all">All Continents</option>
+                <option value="Africa">Africa</option>
+                <option value="Asia">Asia</option>
+                <option value="Europe">Europe</option>
+                <option value="North America">North America</option>
+                <option value="South America">South America</option>
+                <option value="Oceania">Oceania</option>
+              </select>
+            </fieldset>
+            
+            <!-- Single Search Input -->
+            <div>
+              <label for="searchInput" class="visually-hidden">Search Files</label>
+              <input
+                id="searchInput"
+                type="text"
+                placeholder="Search files, metadata, institution, or country"
+              />
+            </div>
+          </div>
+          
+          <!-- Unordered List for File Entries -->
+          <ul id="documentList"></ul>
+        </section>
+      </div>
 
       <!-- Fallback Section for Extra Country/Institution Information -->
       <section id="fallback-section">
@@ -55,21 +148,32 @@
 
       <!-- Notification for General Messages -->
       <p id="notification" style="display: none"></p>
+      
+      <!-- New Folder Modal -->
+      <div id="newFolderModal">
+        <div class="modal-content">
+          <span class="close">&times;</span>
+          <h3>Create New Folder</h3>
+          <div>
+            <label for="folderName">Folder Name:</label>
+            <input type="text" id="folderName" placeholder="Enter folder name">
+          </div>
+          <div style="margin-top: 15px;">
+            <button id="createFolderSubmit">Create</button>
+            <button id="cancelFolderCreate">Cancel</button>
+          </div>
+        </div>
+      </div>
     </main>
     <footer>
       <p>&copy; 2025 ConstitutionVault | All Rights Reserved</p>
     </footer>
 
-    <!-- 
-      Include additional module scripts before the main admin-directory script.
-      Ensure that CountryData.js (which contains CountryAliases and CountryFacts)
-      and NLPTools.js (which contains QueryEnhancer and LanguageSupport) are loaded so
-      that admin-directory.js can use them.
-    -->
+    <!-- Include additional module scripts -->
     <script src="CountryData.js"></script>
-    <!-- <script src="NLPTools.js"></script> -->
     <script src="CountryInfoService.js"></script>
     <script src="AdminDirectoryDeletion.js"></script>
+    <script src="DirectoryManager.js"></script>
     <script src="admin-directory.js"></script>
   </body>
 </html>
