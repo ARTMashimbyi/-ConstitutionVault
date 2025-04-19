@@ -16,12 +16,8 @@
     <main>
       <section>
         <h2>Upload Constitutional Archive Data</h2>
-        <form
-          id="uploadForm"
-          action="http://localhost:3000/constitutionalDocuments"
-          method="POST"
-          enctype="multipart/form-data"
-        >
+        <form id="uploadForm" enctype="multipart/form-data">
+
           <fieldset>
             <legend>Add File</legend>
 
@@ -46,12 +42,13 @@
             <label for="date">Date</label>
             <input type="date" id="date" name="date" required />
 
-            <!-- New structured metadata -->
             <label for="continent">Continent</label>
             <input type="text" id="continent" name="continent" required />
 
             <label for="country">Country</label>
             <input type="text" id="country" name="country" required />
+
+
 
             <label for="institution">Institution/Place</label>
             <input type="text" id="institution" name="institution" />
@@ -65,10 +62,15 @@
             <label for="keywords">Keywords (comma separated)</label>
             <input type="text" id="keywords" name="keywords" />
 
+            
+            <label for="directory">Directory Location (e.g., /Ghana/1992/Fonds A/Series 1)</label>
+            <input type="text" id="directory" name="directory" required />
+
+
             <button type="submit">Upload</button>
           </fieldset>
         </form>
-        <!-- A paragraph to display upload status -->
+       
         <p
           id="uploadStatus"
           style="display: none; color: green; font-weight: bold"
@@ -78,6 +80,7 @@
     <footer>
       <p>&copy; 2025 ConstitutionVault | All Rights Reserved</p>
     </footer>
-    <script src="admin-add.js"></script>
+    <script type="module" src="admin-add.js"></script>
+
   </body>
 </html>

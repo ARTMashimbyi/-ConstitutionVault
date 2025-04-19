@@ -1,114 +1,114 @@
-document.addEventListener('DOMContentLoaded', () => { 
-  const uploadForm = document.getElementById('uploadForm');
-  const statusElem = document.getElementById('uploadStatus');
-  const fileInput = document.getElementById('document');
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+import { 
+  getFirestore, 
+  collection, 
+  addDoc, 
+  getDocs, 
+  query, 
+  where
+} from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAU_w_Oxi6noX_A1Ma4XZDfpIY-jkoPN-c",
+  authDomain: "constitutionvault-1b5d1.firebaseapp.com",
+  projectId: "constitutionvault-1b5d1",
+  storageBucket: "constitutionvault-1b5d1.firebasestorage.app",
+  messagingSenderId: "616111688261",
+  appId: "1:616111688261:web:97cc0a35c8035c0814312c",
+  measurementId: "G-YJEYZ85T3S"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const uploadForm = document.getElementById("uploadForm");
+const uploadStatus = document.getElementById("uploadStatus");
+const directoryInput = document.getElementById("directory");
+
+// Check if directory parameter exists in URL
+document.addEventListener('DOMContentLoaded', function() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const directoryParam = urlParams.get('directory');
   
-  // New: Get elements for dynamic UI updating
-  const fileTypeSelect = document.getElementById('fileType');
-  const fileLabel = document.getElementById('fileLabel');
-  const authorLabel = document.getElementById('authorLabel');
-
-  // Maximum file size in bytes (100 MB)
-  const MAX_FILE_SIZE = 100 * 1024 * 1024;
-
-  // Utility function to show a notification message for a specified duration (default: 5000ms)
-  function showNotification(message, duration = 5000) {
-    statusElem.innerText = message;
-    statusElem.style.display = "block";
-    setTimeout(() => {
-      statusElem.style.display = "none";
-    }, duration);
+  if (directoryParam && directoryInput) {
+    directoryInput.value = directoryParam;
   }
+});
 
-  // Add a change event listener to the fileType dropdown so UI updates dynamically.
-  if (fileTypeSelect) {
-    fileTypeSelect.addEventListener('change', function (e) {
-      const selectedType = e.target.value;
-      // Update the file input label and the accepted file types.
-      switch(selectedType) {
-        case 'video':
-          fileLabel.textContent = 'Upload Video';
-          fileInput.setAttribute('accept', 'video/*');
-          if (authorLabel) {
-            authorLabel.textContent = 'Creator';
-          }
-          break;
-        case 'image':
-          fileLabel.textContent = 'Upload Image';
-          fileInput.setAttribute('accept', 'image/*');
-          if (authorLabel) {
-            authorLabel.textContent = 'Photographer';
-          }
-          break;
-        case 'audio':
-          fileLabel.textContent = 'Upload Audio';
-          fileInput.setAttribute('accept', 'audio/*');
-          if (authorLabel) {
-            authorLabel.textContent = 'Artist';
-          }
-          break;
-        default:
-          fileLabel.textContent = 'Upload File';
-          fileInput.setAttribute('accept', 'application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document');
-          if (authorLabel) {
-            authorLabel.textContent = 'Author';
-          }
-      }
-    });
-  }
+uploadForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const formData = new FormData(uploadForm);
   
-  // Optional: Verify file size when a file is selected.
-  fileInput.addEventListener('change', function () {
-    const file = fileInput.files[0];
-    if (file && file.size > MAX_FILE_SIZE) {
-      showNotification("Error: The selected file exceeds 100 MB. Please choose a smaller file.", 7000);
-      // Clear the file input so that the file won't be submitted.
-      fileInput.value = "";
-    }
-  });
-
-  uploadForm.addEventListener('submit', async function (e) {
-    e.preventDefault(); // Prevent the default form submission
-
-    // Before submitting, double-check that the file is within allowed limits.
-    const file = fileInput.files[0];
-    if (!file) {
-      showNotification("Error: Please select a file to upload.");
-      return;
-    }
-    if (file.size > MAX_FILE_SIZE) {
-      showNotification("Error: The selected file exceeds 100 MB. Please choose a smaller file.");
-      return;
-    }
-
-    // Create FormData from the form; all input fields, including the new "fileType" dropdown, are captured automatically.
-    const formData = new FormData(uploadForm);
-
-    // Immediately show "Uploading..." message.
-    statusElem.style.display = "block";
-    statusElem.innerText = "Uploading...";
-
-    try {
-      // Wait 2 seconds so that "Uploading..." is visible.
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
-      // Send the form data via fetch to your backend endpoint.
-      const response = await fetch(uploadForm.action, {
-        method: uploadForm.method,
-        body: formData
-      });
-      const result = await response.json();
-
-      if (response.ok) {
-        // Display the final success message for 5 seconds.
-        showNotification(result.message, 5000);
-        // Optionally reset the form upon successful upload.
-        uploadForm.reset();
-      } else {
-        showNotification(result.error || "Upload failed.", 5000);
+  // Ensure directory exists or create it
+  const directoryPath = formData.get("directory");
+  try {
+    // Check if this directory already exists
+    let directoryExists = false;
+    const directoriesSnapshot = await getDocs(
+      query(collection(db, "directories"), where("path", "==", directoryPath))
+    );
+    
+    directoryExists = !directoriesSnapshot.empty;
+    
+    // If directory doesn't exist, create it
+    if (!directoryExists && directoryPath !== "/") {
+      // Split path into segments
+      const pathSegments = directoryPath.split('/').filter(segment => segment !== '');
+      let currentPath = "";
+      
+      // Ensure each segment exists as a directory
+      for (let i = 0; i < pathSegments.length; i++) {
+        const segment = pathSegments[i];
+        currentPath += `/${segment}`;
+        
+        // Check if this segment exists
+        const segmentQuery = await getDocs(
+          query(collection(db, "directories"), where("path", "==", currentPath))
+        );
+        
+        if (segmentQuery.empty) {
+          // Create this directory segment
+          await addDoc(collection(db, "directories"), {
+            name: segment,
+            path: currentPath,
+            description: "",
+            createdAt: new Date().toISOString()
+          });
+        }
       }
-    } catch (error) {
-      showNotification("Error: " + error.message, 5000);
     }
-  });
+    
+    // Now that we've ensured the directory exists, save the document
+    const metadata = {
+      fileType: formData.get("fileType"),
+      title: formData.get("title"),
+      date: formData.get("date"),
+      continent: formData.get("continent"),
+      country: formData.get("country"),
+      institution: formData.get("institution"),
+      author: formData.get("author"),
+      category: formData.get("category"),
+      keywords: formData.get("keywords") ? formData.get("keywords").split(",").map(kw => kw.trim()) : [],
+      directory: formData.get("directory"),
+      uploadedAt: new Date().toISOString()
+    };
+
+    await addDoc(collection(db, "constitutionalDocuments"), metadata);
+    uploadStatus.style.display = "block";
+    uploadStatus.textContent = "Document uploaded successfully!";
+    uploadForm.reset();
+    
+    // If we came from a specific directory, set that directory again
+    const urlParams = new URLSearchParams(window.location.search);
+    const directoryParam = urlParams.get('directory');
+    if (directoryParam && directoryInput) {
+      directoryInput.value = directoryParam;
+    }
+  } catch (error) {
+    console.error("Upload failed:", error);
+    uploadStatus.style.display = "block";
+    uploadStatus.style.color = "red";
+    uploadStatus.textContent = "Upload failed. Please try again.";
+  }
 });
