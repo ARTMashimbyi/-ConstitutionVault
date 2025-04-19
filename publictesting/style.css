@@ -121,3 +121,14 @@ iframe {
   border: none;
   margin-top: 1rem;
 }
+
+.book-list a {
+  text-decoration: none;
+  color: #0078d4;
+  font-weight: bold;
+}
+
+.book-list a:hover {
+  text-decoration: underline;
+}
+
