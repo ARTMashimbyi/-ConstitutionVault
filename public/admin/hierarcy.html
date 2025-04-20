@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Constitutional Archive - Admin Portal</title>
+    
+    <link rel="stylesheet" href="hierarcy.css" />
+</head>
+<body>
+    <header>
+        <h1>Constitutional Archive Admin</h1>
+        <div class="user-controls">
+            <span>Welcome, Admin</span>
+            <button class="logout-btn">Logout</button>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="sidebar">
+            <h2>Archive Directory</h2>
+            <div class="directory-tree">
+                <ul id="root-directory">
+                    <!-- Directory structure will be populated by JavaScript -->
+                </ul>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div class="path-nav" id="path-navigation">
+                <a href="#">Root</a>
+                <!-- Path navigation will be populated by JavaScript -->
+            </div>
+            
+            <div class="actions">
+                <div class="search-bar">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" placeholder="Search in current directory...">
+                </div>
+                
+                <div class="btn-group">
+                    <button class="btn" id="new-dir-btn">
+                        <span>New Directory</span>
+                    </button>
+                    <button class="btn" id="upload-btn">
+                        <span>Upload Files</span>
+                    </button>
+                </div>
+            </div>
+            <div id="directory-container" class="directory-container"></div>
+            
+            <div class="content-grid" id="content-grid">
+                <!-- Content will be populated by JavaScript -->
+            </div>
+            
+            <!-- Empty state for empty directories -->
+            <div class="empty-state" id="empty-state" style="display:none;">
+                <div style="font-size: 4rem;">📂</div>
+                <p>This directory is empty.</p>
+                <button class="btn" style="margin: 1rem auto;">Upload Files</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- New Directory Modal -->
+    <div class="modal-bg" id="new-dir-modal">
+        <div class="modal">
+            <h2>Create New Directory</h2>
+            <form id="new-dir-form">
+                <div class="form-group">
+                    <label for="dir-name">Directory Name</label>
+                    <input type="text" id="dir-name" placeholder="Enter directory name" required>
+                </div>
+                <div class="form-group">
+                    <label for="dir-description">Description (Optional)</label>
+                    <input type="text" id="dir-description" placeholder="Brief description of this directory">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" id="cancel-dir-btn">Cancel</button>
+                    <button type="submit" class="btn">Create</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="hierarchy-container"></div>
+
+<form id="create-directory-form">
+  <input type="text" id="directory-path" placeholder="e.g., Africa/Nigeria/2023" />
+  <button type="submit">Create Directory</button>
+</form>
+
+
+
+
+   
+    <script type="module" src="hierarcy.js"></script>
+    
+</body>
+</html>
