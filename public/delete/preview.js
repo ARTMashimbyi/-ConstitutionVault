@@ -18,24 +18,26 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 // //DOM?
-const titleElement = document.querySelector('.title');
-const authorElement = document.querySelector('.author');
-const publishDateElement = document.querySelector('.publishDate');
-const updatedElement = document.querySelector('.updated');
-const documentTypeElement = document.querySelector('.document');
-const sizeElement = document.querySelector('.size');
-const descriptionElement = document.querySelector('.description');
-const textContentElement = document.querySelector('.text-content');
-const loadingElement = document.querySelector('.loading');
-const errorElement = document.querySelector('.error-message');
-const readButton = document.querySelector('.btn-read');
-const editButton = document.querySelector('.btn-edit');
-const deleteButton = document.querySelector('.btn-delete');
+const titleElement = document.querySelector('.title') || {textContent: '', style: {}};
+const authorElement = document.querySelector('.author') || {textContent: '', style: {}};
+const publishDateElement = document.querySelector('.publishDate') || {textContent: '', style: {}};
+const updatedElement = document.querySelector('.updated') || {textContent: '', style: {}};
+const documentTypeElement = document.querySelector('.document') || {textContent: '', style: {}};
+//const sizeElement = document.querySelector('.size');
+//const descriptionElement = document.querySelector('.description');
+const textContentElement = document.querySelector('.text-content') || {textContent: '', style: {}};
+//const loadingElement = document.querySelector('.loading');
+const errorElement = document.querySelector('.error-message') || {textContent: '', style: {}};
+//const readButton = document.querySelector('.btn-read');
+//const editButton = document.querySelector('.btn-edit');
+const deleteButton = document.querySelector('.btn-delete') || {textContent: '', style: {}};
 
 console.log('still okay^ ^');
 
-const urlParams = new URLSearchParams(window.location.search);
-const docId = urlParams.get('id');
+const docId =  () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get('id');
+};
 //const docID = localStorage.getItem('selectedID');
 //console.log('the ID is', docID);
 console.log("i am working, my ID: ", docId);//on console
@@ -65,6 +67,8 @@ async function loadDocument() {
 }
 
 function displayDocument(docData) {
+    if(!docData) return
+
     titleElement.textContent = docData.title || 'Untitled Document';
     authorElement.textContent = docData.author || 'Unknown Author';
     publishDateElement.textContent = formatDate(docData.date) || 'Unknown Date';
@@ -99,17 +103,19 @@ function setupButtonActions(docId, docData) {
     // });
 
     // Delete button
-    deleteButton.addEventListener('click', async () => {
-        try {
-            // await db.collection("constitutionalDocuments").doc(docId).delete();
-            // alert('Document deleted successfully');
-            localStorage.setItem('deleteId', docId);
-            window.location.href = 'deleteConfirm.html';
-        } catch (error) {
-            console.error("Error deleting document:", error);
-            alert('Error deleting document');
-        }
-    });
+    if (deleteButton) {
+        deleteButton.addEventListener('click', async () => {
+            try {
+                // await db.collection("constitutionalDocuments").doc(docId).delete();
+                // alert('Document deleted successfully');
+                localStorage.setItem('deleteId', docId);
+                window.location.href = 'deleteConfirm.html';
+            } catch (error) {
+                console.error("Error deleting document:", error);
+                alert('Error deleting document');
+            }
+        });
+    }
 }
 
 // // Helper functions
@@ -125,6 +131,14 @@ function showContent() {
     });
 }
 console.log('finally works, YAAY (T^T)');
+
+export {
+    loadDocument,
+    displayDocument,
+    setupButtonActions,
+    formatDate,
+    showContent
+};
 
 
 // Initialize when DOM is loaded

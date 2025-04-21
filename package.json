@@ -1,5 +1,41 @@
 {
   "dependencies": {
     "firebase": "^11.6.0"
-  }
+  },
+  "devDependencies": {
+    "@babel/preset-env": "^7.26.9",
+    "@babel/preset-react": "^7.26.3",
+    "@testing-library/jest-dom": "^6.6.3",
+    "babel-jest": "^29.7.0",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0"
+  },
+  "name": "-constitutionvault",
+  "version": "1.0.0",
+  "description": "[![codecov](https://codecov.io/gh/ARTMashimbyi/-ConstitutionVault/branch/main/graph/badge.svg)](https://codecov.io/gh/ARTMashimbyi/-ConstitutionVault)",
+  "main": "jest.config.js",
+  "type": "module",
+  "scripts": {
+    "test": "jest"
+  },
+  "jest": {
+    "testEnvironment": "jsdom",
+    "moduleNameMapper": {
+      "^https://www.gstatic.com/firebasejs/(.*)$": "<rootDir>/__mocks__/firebase.js",
+      "tansform": {}
+
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ARTMashimbyi/-ConstitutionVault.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ARTMashimbyi/-ConstitutionVault/issues"
+  },
+  "homepage": "https://github.com/ARTMashimbyi/-ConstitutionVault#readme"
 }
+

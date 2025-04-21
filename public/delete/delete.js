@@ -23,13 +23,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.log('Document ID to delete:', docId);
 
     // UI Elements
-    const statusMessage = document.querySelector('.status-message');
-    const spinner = document.querySelector('.spinner');
-    const successIcon = document.querySelector('.success-icon');
-    const errorIcon = document.querySelector('.error-icon');
-    const confirmBtn = document.querySelector('.confirm-btn');
-    const cancelBtn = document.querySelector('.cancel-btn');
-    const backBtn = document.querySelector('.back-btn');
+    const statusMessage = document.querySelector('.status-message') || { textContent: '', style: {} };
+    const spinner = document.querySelector('.spinner') || { textContent: '', style: {} };
+    const successIcon = document.querySelector('.success-icon') || { textContent: '', style: {} };
+    const errorIcon = document.querySelector('.error-icon') || { textContent: '', style: {} };
+    const confirmBtn = document.querySelector('.confirm-btn') || { textContent: '', style: {} };
+    const cancelBtn = document.querySelector('.cancel-btn') || { textContent: '', style: {} };
+    const backBtn = document.querySelector('.back-btn') || { textContent: '', style: {} };
 
     console.log('who in the hell is NULL!!(~_~)',{
         confirmBtn,
@@ -53,7 +53,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     
         try {
             if (!docId) {
-                throw new Error('No document ID provided');
+                errorElement.textContent = 'No document ID provided';
+                errorElement.style.display = 'block';
+                return;
             }
 
             // Delete document using modular Firebase v9 syntax
@@ -67,10 +69,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Clear the stored ID
             localStorage.removeItem('deleteId');
         
-            // Redirect after 2 seconds
+            // Redirect after 1.2 seconds
+            const delay = 1200;
             setTimeout(() => {
                 window.location.href = "../admin/hierarcy.html";
-            }, 2000);
+            }, delay);
         
         } catch (error) {
             console.error("Error deleting document:", error);
@@ -86,3 +89,5 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 // document.addEventListener('DOMContentLoaded', deleteItem);
 });
+
+export { deleteItem };
