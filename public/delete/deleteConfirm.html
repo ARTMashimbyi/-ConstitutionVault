@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirm Deletion</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: rgba(227, 237, 249, 1);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        main {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        h1 {
+            color: rgba(18, 28, 62, 1);
+            margin-bottom: 1.5rem;
+        }
+
+        p {
+            color: rgba(18, 28, 62, 0.8);
+            margin-bottom: 2rem;
+            line-height: 1.5;
+        }
+
+        .status-container {
+            margin: 2rem 0;
+            min-height: 60px;
+        }
+
+        .spinner {
+            border: 4px solid rgba(227, 237, 249, 1);
+            border-top: 4px solid rgba(255, 194, 14, 1);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+            display: none;
+        }
+
+        .success-icon, .error-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .success-icon {
+            color: rgba(255, 194, 14, 1);
+        }
+
+        .error-icon {
+            color: rgba(255, 0, 0, 1);
+        }
+
+        .status-message {
+            color: rgba(18, 28, 62, 1);
+            font-weight: bold;
+            margin: 1rem 0;
+        }
+
+        button {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .confirm-btn {
+            background-color: rgba(255, 0, 0, 1);
+            color: white;
+            margin-right: 1rem;
+        }
+
+        .confirm-btn:hover {
+            background-color: rgba(200, 0, 0, 1);
+        }
+
+        .cancel-btn {
+            background-color: rgba(18, 28, 62, 1);
+            color: white;
+        }
+
+        .cancel-btn:hover {
+            background-color: rgba(10, 15, 35, 1);
+        }
+
+        .back-btn {
+            background-color: rgba(18, 28, 62, 1);
+            color: white;
+            display: none;
+            margin-top: 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <h1>Confirm Deletion</h1>
+        <p><h3>Are you sure you want to permanently delete this document? This action cannot be undone.</h3></p>
+        
+        <section class="status-container">
+            <div class="spinner"></div>
+            <p class="success-icon">✓</p>
+            <p class="error-icon">✗</p>
+            <p class="status-message"></p>
+        </section>
+
+        <button class="confirm-btn">Delete Permanently</button>
+        <button class="cancel-btn">Cancel</button>
+        <button class="back-btn">Back to Documents</button>
+    </main>
+
+    <script type="module" src="delete.js"></script>
+</body>
+</html>
