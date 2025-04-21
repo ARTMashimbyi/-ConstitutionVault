@@ -1,61 +1,44 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
-import {
-  getAuth,
-  signInWithPopup,
-  GoogleAuthProvider
-} from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
-import {
-  getFirestore,
-  collection,
-  query,
-  where,
-  getDocs,
-  addDoc
-} from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+// signup.js
+let auth0 = null;
 
-const firebaseConfig = {
-  apiKey: "AIzaSyAU_w_Oxi6noX_A1Ma4XZDfpIY-jkoPN-c",
-  authDomain: "constitutionvault-1b5d1.firebaseapp.com",
-  projectId: "constitutionvault-1b5d1",
-  storageBucket: "constitutionvault-1b5d1.appspot.com",
-  messagingSenderId: "616111688261",
-  appId: "1:616111688261:web:97cc0a35c8035c0814312c"
-};
+async function initAuth0() {
+  auth0 = await createAuth0Client({
+    domain: 'dev-gle8pp2yx6w48r1a.us.auth0.com',
+    client_id: 'eCyqhVkWIJ4SCb2R3SbM5AkXSlfgVrQx',
+    cacheLocation: 'localstorage',
+  });
+}
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-const provider = new GoogleAuthProvider();
-
-document.getElementById("google-signup").addEventListener("click", async () => {
+document.getElementById('google-signup').addEventListener('click', async () => {
   try {
-    const result = await signInWithPopup(auth, provider);
-    const user = result.user;
-    const token = await user.getIdToken();
-
-    console.log("User signed in:", user.uid);
-
-    // Check if user UID exists in Firestore
-    const usersRef = collection(db, "users");
-    const q = query(usersRef, where("uid", "==", user.uid));
-    const querySnapshot = await getDocs(q);
-
-    if (querySnapshot.empty) {
-      // New user — add UID only (no email or name)
-      await addDoc(usersRef, {
-        uid: user.uid,
-        createdAt: new Date().toISOString()
-      });
-      console.log("New user added with UID only.");
-    } else {
-      console.log("User already exists.");
+    if (!auth0) {
+      await initAuth0();
     }
 
-    // Redirect to landing page
-    window.location.href = "landing.html";
+    // Login using Google (popup)
+    await auth0.loginWithPopup({
+      connection: 'google-oauth2',
+    });
+
+    const idTokenClaims = await auth0.getIdTokenClaims();
+    const idToken = idTokenClaims.__raw;
+
+    console.log('ID Token:', idToken);
+
+    // Send the token to the backend
+    const response = await fetch('http://localhost:3000/api/signup', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ id_token: idToken })
+    });
+
+    const result = await response.json();
+    alert(result.message);
 
   } catch (err) {
-    console.error("Signup failed:", err);
-    alert("Signup failed. Check the console.");
+    console.error('Signup failed:', err);
+    alert('Signup failed. Check the console.');
   }
 });
