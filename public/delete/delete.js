@@ -90,4 +90,4 @@ document.addEventListener('DOMContentLoaded', async () => {
 // document.addEventListener('DOMContentLoaded', deleteItem);
 });
 
-export { deleteItem };
+//export { deleteItem };

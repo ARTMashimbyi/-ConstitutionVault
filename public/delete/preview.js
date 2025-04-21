@@ -34,10 +34,9 @@ const deleteButton = document.querySelector('.btn-delete') || {textContent: '', 
 
 console.log('still okay^ ^');
 
-const docId =  () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    return urlParams.get('id');
-};
+const urlParams = new URLSearchParams(window.location.search);
+const docId = urlParams.get('id');
+
 //const docID = localStorage.getItem('selectedID');
 //console.log('the ID is', docID);
 console.log("i am working, my ID: ", docId);//on console
