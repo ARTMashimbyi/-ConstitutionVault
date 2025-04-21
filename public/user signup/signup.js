@@ -1,4 +1,24 @@
-// signup.js
+// Import the functions you need from the Firebase SDKs
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  query,
+  where,
+  getDocs,
+  addDoc
+} from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAU_w_Oxi6noX_A1Ma4XZDfpIY-jkoPN-c",
+  authDomain: "ConstitutionVault.firebaseapp.com",
+  projectId: "constitutionvault-1b5d1",
+  
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
 let auth0 = null;
 
 async function initAuth0() {
@@ -37,8 +57,27 @@ document.getElementById('google-signup').addEventListener('click', async () => {
     const result = await response.json();
     alert(result.message);
 
+    // Check if user UID exists in Firestore
+    const usersRef = collection(db, "users");
+    const q = query(usersRef, where("uid", "==", idTokenClaims.sub));  // UID from token
+    const querySnapshot = await getDocs(q);
+
+    if (querySnapshot.empty) {
+      // New user — add UID only (no email or name)
+      await addDoc(usersRef, {
+        uid: idTokenClaims.sub,
+        createdAt: new Date().toISOString()
+      });
+      console.log("New user added with UID only.");
+    } else {
+      console.log("User already exists.");
+    }
+
+    window.location.replace("landing.html");
+
+
   } catch (err) {
-    console.error('Signup failed:', err);
-    alert('Signup failed. Check the console.');
+    console.error("Signup failed:", err);
+    alert("Signup failed. Check the console.");
   }
 });

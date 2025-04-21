@@ -1,5 +1,5 @@
 node_modules
 /keys/*.json
 
-firebase-service-account.json
+public/user signup/firebase-service-account.json
 
