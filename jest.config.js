@@ -5,5 +5,6 @@ module.exports = {
         '^.+\\.js$': 'babel-jest', // Ensure Babel transforms JavaScript files
       },
       testEnvironment: 'jsdom', // Set the test environment to jsdom
+      moduleFileExtensions: ["js", "jsx", "json", "node"],
   };
   
