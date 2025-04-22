@@ -28,8 +28,7 @@ const documentTypeElement = document.querySelector('.document') || {textContent:
 const textContentElement = document.querySelector('.text-content') || {textContent: '', style: {}};
 //const loadingElement = document.querySelector('.loading');
 const errorElement = document.querySelector('.error-message') || {textContent: '', style: {}};
-//const readButton = document.querySelector('.btn-read');
-//const editButton = document.querySelector('.btn-edit');
+const editButton = document.querySelector('.btn-edit') || {textContent: '', style: {}};
 const deleteButton = document.querySelector('.btn-delete') || {textContent: '', style: {}};
 
 console.log('still okay^ ^');
@@ -97,9 +96,11 @@ function setupButtonActions(docId, docData) {
     // });
 
     // Edit button - redirect to edit page
-    // editButton.addEventListener('click', () => {
-    //     window.location.href = `../admin/admin-edit.html?id=${docId}`;
-    // });
+    if (editButton) {
+        editButton.addEventListener('click', () => {
+            window.location.href = `../edit/edit.html?id=${docId}`;
+        });
+    }
 
     // Delete button
     if (deleteButton) {
