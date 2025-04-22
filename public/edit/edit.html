@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Edit Constitutional Document</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container" style="flex-direction: column; align-items: center;">
+    <h1>Edit Constitutional Document</h1>
+    <form id="editDocForm" style="max-width: 500px; width: 100%;">
+      <label>
+        Title:
+        <input type="text" id="docTitle" required />
+      </label>
+      <br /><br />
+      <label>
+        Institution/Place:
+        <input type="text" id="docInstitution" />
+      </label>
+      <br /><br />
+      <label>
+        Author:
+        <input type="text" id="docAuthor" />
+      </label>
+      <br /><br />
+      <label>
+        Category:
+        <input type="text" id="docCategory" />
+      </label>
+      <br /><br />
+      <label>
+        Keywords (comma separated):
+        <input type="text" id="docKeywords" />
+      </label>
+      <br /><br />
+      <label>
+        Date:
+        <input type="date" id="docDate" />
+      </label>
+      <br /><br />
+      <button type="submit">💾 Save Changes</button>
+      <button type="button" id="cancelButton">Cancel</button>
+    </form>
+    <p id="message" style="color: green;"></p>
+  </div>
+</body>
+<script type="module" src="edit.js"></script>
+</html>
