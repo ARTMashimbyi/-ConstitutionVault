@@ -676,7 +676,7 @@ document.addEventListener('DOMContentLoaded', function() {
         logoutBtn.addEventListener('click', function() {
             if (confirm('Are you sure you want to logout?')) {
                 // Redirect to login page or perform logout actions
-                window.location.href = 'login.html';
+                window.location.href = '../index.html';
             }
         });
     }

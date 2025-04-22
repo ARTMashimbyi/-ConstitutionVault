@@ -4,14 +4,12 @@
     <meta charset="UTF-8" />
     <title>ConstitutionVault | Admin Upload</title>
     <link rel="stylesheet" href="admin-add.css" />
+    
   </head>
   <body>
     <header>
+      <a href="hierarcy.html" class="back-arrow">←</a>
       <h1>ConstitutionVault Admin Portal</h1>
-      <!-- Navigation: Link to Directory Page -->
-      <nav>
-        <a href="admin-directory.html">View Uploaded Documents</a>
-      </nav>
     </header>
     <main>
       <section>
@@ -21,7 +19,7 @@
           <fieldset>
             <legend>Add File</legend>
 
-            <!-- File Type Selection (if already implemented) -->
+            <!-- File Type Selection -->
             <label for="fileType">File Type</label>
             <select id="fileType" name="fileType" required>
               <option value="document">Document/PDF</option>
@@ -40,15 +38,7 @@
             <input type="text" id="title" name="title" required />
 
             <label for="date">Date</label>
-            <input type="date" id="date" name="date" required />
-
-            <label for="continent">Continent</label>
-            <input type="text" id="continent" name="continent" required />
-
-            <label for="country">Country</label>
-            <input type="text" id="country" name="country" required />
-
-
+            <input type="date" id="date" name="date" required class="readonly-field" readonly />
 
             <label for="institution">Institution/Place</label>
             <input type="text" id="institution" name="institution" />
@@ -62,10 +52,8 @@
             <label for="keywords">Keywords (comma separated)</label>
             <input type="text" id="keywords" name="keywords" />
 
-            
-            <label for="directory">Directory Location (e.g., /Ghana/1992/Fonds A/Series 1)</label>
-            <input type="text" id="directory" name="directory" required />
-
+            <label for="directory">Directory Location</label>
+            <input type="text" id="directory" name="directory" required class="readonly-field" readonly />
 
             <button type="submit">Upload</button>
           </fieldset>
@@ -80,7 +68,8 @@
     <footer>
       <p>&copy; 2025 ConstitutionVault | All Rights Reserved</p>
     </footer>
-    <script type="module" src="admin-add.js"></script>
+    
 
+<script type="module" src="admin-add.js"></script>
   </body>
 </html>
