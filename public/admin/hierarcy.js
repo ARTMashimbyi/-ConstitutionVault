@@ -638,7 +638,9 @@ function updateContentGrid() {
                     } else {
                         // Navigate to file view page or show details
                         if (item.firestoreId) {
-                            window.location.href = `file-view.html?id=${item.firestoreId}`;
+                            window.location.href = `../delete/preview.html?id=${item.firestoreId}`;
+                            localStorage.setItem('selectedID', item.firestoreId);
+                            
                         } else {
                             alert(`Viewing file: ${item.name}`);
                         }
