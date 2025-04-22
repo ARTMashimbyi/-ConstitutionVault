@@ -1,3 +1,4 @@
+// index.js
 const express = require('express');
 const admin = require('firebase-admin');
 const bodyParser = require('body-parser');
@@ -8,7 +9,6 @@ const port = 3000;
 app.use(cors());
 app.use(bodyParser.json());
 
-// Initialize Firebase Admin SDK
 const serviceAccount = require('./firebase-service-account.json');
 
 admin.initializeApp({
@@ -18,7 +18,7 @@ admin.initializeApp({
 const db = admin.firestore();
 
 app.post('/api/signup', async (req, res) => {
-  const { id_token } = req.body; // Make sure this matches the frontend key
+  const { id_token } = req.body;
 
   if (!id_token) {
     return res.status(400).send({ message: 'Missing ID token' });
@@ -34,7 +34,6 @@ app.post('/api/signup', async (req, res) => {
     }
 
     await db.collection('user_signup').add({ id_token });
-
     res.status(200).send({ message: 'Signup successful' });
   } catch (error) {
     console.error('Signup error:', error);
@@ -42,6 +41,10 @@ app.post('/api/signup', async (req, res) => {
   }
 });
 
-app.listen(port, () => {
-  console.log(`Server running on http://localhost:${port}`);
-});
+if (require.main === module) {
+  app.listen(port, () => {
+    console.log(`Server running on http://localhost:${port}`);
+  });
+}
+
+module.exports = app;
