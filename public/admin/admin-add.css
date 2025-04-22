@@ -153,3 +153,23 @@
     margin-top: 1rem;
     display: none;
   }
+
+  .back-arrow {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    font-size: 50px;
+    text-decoration: none;
+    color: #ff0404;
+  }
+  .back-arrow:hover {
+    color: #f80707;
+  }
+  header {
+    position: relative;
+    padding-top: 10px;
+  }
+  .readonly-field {
+    background-color: #f0f0f0;
+    cursor: not-allowed;
+  }
