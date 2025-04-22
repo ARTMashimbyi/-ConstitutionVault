@@ -301,3 +301,77 @@
             justify-content: flex-end;
             gap: 1rem;
         }
+
+
+
+        /* Directory Tree Styling */
+.directory-tree ul {
+    list-style-type: none;
+    padding-left: 1rem;
+    margin: 0;
+}
+
+.directory-tree > ul {
+    padding-left: 0;
+}
+
+.directory {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.directory.active {
+    background-color: #000752;
+}
+
+.directory:hover {
+    background-color: #151515;
+}
+
+.directory-toggle {
+    width: 16px;
+    height: 16px;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    
+    font-size: 10px;
+    margin-right: 4px;
+}
+
+.directory-spacer {
+    width: 16px;
+    display: inline-block;
+    margin-right: 4px;
+}
+
+.directory-icon {
+    margin-right: 8px;
+}
+
+.directory-name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+}
+
+.directory-children {
+    padding-left: 1rem;
+    transition: all 0.2s ease;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .directory-tree ul {
+        padding-left: 0.5rem;
+    }
+    
+    .directory-children {
+        padding-left: 0.5rem;
+    }
+}

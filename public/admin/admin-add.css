@@ -160,10 +160,10 @@
     left: 20px;
     font-size: 50px;
     text-decoration: none;
-    color: #ff0404;
+    color: #fffdfd;
   }
   .back-arrow:hover {
-    color: #f80707;
+    color: #f7f7f7;
   }
   header {
     position: relative;

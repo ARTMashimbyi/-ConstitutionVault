@@ -17,7 +17,7 @@ const firebaseConfig = {
     messagingSenderId: "616111688261",
     appId: "1:616111688261:web:97cc0a35c8035c0814312c",
     measurementId: "G-YJEYZ85T3S"
-  };
+};
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
@@ -249,76 +249,84 @@ function initializeUI() {
     const cancelDirBtn = document.getElementById('cancel-dir-btn');
     const newDirForm = document.getElementById('new-dir-form');
 
-    newDirBtn.addEventListener('click', function() {
-        newDirModal.style.display = 'flex';
-    });
+    if (newDirBtn) {
+        newDirBtn.addEventListener('click', function() {
+            newDirModal.style.display = 'flex';
+        });
+    }
 
-    cancelDirBtn.addEventListener('click', function() {
-        newDirModal.style.display = 'none';
-    });
-
-    newDirForm.addEventListener('submit', async function(e) {
-        e.preventDefault();
-        
-        const dirName = document.getElementById('dir-name').value;
-        const dirDescription = document.getElementById('dir-description').value;
-        
-        // Generate a temporary ID for the new directory (will be replaced by Firestore ID)
-        const tempId = dirName.toLowerCase().replace(/\s+/g, '_') + '_' + Date.now();
-        
-        // Create new directory object
-        const newDir = {
-            name: dirName,
-            type: 'directory',
-            path: currentPath === '/' ? `/${dirName}` : `${currentPath}/${dirName}`,
-            children: [],
-            description: dirDescription
-        };
-        
-        try {
-            // Save directory to Firestore
-            const firestoreId = await saveDirectoryToFirestore(tempId, newDir);
-            
-            // Update with Firestore ID
-            newDir.firestoreId = firestoreId;
-            
-            // Add to archive data
-            archiveData[firestoreId] = newDir;
-            
-            // Find parent directory and add new dir to its children
-            const parentDir = findDirectoryByPath(currentPath);
-            if (parentDir) {
-                if (!parentDir.children) {
-                    parentDir.children = [];
-                }
-                parentDir.children.push(firestoreId);
-            }
-            
-            // Close modal
+    if (cancelDirBtn) {
+        cancelDirBtn.addEventListener('click', function() {
             newDirModal.style.display = 'none';
+        });
+    }
+
+    if (newDirForm) {
+        newDirForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
             
-            // Refresh directory tree and content
-            buildDirectoryTree();
-            updateContentGrid();
+            const dirName = document.getElementById('dir-name').value;
+            const dirDescription = document.getElementById('dir-description').value;
             
-            // Reset form
-            document.getElementById('dir-name').value = '';
-            document.getElementById('dir-description').value = '';
+            // Generate a temporary ID for the new directory (will be replaced by Firestore ID)
+            const tempId = dirName.toLowerCase().replace(/\s+/g, '_') + '_' + Date.now();
             
-        } catch (error) {
-            console.error("Error creating directory:", error);
-            alert("Failed to create directory. Please try again.");
-        }
-    });
+            // Create new directory object
+            const newDir = {
+                name: dirName,
+                type: 'directory',
+                path: currentPath === '/' ? `/${dirName}` : `${currentPath}/${dirName}`,
+                children: [],
+                description: dirDescription
+            };
+            
+            try {
+                // Save directory to Firestore
+                const firestoreId = await saveDirectoryToFirestore(tempId, newDir);
+                
+                // Update with Firestore ID
+                newDir.firestoreId = firestoreId;
+                
+                // Add to archive data
+                archiveData[firestoreId] = newDir;
+                
+                // Find parent directory and add new dir to its children
+                const parentDir = findDirectoryByPath(currentPath);
+                if (parentDir) {
+                    if (!parentDir.children) {
+                        parentDir.children = [];
+                    }
+                    parentDir.children.push(firestoreId);
+                }
+                
+                // Close modal
+                newDirModal.style.display = 'none';
+                
+                // Refresh directory tree and content
+                buildDirectoryTree();
+                updateContentGrid();
+                
+                // Reset form
+                document.getElementById('dir-name').value = '';
+                document.getElementById('dir-description').value = '';
+                
+            } catch (error) {
+                console.error("Error creating directory:", error);
+                alert("Failed to create directory. Please try again.");
+            }
+        });
+    }
 
     // Handle "Upload Files" button click
     const uploadBtn = document.getElementById('upload-btn');
     const emptyStateUploadBtn = document.querySelector('.empty-state .btn');
     
-    uploadBtn.addEventListener('click', function () {
-        const directoryPath = currentPath === '/' ? '/' : currentPath;
-        window.location.href = `admin-add.html?directory=${encodeURIComponent(directoryPath)}`;
-    });
+    if (uploadBtn) {
+        uploadBtn.addEventListener('click', function () {
+            const directoryPath = currentPath === '/' ? '/' : currentPath;
+            window.location.href = `admin-add.html?directory=${encodeURIComponent(directoryPath)}`;
+        });
+    }
     
     if (emptyStateUploadBtn) {
         emptyStateUploadBtn.addEventListener('click', function() {
@@ -329,20 +337,22 @@ function initializeUI() {
     
     // Set up search functionality
     const searchInput = document.querySelector('.search-bar input');
-    searchInput.addEventListener('input', function() {
-        const searchTerm = this.value.toLowerCase();
-        
-        // Simple filtering for items in the current view
-        const contentItems = document.querySelectorAll('.item-card');
-        contentItems.forEach(item => {
-            const itemName = item.querySelector('.item-name').textContent.toLowerCase();
-            if (itemName.includes(searchTerm)) {
-                item.style.display = 'flex';
-            } else {
-                item.style.display = 'none';
-            }
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            
+            // Simple filtering for items in the current view
+            const contentItems = document.querySelectorAll('.item-card');
+            contentItems.forEach(item => {
+                const itemName = item.querySelector('.item-name').textContent.toLowerCase();
+                if (itemName.includes(searchTerm)) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
         });
-    });
+    }
     
     // Set up directory creation form
     const createDirForm = document.getElementById('create-directory-form');
@@ -452,42 +462,57 @@ async function createDirectoryStructure(directoryPath) {
     return currentPath;
 }
 
-// Function to build directory tree
+// UPDATED: Function to build directory tree with collapsible functionality
 function buildDirectoryTree() {
     const rootUl = document.getElementById('root-directory');
     rootUl.innerHTML = '';
     
     // Add root directory
     const rootLi = document.createElement('li');
-    rootLi.innerHTML = `<div class="directory active" data-path="/">
-                        <span class="directory-icon">📁</span>
-                        <span>Root</span>
-                    </div>`;
+    rootLi.innerHTML = `
+        <div class="directory active" data-path="/">
+            <span class="directory-toggle">▼</span>
+            <span class="directory-icon">📁</span>
+            <span class="directory-name">Root</span>
+        </div>
+    `;
     rootUl.appendChild(rootLi);
     
     // Add first level directories
     const rootChildren = archiveData.root.children;
     if (rootChildren && rootChildren.length > 0) {
         const childrenUl = document.createElement('ul');
+        childrenUl.className = 'directory-children';
         rootLi.appendChild(childrenUl);
         
         rootChildren.forEach(childId => {
             const child = archiveData[childId];
-            if (child) {
-                const childLi = document.createElement('li');
-                childLi.innerHTML = `<div class="directory" data-path="${child.path}">
-                                    <span class="directory-icon">📁</span>
-                                    <span>${child.name}</span>
-                                </div>`;
-                childrenUl.appendChild(childLi);
-                
-                // Add second level directories recursively
-                if (child.type === 'directory' && child.children && child.children.length > 0) {
-                    buildSubDirectories(childLi, child.children);
-                }
+            if (child && child.type === 'directory') {
+                buildDirectoryItem(childrenUl, child, childId);
             }
         });
     }
+    
+    // Add click event listeners to directory toggles
+    document.querySelectorAll('.directory-toggle').forEach(toggle => {
+        toggle.addEventListener('click', function(e) {
+            e.stopPropagation(); // Prevent directory selection
+            
+            const li = this.closest('li');
+            const childrenUl = li.querySelector('ul');
+            
+            if (childrenUl) {
+                // Toggle visibility
+                if (childrenUl.style.display === 'none') {
+                    childrenUl.style.display = 'block';
+                    this.textContent = '▼'; // Down arrow
+                } else {
+                    childrenUl.style.display = 'none';
+                    this.textContent = '▶'; // Right arrow
+                }
+            }
+        });
+    });
     
     // Add click event listeners to directories
     document.querySelectorAll('.directory').forEach(dir => {
@@ -502,27 +527,38 @@ function buildDirectoryTree() {
     });
 }
 
-// Recursively build subdirectories
-function buildSubDirectories(parentLi, children) {
-    const childrenUl = document.createElement('ul');
-    parentLi.appendChild(childrenUl);
+// New function to build a directory item with its children
+function buildDirectoryItem(parentUl, directory, directoryId) {
+    const hasChildren = directory.children && directory.children.length > 0 && 
+                       directory.children.some(childId => archiveData[childId] && archiveData[childId].type === 'directory');
     
-    children.forEach(childId => {
-        const child = archiveData[childId];
-        if (child && child.type === 'directory') {
-            const childLi = document.createElement('li');
-            childLi.innerHTML = `<div class="directory" data-path="${child.path}">
-                                <span class="directory-icon">📁</span>
-                                <span>${child.name}</span>
-                            </div>`;
-            childrenUl.appendChild(childLi);
-            
-            // Continue recursion
-            if (child.children && child.children.length > 0) {
-                buildSubDirectories(childLi, child.children);
+    const dirLi = document.createElement('li');
+    dirLi.innerHTML = `
+        <div class="directory" data-path="${directory.path}">
+            ${hasChildren ? 
+                '<span class="directory-toggle">▶</span>' : 
+                '<span class="directory-spacer"></span>'}
+            <span class="directory-icon">📁</span>
+            <span class="directory-name">${directory.name}</span>
+        </div>
+    `;
+    parentUl.appendChild(dirLi);
+    
+    // Add children if any
+    if (hasChildren) {
+        const childrenUl = document.createElement('ul');
+        childrenUl.className = 'directory-children';
+        childrenUl.style.display = 'none'; // Start collapsed
+        dirLi.appendChild(childrenUl);
+        
+        // Add each child directory (but not files)
+        directory.children.forEach(childId => {
+            const child = archiveData[childId];
+            if (child && child.type === 'directory') {
+                buildDirectoryItem(childrenUl, child, childId);
             }
-        }
-    });
+        });
+    }
 }
 
 // Function to navigate to a specific path
@@ -535,6 +571,39 @@ function navigateToPath(path) {
     
     // Update content grid
     updateContentGrid();
+    
+    // Update expanded state in directory tree
+    expandDirectoryPath(path);
+}
+
+// New function to expand directories along a path
+function expandDirectoryPath(path) {
+    if (path === '/') return;
+    
+    const pathSegments = path.split('/').filter(segment => segment !== '');
+    let currentPath = '';
+    
+    // Expand each segment in the path
+    for (let i = 0; i < pathSegments.length; i++) {
+        currentPath += '/' + pathSegments[i];
+        
+        // Find the directory element with this path
+        const dirElement = document.querySelector(`.directory[data-path="${currentPath}"]`);
+        if (dirElement) {
+            // Find parent li and its child ul
+            const parentLi = dirElement.closest('li');
+            const childrenUl = parentLi.querySelector('ul');
+            
+            // Expand if it has children
+            if (childrenUl) {
+                childrenUl.style.display = 'block';
+                const toggle = dirElement.querySelector('.directory-toggle');
+                if (toggle) {
+                    toggle.textContent = '▼'; // Down arrow
+                }
+            }
+        }
+    }
 }
 
 // Update the path navigation breadcrumb
@@ -640,7 +709,6 @@ function updateContentGrid() {
                         if (item.firestoreId) {
                             window.location.href = `../delete/preview.html?id=${item.firestoreId}`;
                             localStorage.setItem('selectedID', item.firestoreId);
-                            
                         } else {
                             alert(`Viewing file: ${item.name}`);
                         }
