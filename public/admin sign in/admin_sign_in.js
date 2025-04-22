@@ -1,121 +1,183 @@
+// Import Firebase modules
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
-        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
-        
-        import { getFirestore } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
-        // TODO: Add SDKs for Firebase products that you want to use
-        // https://firebase.google.com/docs/web/setup#available-libraries
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-analytics.js";
-        // Your web app's Firebase configuration
-        import {
-            collection,  // Used to reference a collection in Firestore
-            getDocs      // Used to retrieve all documents from a collection
-          } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
+import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-analytics.js";
+
+// Firebase configuration
+const firebaseConfig = {
+    apiKey: "AIzaSyAU_w_Oxi6noX_A1Ma4XZDfpIY-jkoPN-c",
+    authDomain: "constitutionvault-1b5d1.firebaseapp.com",
+    projectId: "constitutionvault-1b5d1",
+    storageBucket: "constitutionvault-1b5d1.firebasestorage.app",
+    messagingSenderId: "616111688261",
+    appId: "1:616111688261:web:97cc0a35c8035c0814312c",
+    measurementId: "G-YJEYZ85T3S"
+};    
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);        
+const auth = getAuth();
+const provider = new GoogleAuthProvider();
+const db = getFirestore(app);
+
+// DOM Elements
+const signInButton = document.getElementById('signInButton');
+const signOutButton = document.getElementById('signOutButton');
+const message = document.getElementById('message');
+const adminLink = document.querySelector('.admin-in');
+const userButton = document.querySelector('.loggedIn');
+const loadingSpinner = document.querySelector('.loading-spinner');
+const portalOptions = document.getElementById('portal-options');
+const adminOption = document.getElementById('admin-option');
+const userOption = document.getElementById('user-option');
+const userModal = document.getElementById('modal-users');
+
+// Global variables
+let adminStatus = false;
+let redirectTimer;
+
+/**
+ * Sign in with Google
+ */
+const userSignIn = async() => {
+    loadingSpinner.style.display = "block";
     
-          const firebaseConfig = {
-            apiKey: "AIzaSyAU_w_Oxi6noX_A1Ma4XZDfpIY-jkoPN-c",
-            authDomain: "constitutionvault-1b5d1.firebaseapp.com",
-            projectId: "constitutionvault-1b5d1",
-            storageBucket: "constitutionvault-1b5d1.firebasestorage.app",
-            messagingSenderId: "616111688261",
-            appId: "1:616111688261:web:97cc0a35c8035c0814312c",
-            measurementId: "G-YJEYZ85T3S"
-        };    
-        // Initialize Firebase
-       const app = initializeApp(firebaseConfig);        
-        const auth=getAuth();
-        const provider=new GoogleAuthProvider();
-        const db = getFirestore(app);
-        // Display
-    const signInButton = document.getElementById('signInButton');
-    const signOutButton = document.getElementById('signOutButton');
-    const message = document.getElementById('message');
-    const adminLink=document.querySelector('.admin-in');
-    const userButton =document.querySelector('.loggedIn');
-signOutButton.style.display ="none";
-message.style.display="none";
-
-
-var Admin_status = false;
-
-// signIn with google
-const userSignIn =async() =>{
-    signInWithPopup(auth, provider) 
-    .then((result) =>{
-        const user= result.user 
-       // console.log(user.uid);
-       // console.log(typeof(user.uid));
-    }).catch((error)=>{
-        const errorCode=error.code;
-        const errorMessage=error.message;
-    });
-};
-// sign out
-const userSignOut = async() =>{
-    signOut(auth).then(()=>{
-        alert("You have signed out successfully");
-    }).catch((error)=>{})
+    try {
+        const result = await signInWithPopup(auth, provider);
+        const user = result.user;
+        // The rest of the authentication flow is handled by onAuthStateChanged
+    } catch (error) {
+        console.error("Sign-in error:", error);
+        loadingSpinner.style.display = "none";
+        M.toast({html: 'Sign-in failed. Please try again.', classes: 'red'});
+    }
 };
 
+/**
+ * Sign out function
+ */
+const userSignOut = async() => {
+    try {
+        await signOut(auth);
+        M.toast({html: 'You have signed out successfully', classes: 'green'});
+        
+        adminStatus = false;
+        clearTimeout(redirectTimer);
+        
+        // Reset UI elements
+        portalOptions.style.display = "none";
+        adminOption.style.display = "none";
+        userOption.style.display = "none";
+        
+    } catch (error) {
+        console.error("Sign-out error:", error);
+        M.toast({html: 'Sign-out failed. Please try again.', classes: 'red'});
+    }
+};
 
+/**
+ * Check if user has admin privileges
+ * @param {Object} user - The Firebase user object
+ * @returns {Promise<boolean>} - True if user is an admin, false otherwise
+ */
+async function checkAdmin(user) {
+    try {
+        const querySnapshot = await getDocs(collection(db, "Admin_users"));
+        adminStatus = false; // Reset admin status
+        
+        querySnapshot.forEach((docSnap) => {
+            const adminData = docSnap.data();
+            if (adminData.UID === user.uid) {
+                adminStatus = true;
+                console.log("Admin status verified");
+            }
+        });
+        
+        return adminStatus;
+    } catch (error) {
+        console.error("Error checking admin status:", error);
+        return false;
+    }
+}
+
+/**
+ * Direct user to appropriate portal based on role
+ * @param {boolean} isAdmin - Whether the user is an admin
+ */
+function handleUserAccess(isAdmin) {
+    portalOptions.style.display = "block";
+    
+    if (isAdmin) {
+        // For admin users, show both options
+        adminOption.style.display = "block";
+        userOption.style.display = "block";
+        adminLink.style.display = "block";
+    } else {
+        // For regular users, only show user option and auto-redirect
+        adminOption.style.display = "none";
+        userOption.style.display = "block";
+        
+        // Auto-redirect regular users to user portal after 2 seconds
+        redirectTimer = setTimeout(() => {
+            window.location.href = "users.html";
+        }, 2000);
+        
+        // Show a toast notification about redirection
+        M.toast({html: 'Redirecting to user portal...', classes: 'blue', displayLength: 2000});
+    }
+}
+
+// Event listeners
 signInButton.addEventListener('click', userSignIn);
 signOutButton.addEventListener('click', userSignOut);
 
-
-// Select the HTML element with the ID 'Admin_users' where the book links will be displayed
-//const Admin_users = document.getElementById('Admin_users');
-
-// Define an async function to fetch and display books
-
-async function checkAdmin(user ) {
-  
-    //console.log("DB:", db); // this should NOT be undefined
-   // console.log(user.uid);
-    const booksRef = collection(db, "Admin_users");
-    
-    // Get all documents from the 'Books' collection in Firestore
-    const querySnapshot = await getDocs(collection(db, "Admin_users"));
-    querySnapshot.forEach((docSnap) => {
-       const Admins = docSnap.data(); // Get the admin data
-       if(Admins.UID==user.uid){
-     Admin_status = true;
-     console.log("Admin checked out");
-     console.log(Admin_status);
-     adminLink.style.display ="block";
-        } 
-        else{
-            console.log("Admin did not check out");
-        }
-    });
-   
-
-};
-
-console.log(Admin_status);
-onAuthStateChanged(auth, (user)=>{
-    if(user){
-        
-        signOutButton.style.display ="block";
-        message.style.display="block";
-        checkAdmin(user);
-        userButton.style.display="block";
-        signInButton.style.display="none";
-    }
-    else{
-        signOutButton.style.display ="none";
-        message.style.display="none"; 
-        adminLink.style.display ="none";
-        userButton.style.display="none";
-        signInButton.style.display="block";
-    }
-})
-//admin_portal();
-// setup materialize components
+// Initialize Materialize components
 document.addEventListener('DOMContentLoaded', function() {
-
-    var modals = document.querySelectorAll('.modal');
+    const modals = document.querySelectorAll('.modal');
     M.Modal.init(modals);
-  
-    var items = document.querySelectorAll('.collapsible');
-    M.Collapsible.init(items);
-  
-  });
+    
+    const tooltips = document.querySelectorAll('.tooltipped');
+    M.Tooltip.init(tooltips);
+    
+    // Open the user modal and redirect when clicked
+    const userModalInstance = M.Modal.getInstance(userModal);
+    userButton.addEventListener('click', () => {
+        userModalInstance.open();
+        setTimeout(() => {
+            window.location.href = "users.html";
+        }, 1500);
+    });
+});
+
+// Authentication state observer
+onAuthStateChanged(auth, async (user) => {
+    loadingSpinner.style.display = "none";
+    
+    if (user) {
+        // User is signed in
+        signInButton.style.display = "none";
+        signOutButton.style.display = "block";
+        message.style.display = "block";
+        userButton.style.display = "block";
+        
+        // Check if user is admin
+        const isAdmin = await checkAdmin(user);
+        
+        // Update UI based on user role
+        handleUserAccess(isAdmin);
+        
+        // Show welcome toast
+        M.toast({html: `Welcome, ${user.displayName || 'User'}!`, classes: 'green'});
+        
+    } else {
+        // User is signed out
+        signInButton.style.display = "block";
+        signOutButton.style.display = "none";
+        message.style.display = "none";
+        adminLink.style.display = "none";
+        userButton.style.display = "none";
+        portalOptions.style.display = "none";
+    }
+});
