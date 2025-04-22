@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <title>Google_Auth</title>
+    <script src="admin_sign_in.js" type="module" defer></script>
+</head>
+<body>
+    <nav class="z-depth-0 grey lighten-4">
+        <div class="nav-wrapper container">
+            <ul id="nav-mobile" class="right hide-on-med-and-down"></ul>
+                <li class="admin-in" style="display: none;">
+                    <a href="#" class="grey-text modal-trigger" data-target="modal-admin">Admin</a>
+                </li>
+                <li class="loggedIn" style="display: none;">
+                    <a href="#" class="grey-text modal-trigger" data-target="modal-users">Users</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+     <!--Admin Modal-->
+<div id="modal-admin" class="modal">
+    <div class="modal-content center-align">
+      <a href="../admin/hierarcy.html" class="button-class">Admin Portal</a>
+    </div>
+  </div>
+  <!--User Modal-->
+  <div id="modal-users" class="modal">
+    <div class="modal-content right-align">
+      <a href="users.html" class="button-class">User Portal</a>
+    </div>
+  </div>
+    <button id="signInButton">Create Account/Sign In</button>
+    <button id="signOutButton">Sign Out</button>
+    
+    <p id="message">You have signed in</p>
+    
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+   
+</body>
+</html>
