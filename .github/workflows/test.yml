@@ -24,11 +24,11 @@ jobs:
         working-directory: ./public
 
       - name: Run tests with coverage
-        run: npx jest --coverage
+        run: npm test -- --coverage
         working-directory: ./public
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
         with:
-          token: ${{ secrets.CODECOV_TOKEN }} # only needed for private repos
+          token: ${{ secrets.CODECOV_TOKEN }}
           slug: ARTMashimbyi/-ConstitutionVault
