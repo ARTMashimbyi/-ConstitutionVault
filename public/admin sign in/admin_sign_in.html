@@ -9,122 +9,123 @@
     <title>Constitution Vault - Authentication</title>
 </head>
 <body>
-    <nav class="blue darken-3">
-        <div class="nav-wrapper container">
-            <a href="#" class="brand-logo">Constitution Vault</a>
-            <ul id="nav-mobile" class="right hide-on-med-and-down">
-                <li class="admin-in" style="display: none;">
-                    <a href="#" class="white-text modal-trigger" data-target="modal-admin">
-                        <i class="material-icons left">admin_panel_settings</i>Admin
-                    </a>
-                </li>
-                <li class="loggedIn" style="display: none;">
-                    <a href="#" class="white-text modal-trigger" data-target="modal-users">
-                        <i class="material-icons left">person</i>User
-                    </a>
-                </li>
-            </ul>
-        </div>
-    </nav>
+    <header>
+        <nav class="blue darken-3">
+            <section class="nav-wrapper container">
+                <a href="#" class="brand-logo">Constitution Vault</a>
+                <ul id="nav-mobile" class="right hide-on-med-and-down">
+                    <li class="admin-in" style="display: none;">
+                        <a href="#" class="white-text modal-trigger" data-target="modal-admin">
+                            <i class="material-icons left">admin_panel_settings</i>Admin
+                        </a>
+                    </li>
+                    <li class="loggedIn" style="display: none;">
+                        <a href="#" class="white-text modal-trigger" data-target="modal-users">
+                            <i class="material-icons left">person</i>User
+                        </a>
+                    </li>
+                </ul>
+            </section>
+        </nav>
+    </header>
 
     <main>
-        <div class="container auth-container">
-            <div class="logo-container">
-                <!-- Replace with your actual logo or use a placeholder -->
+        <section class="container auth-container">
+            <figure class="logo-container">
                 <img src="/api/placeholder/200/100" alt="Constitution Vault Logo" class="logo">
-            </div>
+            </figure>
             
             <h4 class="auth-title">Welcome to Constitution Vault</h4>
             
-            <div class="auth-buttons">
+            <section class="auth-buttons">
                 <button id="signInButton" class="btn-large waves-effect waves-light btn-auth">
-                    <i class="material-icons left">login</i>Sign In with Google
+                    <span class="google-icon"></span>Sign In with Google
                 </button>
                 
                 <button id="signOutButton" class="btn-large waves-effect waves-light btn-auth" style="display: none;">
                     <i class="material-icons left">logout</i>Sign Out
                 </button>
-            </div>
+            </section>
             
-            <div class="progress loading-spinner">
+            <progress class="progress loading-spinner">
                 <div class="indeterminate"></div>
-            </div>
+            </progress>
             
             <p id="message" class="welcome-message" style="display: none;">
                 <i class="material-icons">check_circle</i> You have successfully signed in!
             </p>
             
-            <div id="portal-options" class="portal-options row" style="display: none;">
-                <div id="admin-option" class="col s12 m6" style="display: none;">
-                    <div class="portal-card admin-portal z-depth-1">
+            <section id="portal-options" class="portal-options row" style="display: none;">
+                <article id="admin-option" class="col s12 m6" style="display: none;">
+                    <section class="portal-card admin-portal z-depth-1">
                         <i class="material-icons medium">security</i>
                         <h5>Admin Portal</h5>
                         <p>Access administrative controls and settings</p>
                         <a href="../admin/hierarcy.html" class="portal-link btn blue darken-2 waves-effect waves-light">
                             <i class="material-icons left">dashboard</i>Enter Admin Portal
                         </a>
-                    </div>
-                </div>
+                    </section>
+                </article>
                 
-                <div id="user-option" class="col s12" style="display: none;">
-                    <div class="portal-card user-portal z-depth-1">
+                <article id="user-option" class="col s12" style="display: none;">
+                    <section class="portal-card user-portal z-depth-1">
                         <i class="material-icons medium">person</i>
                         <h5>User Portal</h5>
                         <p>Access your personal dashboard and resources</p>
                         <a href="users.html" class="portal-link btn amber darken-2 waves-effect waves-light">
                             <i class="material-icons left">view_list</i>Enter User Portal
                         </a>
-                    </div>
-                </div>
-            </div>
-        </div>
+                    </section>
+                </article>
+            </section>
+        </section>
     </main>
 
     <!-- Admin Modal -->
-    <div id="modal-admin" class="modal">
-        <div class="modal-content">
+    <dialog id="modal-admin" class="modal">
+        <section class="modal-content">
             <h4><i class="material-icons left">admin_panel_settings</i>Admin Access</h4>
             <p>Select which portal you would like to access:</p>
-            <div class="row">
-                <div class="col s12 m6">
+            <section class="row">
+                <section class="col s12 m6">
                     <a href="../admin/hierarcy.html" class="btn-large blue darken-3 waves-effect waves-light">
                         <i class="material-icons left">security</i>Admin Portal
                     </a>
-                </div>
-                <div class="col s12 m6">
+                </section>
+                <section class="col s12 m6">
                     <a href="users.html" class="btn-large amber darken-2 waves-effect waves-light">
                         <i class="material-icons left">person</i>User Portal
                     </a>
-                </div>
-            </div>
-        </div>
-        <div class="modal-footer">
+                </section>
+            </section>
+        </section>
+        <footer class="modal-footer">
             <a href="#!" class="modal-close waves-effect waves-green btn-flat">Close</a>
-        </div>
-    </div>
+        </footer>
+    </dialog>
 
     <!-- User Modal -->
-    <div id="modal-users" class="modal">
-        <div class="modal-content">
+    <dialog id="modal-users" class="modal">
+        <section class="modal-content">
             <h4><i class="material-icons left">person</i>User Portal</h4>
             <p>Redirecting you to the user portal...</p>
-        </div>
-    </div>
+        </section>
+    </dialog>
 
     <footer class="page-footer blue-grey darken-3">
-        <div class="container">
-            <div class="row">
-                <div class="col s12">
+        <section class="container">
+            <section class="row">
+                <article class="col s12">
                     <h5 class="white-text">Constitution Vault</h5>
                     <p class="grey-text text-lighten-4">Secure access to constitutional resources.</p>
-                </div>
-            </div>
-        </div>
-        <div class="footer-copyright blue-grey darken-4">
-            <div class="container">
+                </article>
+            </section>
+        </section>
+        <section class="footer-copyright blue-grey darken-4">
+            <section class="container">
                 © 2025 Constitution Vault
-            </div>
-        </div>
+            </section>
+        </section>
     </footer>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
