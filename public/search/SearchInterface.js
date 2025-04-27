@@ -10,7 +10,7 @@ import {
 import { renderSearchBar }     from "./SearchBar.js";
 import { renderSearchResults } from "./SearchResults.js";
 
-// ← Your Web-app config (make sure this matches your project)
+// ← Your Web-app config (must match your Firebase project exactly)
 const firebaseConfig = {
   apiKey:            "AIzaSyAU_w_Oxi6noX_A1Ma4XZDfpIY-jkoPN-c",
   authDomain:        "constitutionvault-1b5d1.firebaseapp.com",
@@ -37,22 +37,21 @@ export function initializeSearchInterface(containerId) {
     return;
   }
 
-  // Create a semantic section for the search interface
+  // Semantic wrapper
   const wrapper = document.createElement("section");
   wrapper.id    = "search-interface";
 
-  // Render the search bar (handles its own <form> or <input>)
+  // Search bar (submit only on button/Enter)
   const searchBar = renderSearchBar(handleSearch);
 
-  // Create a section to hold results
+  // Results area
   const resultsSection = document.createElement("section");
   resultsSection.id  = "search-results";
 
-  // Assemble and mount
   wrapper.append(searchBar, resultsSection);
   container.appendChild(wrapper);
 
-  // Kick off initial load
+  // Initial load
   handleSearch("");
 
   async function handleSearch(query) {
@@ -82,13 +81,15 @@ export function initializeSearchInterface(containerId) {
         (a.title || "").localeCompare(b.title || "")
       );
 
-      // 4) Map to include the stored downloadURL
+      // 4) Build the results array with downloadURL & fileType
       const results = hits.map(item => ({
-        ...item,
-        url: item.downloadURL || ""      // relies on your Firestore field
+        title:       item.title,
+        description: item.description || "",
+        url:         item.downloadURL || "",
+        fileType:    item.fileType   || "document"
       }));
 
-      // 5) Render with your existing helper
+      // 5) Render
       renderSearchResults(resultsSection, results);
 
     } catch (err) {
