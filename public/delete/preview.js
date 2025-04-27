@@ -95,6 +95,15 @@ function setupButtonActions(docId, docData) {
     //     }
     // });
 
+    
+    // View button - open the document viewer
+    const viewButton = document.querySelector('.btn-read');
+    if (viewButton) {
+        viewButton.addEventListener('click', () => {
+            window.location.href = `viewer.html?id=${docId}`;
+        });
+    }
+
     // Edit button - redirect to edit page
     if (editButton) {
         editButton.addEventListener('click', () => {

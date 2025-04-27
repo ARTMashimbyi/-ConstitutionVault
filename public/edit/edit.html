@@ -2,48 +2,68 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Edit Constitutional Document</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="container" style="flex-direction: column; align-items: center;">
+  <header>
     <h1>Edit Constitutional Document</h1>
-    <form id="editDocForm" style="max-width: 500px; width: 100%;">
-      <label>
-        Title:
-        <input type="text" id="docTitle" required />
-      </label>
-      <br /><br />
-      <label>
-        Institution/Place:
-        <input type="text" id="docInstitution" />
-      </label>
-      <br /><br />
-      <label>
-        Author:
-        <input type="text" id="docAuthor" />
-      </label>
-      <br /><br />
-      <label>
-        Category:
-        <input type="text" id="docCategory" />
-      </label>
-      <br /><br />
-      <label>
-        Keywords (comma separated):
-        <input type="text" id="docKeywords" />
-      </label>
-      <br /><br />
-      <label>
-        Date:
-        <input type="date" id="docDate" />
-      </label>
-      <br /><br />
-      <button type="submit">💾 Save Changes</button>
-      <button type="button" id="cancelButton">Cancel</button>
-    </form>
-    <p id="message" style="color: green;"></p>
-  </div>
+  </header>
+  
+  <main>
+    <section class="document-form">
+      <form id="editDocForm">
+        <fieldset>
+          <legend>Document Information</legend>
+          
+          <article class="form-field">
+            <label for="docTitle">Title:</label>
+            <input type="text" id="docTitle" required />
+          </article>
+          
+          <article class="form-field">
+            <label for="docInstitution">Institution/Place:</label>
+            <input type="text" id="docInstitution" />
+          </article>
+          
+          <article class="form-field">
+            <label for="docAuthor">Author:</label>
+            <input type="text" id="docAuthor" />
+          </article>
+          
+          <article class="form-field">
+            <label for="docCategory">Category:</label>
+            <input type="text" id="docCategory" />
+          </article>
+          
+          <article class="form-field">
+            <label for="docKeywords">Keywords (comma separated):</label>
+            <input type="text" id="docKeywords" />
+          </article>
+          
+          <article class="form-field">
+            <label for="docDate">Date:</label>
+            <input type="date" id="docDate" />
+          </article>
+        </fieldset>
+        
+        <nav class="form-actions">
+          <button type="submit" class="btn primary">💾 Save Changes</button>
+          <button type="button" id="cancelButton" class="btn secondary">Cancel</button>
+        </nav>
+      </form>
+    </section>
+    
+    <aside class="status-container">
+      <p id="message" aria-live="polite"></p>
+    </aside>
+  </main>
+  
+  <footer>
+    <p>ConstitutionVault Document Editor</p>
+  </footer>
+  
+  <script type="module" src="edit.js"></script>
 </body>
-<script type="module" src="edit.js"></script>
 </html>
