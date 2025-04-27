@@ -40,8 +40,18 @@ main {
   margin-bottom: 1rem;
 }
 
-.search-input {
+/* If you remove the button, you might only need: */
+.search-bar .search-input {
   flex: 1;
+}
+
+/* (Optional) Hide the button entirely:
+.search-button {
+  display: none;
+}
+*/
+
+.search-input {
   padding: 0.5rem;
   font-size: 1rem;
   border: 1px solid #bbb;
@@ -85,6 +95,35 @@ main {
 .search-result p {
   font-size: 0.95rem;
   color: #555;
+}
+
+/* Media previews */
+.search-result img,
+.search-result video,
+.search-result audio {
+  max-width: 100%;
+  height: auto;
+  margin: 0.5rem 0;
+}
+
+/* View & Download buttons */
+.result-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.result-actions a {
+  padding: 0.3rem 0.6rem;
+  border-radius: 4px;
+  background: #004080;
+  color: white;
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.result-actions a:hover {
+  opacity: 0.9;
 }
 
 /* No results message */

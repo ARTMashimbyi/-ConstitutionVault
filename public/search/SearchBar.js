@@ -1,36 +1,34 @@
 // public/search/SearchBar.js
 
 /**
- * Renders a search bar as a form, wiring up the onSubmitCallback.
- * @param {(query: string) => void} onSubmitCallback
+ * Renders a search bar as a <form> that auto-submits on typing (debounced).
+ * @param {(query: string) => void} onSearchCallback
  * @returns {HTMLFormElement}
  */
-export function renderSearchBar(onSubmitCallback) {
-  // Create a <form> to handle both button click and Enter key
+export function renderSearchBar(onSearchCallback) {
+  // Use a <form> so we stay semantic and never use a <div>
   const form = document.createElement("form");
   form.className = "search-bar";
 
-  // Text input
   const input = document.createElement("input");
-  input.type        = "text";
-  input.placeholder = "Enter search query…";
-  input.className   = "search-input";
+  input.type        = "search";
   input.name        = "searchQuery";
+  input.placeholder = "Start typing to search…";
+  input.className   = "search-input";
 
-  // Submit button
-  const button = document.createElement("button");
-  button.type        = "submit";
-  button.textContent = "Search";
-  button.className   = "search-button";
+  form.append(input);
 
-  // When the form is submitted (click or Enter), call the callback
-  form.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const query = input.value.trim();
-    onSubmitCallback(query);
+  // Prevent the form from actually submitting & reloading
+  form.addEventListener("submit", e => e.preventDefault());
+
+  // Debounce input so we only fire after 300ms of no typing
+  let timeoutId;
+  input.addEventListener("input", () => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => {
+      onSearchCallback(input.value.trim());
+    }, 300);
   });
 
-  // Assemble
-  form.append(input, button);
   return form;
 }
