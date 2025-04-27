@@ -1,9 +1,13 @@
 // public/search/SearchInterface.js
 
-const { initializeApp } = require("https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js");
-const { getFirestore, collection, getDocs } = require("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js");
-const { renderSearchBar } = require("./SearchBar.js");
-const { renderSearchResults } = require("./SearchResults.js");
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  getDocs
+} from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+import { renderSearchBar } from "./SearchBar.js";
+import { renderSearchResults } from "./SearchResults.js";
 
 // Firebase configuration
 const firebaseConfig = {
@@ -16,53 +20,67 @@ const firebaseConfig = {
   measurementId: "G-YJEYZ85T3S"
 };
 
+// Initialize Firebase & Firestore
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+const db  = getFirestore(app);
 
 /**
- * Mounts the user‐facing search interface into the given container.
- * @param {string} containerId  – the id of the element to render into
+ * Mounts the search UI and immediately loads & sorts all documents.
+ *
+ * @param {string} containerId – ID of the element to render into
  */
-function initializeSearchInterface(containerId) {
+export function initializeSearchInterface(containerId) {
   const container = document.getElementById(containerId);
   if (!container) {
     console.error(`Search container "${containerId}" not found.`);
     return;
   }
 
-  // Build UI
-  const wrapper = document.createElement("div");
+  // Build the UI
+  const wrapper = document.createElement("section");
   wrapper.id = "search-interface";
 
+  const searchBar        = renderSearchBar(handleSearch);
   const resultsContainer = document.createElement("div");
-  resultsContainer.id = "search-results";
+  resultsContainer.id    = "search-results";
 
-  const searchBar = renderSearchBar(handleSearch);
-
-  wrapper.appendChild(searchBar);
-  wrapper.appendChild(resultsContainer);
+  wrapper.append(searchBar, resultsContainer);
   container.appendChild(wrapper);
 
+  // Initial load: fetch & display all docs
+  handleSearch("");
+
+  // Fetch, filter, sort, and render
   async function handleSearch(query) {
-    resultsContainer.innerHTML = "🔄 Loading...";
+    resultsContainer.innerHTML = "🔄 Loading…";
     try {
-      const snapshot = await getDocs(collection(db, "constitutionalDocuments"));
-      const lowerQuery = query.toLowerCase();
-      const results = [];
-      snapshot.forEach(doc => {
+      const snapshot = await getDocs(
+        collection(db, "constitutionalDocuments")
+      );
+
+      const lower = query.trim().toLowerCase();
+      const hits  = [];
+
+      snapshot.forEach((doc) => {
         const data = doc.data();
-        const matches =
-          !lowerQuery ||
-          data.title?.toLowerCase().includes(lowerQuery) ||
-          data.description?.toLowerCase().includes(lowerQuery);
-        if (matches) results.push(data);
+        if (
+          !lower ||
+          data.title?.toLowerCase().includes(lower) ||
+          data.description?.toLowerCase().includes(lower)
+        ) {
+          hits.push(data);
+        }
       });
-      renderSearchResults(resultsContainer, results);
+
+      // Default sort: alphabetical by title
+      hits.sort((a, b) =>
+        (a.title || "").localeCompare(b.title || "")
+      );
+
+      renderSearchResults(resultsContainer, hits);
     } catch (err) {
       console.error("Error fetching documents:", err);
       resultsContainer.innerHTML = "<p>❌ Failed to load results.</p>";
     }
   }
 }
-
-module.exports = { initializeSearchInterface };

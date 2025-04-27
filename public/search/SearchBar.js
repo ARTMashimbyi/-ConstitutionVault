@@ -1,41 +1,38 @@
 // public/search/SearchBar.js
 
 /**
- * Renders a search bar with input and button, wiring up callbacks.
+ * Renders a semantic search form (no divs!) with input and submit button.
  * @param {(query: string) => void} onSubmitCallback
- * @returns {HTMLDivElement}
+ * @returns {HTMLFormElement}
  */
-function renderSearchBar(onSubmitCallback) {
-  const wrapper = document.createElement("div");
-  wrapper.className = "search-bar";
+export function renderSearchBar(onSubmitCallback) {
+  // Use a <form> with role="search" instead of a div
+  const form = document.createElement("form");
+  form.className = "search-bar";
+  form.setAttribute("role", "search");
 
+  // Search input
   const input = document.createElement("input");
-  input.type = "text";
-  input.placeholder = "Enter search query...";
+  input.type = "search";
+  input.name = "query";
+  input.placeholder = "Enter search query…";
   input.className = "search-input";
 
+  // Submit button
   const button = document.createElement("button");
-  button.innerText = "Search";
+  button.type = "submit";
   button.className = "search-button";
+  button.textContent = "Search";
 
-  // Submit on click
-  button.addEventListener("click", () => {
-    const query = input.value.trim();
-    onSubmitCallback(query);
+  // Handle both click and Enter via form submission
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const q = input.value.trim();
+    onSubmitCallback(q);
   });
 
-  // Submit on Enter key
-  input.addEventListener("keypress", (e) => {
-    if (e.key === "Enter") {
-      const query = input.value.trim();
-      onSubmitCallback(query);
-    }
-  });
+  // Compose
+  form.append(input, button);
 
-  wrapper.appendChild(input);
-  wrapper.appendChild(button);
-
-  return wrapper;
+  return form;
 }
-
-module.exports = { renderSearchBar };

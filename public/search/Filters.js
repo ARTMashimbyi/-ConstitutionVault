@@ -1,15 +1,22 @@
 // public/search/Filters.js
 
 /**
- * Renders filter controls for “type” and “year”.  
- * Calls onFilterChange with an object: { type: string, year: string } whenever either select changes.
+ * Renders semantic filter controls (no divs!) for “type” and “year”.  
+ * Calls onFilterChange with an object `{ type: string, year: string }`
+ * whenever either select value changes.
  *
  * @param {(filters: {type: string, year: string}) => void} onFilterChange
- * @returns {HTMLDivElement}
+ * @returns {HTMLFieldSetElement}
  */
-function renderFilters(onFilterChange) {
-  const wrapper = document.createElement("div");
-  wrapper.className = "filters";
+export function renderFilters(onFilterChange) {
+  // Use a <fieldset> for grouping filters
+  const fieldset = document.createElement("fieldset");
+  fieldset.className = "filters";
+  fieldset.setAttribute("aria-label", "Filter results");
+
+  const legend = document.createElement("legend");
+  legend.textContent = "Filters";
+  fieldset.appendChild(legend);
 
   // --- Type filter ---
   const typeLabel = document.createElement("label");
@@ -17,6 +24,7 @@ function renderFilters(onFilterChange) {
   typeLabel.textContent = "Type:";
   const typeSelect = document.createElement("select");
   typeSelect.id = "filter-type";
+  typeSelect.name = "type";
   typeSelect.innerHTML = `
     <option value="">All</option>
     <option value="document">Document</option>
@@ -34,6 +42,7 @@ function renderFilters(onFilterChange) {
   yearLabel.textContent = "Year:";
   const yearSelect = document.createElement("select");
   yearSelect.id = "filter-year";
+  yearSelect.name = "year";
   yearSelect.innerHTML = `
     <option value="">All</option>
     <option value="2000">2000</option>
@@ -45,13 +54,13 @@ function renderFilters(onFilterChange) {
     onFilterChange({ type: typeSelect.value, year: yearSelect.value });
   });
 
-  // Compose
-  wrapper.appendChild(typeLabel);
-  wrapper.appendChild(typeSelect);
-  wrapper.appendChild(yearLabel);
-  wrapper.appendChild(yearSelect);
+  // Append in semantic order
+  fieldset.append(
+    typeLabel,
+    typeSelect,
+    yearLabel,
+    yearSelect
+  );
 
-  return wrapper;
+  return fieldset;
 }
-
-module.exports = { renderFilters };

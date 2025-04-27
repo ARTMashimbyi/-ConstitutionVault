@@ -1,42 +1,47 @@
 // public/search/SearchResults.js
 
 /**
- * Renders a list of search results into the given container element.
- * Each result object should have at least a `title` and `description` property.
+ * Renders a list of search results into the given container.
+ * Uses a <ul>/<li> structure instead of <div>s for semantic markup.
  *
- * @param {HTMLElement} container  – the element to populate with results
+ * @param {HTMLElement} container – the element to populate with results
  * @param {Array<{ title: string, description?: string }>} results
  */
-function renderSearchResults(container, results) {
+export function renderSearchResults(container, results) {
   // Clear any existing content
   container.innerHTML = "";
 
-  // If no results, show a friendly message
+  // Empty‐state message
   if (!results || results.length === 0) {
-    const empty = document.createElement("p");
-    empty.className = "no-results";
-    empty.textContent = "No results found.";
-    container.appendChild(empty);
+    const emptyMsg = document.createElement("p");
+    emptyMsg.className = "no-results";
+    emptyMsg.textContent = "No results found.";
+    container.appendChild(emptyMsg);
     return;
   }
 
-  // For each result, create a result card
+  // Build semantic list
+  const list = document.createElement("ul");
+  list.className = "search-results-list";
+
   results.forEach((item) => {
-    const card = document.createElement("div");
-    card.className = "search-result";
+    const li = document.createElement("li");
+    li.className = "search-result-item";
 
-    const title = document.createElement("h3");
-    title.textContent = item.title;
-    card.appendChild(title);
+    // Title
+    const titleEl = document.createElement("h3");
+    titleEl.textContent = item.title;
+    li.appendChild(titleEl);
 
+    // Optional description
     if (item.description) {
-      const desc = document.createElement("p");
-      desc.textContent = item.description;
-      card.appendChild(desc);
+      const descEl = document.createElement("p");
+      descEl.textContent = item.description;
+      li.appendChild(descEl);
     }
 
-    container.appendChild(card);
+    list.appendChild(li);
   });
-}
 
-module.exports = { renderSearchResults };
+  container.appendChild(list);
+}
