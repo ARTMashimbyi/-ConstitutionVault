@@ -126,7 +126,7 @@ uploadForm.addEventListener("submit", async (e) => {
     uploadStatus.textContent = "✅ Uploaded successfully! Redirecting…";
     uploadStatus.style.display = "block";
     setTimeout(() => {
-      window.location.href = "hierarchy.html";
+      window.location.href = "hierarcy.html";
     }, 1500);
 
   } catch (err) {
