@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Viewer</title>
+
+    <link rel="stylesheet" href="viewer.css" />
+   
+</head>
+<body>
+    <header>
+        <section class="document-info">
+            <h1 id="docTitle">Loading document...</h1>
+            <p class="metadata">
+                <span id="docType"></span> • 
+                <span id="docAuthor"></span> • 
+                <span id="docDate"></span>
+            </p>
+        </section>
+        <nav>
+            <button id="backButton">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
+                </svg>
+                Back
+            </button>
+        </nav>
+    </header>
+    
+    <main>
+        <section id="loading" class="loading">Loading document...</section>
+        <section id="error" class="error" style="display: none;"></section>
+        <article id="content" style="display: none; width: 100%; height: 100%;"></article>
+    </main>
+    
+    <script type="module" src="viewer.js"></script>
+</body>
+</html>
