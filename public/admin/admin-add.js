@@ -59,7 +59,7 @@ uploadForm.addEventListener("submit", async (e) => {
   // Ensure a file was chosen
   if (!(file instanceof File)) {
     uploadStatus.style.color = "red";
-    uploadStatus.textContent = "⚠ Please select a file.";
+    uploadStatus.textContent = "⚠️ Please select a file.";
     uploadStatus.style.display = "block";
     return;
   }
@@ -70,7 +70,7 @@ uploadForm.addEventListener("submit", async (e) => {
 
   // Build storage path: either "filename.ext" or "sub/folder/filename.ext"
   const storagePath = dir
-    ? ${dir}/${file.name}
+    ? `${dir}/${file.name}`
     : file.name;
 
   try {
@@ -79,7 +79,7 @@ uploadForm.addEventListener("submit", async (e) => {
       const segments = dir.split("/");
       let current   = "";
       for (const seg of segments) {
-        current = current ? ${current}/${seg} : seg;
+        current = current ? `${current}/${seg}` : seg;
         const dirQuery = await getDocs(
           query(collection(db, "directories"), where("path", "==", current))
         );
@@ -134,5 +134,5 @@ uploadForm.addEventListener("submit", async (e) => {
     uploadStatus.style.color = "red";
     uploadStatus.textContent = "❌ Upload failed. Please try again.";
     uploadStatus.style.display = "block";
-  }
+  }
 });
