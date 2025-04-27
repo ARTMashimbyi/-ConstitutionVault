@@ -1,0 +1,219 @@
+/* Move files functionality styles */
+
+/* Selection mode styles */
+.content-grid.selection-mode .item-card {
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.content-grid.selection-mode .item-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.content-grid.selection-mode .item-card::before {
+    content: '';
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #ddd;
+    border-radius: 4px;
+    background-color: #fff;
+}
+
+.content-grid.selection-mode .item-card.selected::before {
+    content: '✓';
+    background-color: #4a6de5;
+    color: white;
+    border-color: #4a6de5;
+    text-align: center;
+    line-height: 20px;
+    font-size: 14px;
+}
+
+/* Move action bar styles */
+.move-action-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #f0f4f9;
+    border-radius: 4px;
+    padding: 10px 15px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.selection-info {
+    font-size: 14px;
+    color: #555;
+}
+
+#selected-count {
+    font-weight: bold;
+    color: #4a6de5;
+}
+
+.move-actions {
+    display: flex;
+    gap: 10px;
+}
+
+/* Active state for move files button */
+#move-files-btn.active {
+    background-color: #4a6de5;
+    color: white;
+}
+
+/* Directory browser in modal */
+.directory-browser {
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 10px;
+    margin-bottom: 15px;
+}
+
+#modal-directory-tree {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+#modal-directory-tree ul {
+    list-style-type: none;
+    padding-left: 20px;
+}
+
+#modal-directory-tree .directory {
+    display: flex;
+    align-items: center;
+    padding: 6px 10px;
+    cursor: pointer;
+    border-radius: 4px;
+    margin-bottom: 3px;
+}
+
+#modal-directory-tree .directory:hover {
+    background-color: #f5f5f5;
+}
+
+#modal-directory-tree .directory.selected {
+    background-color: #e6effd;
+    color: #4a6de5;
+    font-weight: 500;
+}
+
+#modal-directory-tree .directory-icon {
+    margin-right: 8px;
+}
+
+/* Loading overlay */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.8);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.loading-spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #4a6de5;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin-bottom: 15px;
+}
+
+.loading-text {
+    font-size: 16px;
+    color: #333;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Tooltip for directory selection attempt */
+.tooltip {
+    background-color: #333;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    z-index: 1000;
+    pointer-events: none;
+}
+
+/* Modal styles */
+.modal-bg {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal {
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    max-width: 500px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.modal h2 {
+    margin-top: 0;
+    color: #333;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.btn-secondary {
+    background-color: #e2e8f0;
+    color: #4a5568;
+}
+
+.btn-secondary:hover {
+    background-color: #cbd5e0;
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
