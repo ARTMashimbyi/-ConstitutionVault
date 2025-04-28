@@ -164,13 +164,15 @@ function addDocumentToHierarchy(id, documentData) {
             // Add to parent's children
             currentNode.children.push(childId);
             
-            // Save to Firestore (will be executed asynchronously)
+            // COMMENTED OUT: Save to Firestore functionality
+            /*
             saveDirectoryToFirestore(childId, archiveData[childId])
                 .then(firestoreId => {
                     // Update with Firestore ID
                     archiveData[childId].firestoreId = firestoreId;
                 })
                 .catch(error => console.error("Error saving directory:", error));
+            */
             
             // Update current node reference
             currentNode = archiveData[childId];
@@ -216,8 +218,9 @@ function addDocumentToHierarchy(id, documentData) {
     currentNode.children.push(fileId);
 }
 
-// Function to save a directory to Firestore
+// Function to save a directory to Firestore - COMMENTED OUT
 async function saveDirectoryToFirestore(id, directoryData) {
+    /* COMMENTED OUT: Firestore directory saving functionality
     try {
         // Create a clean copy for Firestore (omitting children array which can be rebuilt)
         const dirForFirestore = {
@@ -235,6 +238,11 @@ async function saveDirectoryToFirestore(id, directoryData) {
         console.error("Error saving directory:", error);
         throw error;
     }
+    */
+    
+    // Instead, just return a dummy ID without adding to Firestore
+    console.log("Directory NOT saved to Firestore (functionality disabled)");
+    return 'local_dir_' + Date.now();
 }
 
 // Initialize UI elements
@@ -268,7 +276,7 @@ function initializeUI() {
             const dirName = document.getElementById('dir-name').value;
             const dirDescription = document.getElementById('dir-description').value;
             
-            // Generate a temporary ID for the new directory (will be replaced by Firestore ID)
+            // Generate a temporary ID for the new directory
             const tempId = dirName.toLowerCase().replace(/\s+/g, '_') + '_' + Date.now();
             
             // Create new directory object
@@ -281,14 +289,17 @@ function initializeUI() {
             };
             
             try {
-                // Save directory to Firestore
-                const firestoreId = await saveDirectoryToFirestore(tempId, newDir);
+                // COMMENTED OUT: Save directory to Firestore
+                // const firestoreId = await saveDirectoryToFirestore(tempId, newDir);
                 
-                // Update with Firestore ID
-                newDir.firestoreId = firestoreId;
+                // Instead, just use a local ID
+                const localId = 'local_dir_' + Date.now();
+                
+                // Update with local ID
+                newDir.firestoreId = localId;
                 
                 // Add to archive data
-                archiveData[firestoreId] = newDir;
+                archiveData[localId] = newDir;
                 
                 // Find parent directory and add new dir to its children
                 const parentDir = findDirectoryByPath(currentPath);
@@ -296,7 +307,7 @@ function initializeUI() {
                     if (!parentDir.children) {
                         parentDir.children = [];
                     }
-                    parentDir.children.push(firestoreId);
+                    parentDir.children.push(localId);
                 }
                 
                 // Close modal
@@ -309,6 +320,8 @@ function initializeUI() {
                 // Reset form
                 document.getElementById('dir-name').value = '';
                 document.getElementById('dir-description').value = '';
+                
+                console.log("Directory created locally but NOT saved to Firestore");
                 
             } catch (error) {
                 console.error("Error creating directory:", error);
@@ -371,7 +384,7 @@ function initializeUI() {
                 buildDirectoryTree();
                 updateContentGrid();
                 
-                alert("Directory structure created successfully!");
+                alert("Directory structure created successfully! (Note: Not saved to Firestore)");
             } catch (error) {
                 console.error("Error creating directory structure:", error);
                 alert("Error creating directory structure. Please try again.");
@@ -391,7 +404,7 @@ function initializeUI() {
     }
 }
 
-// Function to create a directory structure from path string
+// Function to create a directory structure from path string - MODIFIED TO NOT SAVE TO FIRESTORE
 async function createDirectoryStructure(directoryPath) {
     // Split the path into segments
     const pathSegments = directoryPath.split('/').filter(segment => segment !== '');
@@ -436,21 +449,26 @@ async function createDirectoryStructure(directoryPath) {
             };
             
             try {
-                // Save to Firestore
-                const firestoreId = await saveDirectoryToFirestore(tempId, newDir);
+                // COMMENTED OUT: Save to Firestore
+                // const firestoreId = await saveDirectoryToFirestore(tempId, newDir);
                 
-                // Update with Firestore ID
-                newDir.firestoreId = firestoreId;
+                // Instead, use a local ID
+                const localId = 'local_dir_' + Date.now();
+                
+                // Update with local ID
+                newDir.firestoreId = localId;
                 
                 // Add to archive data
-                archiveData[firestoreId] = newDir;
-                currentNode.children.push(firestoreId);
+                archiveData[localId] = newDir;
+                currentNode.children.push(localId);
                 
                 // Move to next level
-                currentNode = archiveData[firestoreId];
+                currentNode = archiveData[localId];
+                
+                console.log("Directory created in structure locally but NOT saved to Firestore");
                 
             } catch (error) {
-                console.error("Error saving directory in structure:", error);
+                console.error("Error creating directory in structure:", error);
                 throw error;
             }
         } else {
