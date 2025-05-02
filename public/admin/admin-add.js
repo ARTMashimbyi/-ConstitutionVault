@@ -1,5 +1,3 @@
-// public/admin/admin-add.js
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
 import {
   getFirestore,
@@ -12,72 +10,131 @@ import {
 
 import {
   getStorage,
-  ref   as storageRef,
+  ref as storageRef,
   uploadBytes,
   getDownloadURL
 } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-storage.js";
 
-// ── Your Firebase web app config (ensure storageBucket matches your console) ──
 const firebaseConfig = {
-  apiKey:            "AIzaSyAU_w_Oxi6noX_A1Ma4XZDfpIY-jkoPN-c",
-  authDomain:        "constitutionvault-1b5d1.firebaseapp.com",
-  projectId:         "constitutionvault-1b5d1",
-  storageBucket:     "constitutionvault-1b5d1.firebasestorage.app",
+  apiKey: "AIzaSyAU_w_Oxi6noX_A1Ma4XZDfpIY-jkoPN-c",
+  authDomain: "constitutionvault-1b5d1.firebaseapp.com",
+  projectId: "constitutionvault-1b5d1",
+  storageBucket: "constitutionvault-1b5d1.appspot.com",
   messagingSenderId: "616111688261",
-  appId:             "1:616111688261:web:97cc0a35c8035c0814312c",
-  measurementId:     "G-YJEYZ85T3S"
+  appId: "1:616111688261:web:97cc0a35c8035c0814312c",
+  measurementId: "G-YJEYZ85T3S"
 };
 
-// Initialize Firebase, Firestore & Storage
-const app     = initializeApp(firebaseConfig);
-const db      = getFirestore(app);
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 const storage = getStorage(app);
 
-// Grab your form elements
-const uploadForm     = document.getElementById("uploadForm");
-const uploadStatus   = document.getElementById("uploadStatus");
+const uploadForm = document.getElementById("uploadForm");
+const uploadStatus = document.getElementById("uploadStatus");
 const directoryInput = document.getElementById("directory");
-const dateInput      = document.getElementById("date");
+const dateInput = document.getElementById("date");
+const fileTypeSelect = document.getElementById("fileType");
+const fileInput = document.getElementById("file");
+const fileLabel = document.getElementById("fileLabel");
+const textContent = document.getElementById("textContent");
+const textContentLabel = document.getElementById("textContentLabel");
 
-// Prefill today's date
-const today         = new Date();
-dateInput.value     = today.toISOString().split("T")[0];
+const fileTypeAccepts = {
+  document: ".pdf,.doc,.docx,.txt,.rtf",
+  video: ".mp4,.mov,.avi,.webm",
+  image: ".jpg,.jpeg,.png,.gif,.svg",
+  audio: ".mp3,.wav,.ogg,.m4a"
+};
 
-// If ?directory=foo/bar in URL, populate that field
+const today = new Date();
+dateInput.value = today.toISOString().split("T")[0];
+
 document.addEventListener("DOMContentLoaded", () => {
   const dirParam = new URLSearchParams(window.location.search).get("directory");
   if (dirParam) directoryInput.value = dirParam;
+  handleFileTypeChange();
 });
+
+fileTypeSelect.addEventListener("change", handleFileTypeChange);
+
+function handleFileTypeChange() {
+  const selectedType = fileTypeSelect.value;
+
+  if (selectedType === "text") {
+    fileInput.style.display = "none";
+    fileLabel.style.display = "none";
+    textContent.style.display = "block";
+    textContentLabel.style.display = "block";
+    fileInput.required = false;
+    textContent.required = true;
+  } else {
+    fileInput.style.display = "block";
+    fileLabel.style.display = "block";
+    textContent.style.display = "none";
+    textContentLabel.style.display = "none";
+    fileInput.required = true;
+    textContent.required = false;
+
+    if (fileTypeAccepts[selectedType]) {
+      fileInput.setAttribute("accept", fileTypeAccepts[selectedType]);
+    } else {
+      fileInput.removeAttribute("accept");
+    }
+  }
+}
 
 uploadForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   uploadStatus.style.display = "none";
 
   const formData = new FormData(uploadForm);
-  const file     = formData.get("file");
+  const fileType = formData.get("fileType");
 
-  // Ensure a file was chosen
-  if (!(file instanceof File)) {
-    uploadStatus.style.color = "red";
-    uploadStatus.textContent = "⚠️ Please select a file.";
-    uploadStatus.style.display = "block";
-    return;
+  if (fileType === "text") {
+    const text = formData.get("textContent");
+    if (!text || text.trim() === "") {
+      uploadStatus.style.color = "red";
+      uploadStatus.textContent = "⚠️ Please enter text content.";
+      uploadStatus.style.display = "block";
+      return;
+    }
+  } else {
+    const file = formData.get("file");
+    if (!(file instanceof File) || file.size === 0) {
+      uploadStatus.style.color = "red";
+      uploadStatus.textContent = "⚠️ Please select a file.";
+      uploadStatus.style.display = "block";
+      return;
+    }
   }
 
-  // Normalize directory path (no leading/trailing slash)
   let dir = (formData.get("directory") || "/").trim();
-  dir     = dir.replace(/^\/|\/$/g, ""); // e.g. "" or "sub/folder"
-
-  // Build storage path: either "filename.ext" or "sub/folder/filename.ext"
-  const storagePath = dir
-    ? `${dir}/${file.name}`
-    : file.name;
+  dir = dir.replace(/^\/|\/$/g, "");
 
   try {
-    // 1) Ensure your 'directories' collection contains each segment
+    let downloadURL = "";
+    let storagePath = "";
+
+    if (fileType === "text") {
+      const textContent = formData.get("textContent");
+      const safeTitle = formData.get("title").replace(/[^\w\-]/g, "_");
+      const fileName = `${safeTitle}_${Date.now()}.txt`;
+      const blob = new Blob([textContent], { type: "text/plain" });
+      storagePath = dir ? `${dir}/${fileName}` : fileName;
+      const fileRef = storageRef(storage, storagePath);
+      const snap = await uploadBytes(fileRef, blob);
+      downloadURL = await getDownloadURL(snap.ref);
+    } else {
+      const file = formData.get("file");
+      storagePath = dir ? `${dir}/${file.name}` : file.name;
+      const fileRef = storageRef(storage, storagePath);
+      const snap = await uploadBytes(fileRef, file);
+      downloadURL = await getDownloadURL(snap.ref);
+    }
+
     if (dir && dir !== "") {
       const segments = dir.split("/");
-      let current   = "";
+      let current = "";
       for (const seg of segments) {
         current = current ? `${current}/${seg}` : seg;
         const dirQuery = await getDocs(
@@ -85,8 +142,8 @@ uploadForm.addEventListener("submit", async (e) => {
         );
         if (dirQuery.empty) {
           await addDoc(collection(db, "directories"), {
-            name:      seg,
-            path:      current,
+            name: seg,
+            path: current,
             description: "",
             createdAt: new Date().toISOString()
           });
@@ -94,45 +151,39 @@ uploadForm.addEventListener("submit", async (e) => {
       }
     }
 
-    // 2) Upload the file to Storage
-    const fileRef = storageRef(storage, storagePath);
-    const snap    = await uploadBytes(fileRef, file);
-
-    // 3) Grab a download URL
-    const downloadURL = await getDownloadURL(snap.ref);
-
-    // 4) Compose metadata for Firestore
     const metadata = {
-      fileType:    formData.get("fileType"),
-      title:       formData.get("title"),
-      date:        formData.get("date"),
+      fileType: formData.get("fileType"),
+      title: formData.get("title"),
+      date: formData.get("date"),
       institution: formData.get("institution"),
-      author:      formData.get("author"),
-      category:    formData.get("category"),
-      keywords:    formData.get("keywords")
-                      ?.split(",")
-                      .map(kw => kw.trim()) || [],
-      directory:   formData.get("directory"),
-      storagePath,    // for dynamic lookups if needed
-      downloadURL,    // for direct viewing/downloads
-      uploadedAt:  new Date().toISOString()
+      author: formData.get("author"),
+      category: formData.get("category"),
+      keywords: formData.get("keywords")
+        ?.split(",")
+        .map(kw => kw.trim()) || [],
+      directory: formData.get("directory"),
+      storagePath,
+      downloadURL,
+      uploadedAt: new Date().toISOString()
     };
 
-    // 5) Write to your 'constitutionalDocuments' collection
+    if (fileType === "text") {
+      metadata.textContent = formData.get("textContent");
+    }
+
     await addDoc(collection(db, "constitutionalDocuments"), metadata);
 
-    // 6) Notify + redirect
     uploadStatus.style.color = "green";
     uploadStatus.textContent = "✅ Uploaded successfully! Redirecting…";
     uploadStatus.style.display = "block";
     setTimeout(() => {
-      window.location.href = "hierarcy.html";
+      window.location.href = "hierarchy.html";
     }, 1500);
 
   } catch (err) {
     console.error("Upload failed:", err);
     uploadStatus.style.color = "red";
-    uploadStatus.textContent = "❌ Upload failed. Please try again.";
+    uploadStatus.textContent = `❌ Upload failed: ${err.message}. Please try again.`;
     uploadStatus.style.display = "block";
   }
 });

@@ -4,6 +4,26 @@
     <meta charset="UTF-8" />
     <title>ConstitutionVault | Admin Upload</title>
     <link rel="stylesheet" href="admin-add.css" />
+    <style>
+      .file-container {
+        margin-bottom: 15px;
+      }
+      .text-content {
+        display: none;
+        width: 100%;
+        min-height: 150px;
+        margin-top: 5px;
+        padding: 10px;
+        font-family: Arial, sans-serif;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+      .max-size-note {
+        margin-top: 5px;
+        font-size: 0.85em;
+        color: #666;
+      }
+    </style>
   </head>
   <body>
     <header>
@@ -12,26 +32,33 @@
     </header>
     <main>
       <section>
-        <h2>Upload Constitutional Archive Data</h2>
+        <h2>Upload Constitution Vault Data</h2>
         <form id="uploadForm" enctype="multipart/form-data">
           <fieldset>
             <legend>Add File</legend>
 
-            <!-- File Type Selection -->
+            
             <label for="fileType">File Type</label>
             <select id="fileType" name="fileType" required>
               <option value="document">Document/PDF</option>
               <option value="video">Video</option>
               <option value="image">Image</option>
               <option value="audio">Audio</option>
+              <option value="text">Text</option>
             </select>
 
-            <!-- File input -->
-            <label for="file" id="fileLabel">Upload File</label>
-            <input type="file" id="file" name="file" required />
-            <p class="max-size-note">Maximum file size allowed: 100 MB</p>
+            
+            <div class="file-container">
+              <label for="file" id="fileLabel">Upload File</label>
+              <input type="file" id="file" name="file" />
+              <p class="max-size-note">Maximum file size allowed: 100 MB</p>
+              
+              
+              <label for="textContent" id="textContentLabel" style="display: none;">Enter Text Content</label>
+              <textarea id="textContent" name="textContent" class="text-content"></textarea>
+            </div>
 
-            <!-- Basic metadata -->
+            
             <label for="title">Title</label>
             <input type="text" id="title" name="title" required />
 
@@ -82,6 +109,5 @@
     </footer>
 
     <script type="module" src="admin-add.js"></script>
-     
   </body>
 </html>
