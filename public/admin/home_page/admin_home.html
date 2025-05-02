@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Constitution Vault - Admin Home</title>
+    <link rel="stylesheet" href="admin_home.css">
+</head>
+<body>
+    <header>
+        <figure class="logo">
+            <span class="logo-icon">📜</span>
+            <figcaption>Constitution Vault</figcaption>
+        </figure>
+        <nav class="user-controls">
+            <article class="user-info">
+                <figure class="user-avatar">A</figure>
+                <span>Admin</span>
+            </article>
+            <button class="logout-btn">Logout</button>
+        </nav>
+    </header>
+
+    <section class="welcome-banner">
+        <h1>Welcome to Constitution Vault</h1>
+        <p>Manage your constitutional document collection with ease</p>
+        <a href="../hierarcy.html" class="btn">View Full Admin Dashboard</a>
+    </section>
+
+    <main class="container">
+        <section>
+            <h2 class="section-title">
+                <span>📊</span>
+                <span>Archive Overview</span>
+            </h2>
+            
+            <section class="stats-container">
+                <article class="stat-card">
+                    <p class="stat-value" id="totalDocs">0</p>
+                    <p class="stat-label">Total Documents</p>
+                </article>
+                <article class="stat-card">
+                    <p class="stat-value" id="totalDirectories">0</p>
+                    <p class="stat-label">Directories</p>
+                </article>
+                <article class="stat-card">
+                    <p class="stat-value" id="recentUploads">0</p>
+                    <p class="stat-label">Recent Uploads</p>
+                </article>
+                <article class="stat-card">
+                    <p class="stat-value" id="fileTypes">0</p>
+                    <p class="stat-label">Document Types</p>
+                </article>
+            </section>
+        </section>
+
+        <section>
+            <h2 class="section-title">
+                <span>📤</span>
+                <span>Type of File You Upload</span>
+            </h2>
+
+            <p>Upload new constitutional documents to the archive in various formats:</p>
+            
+            <section class="upload-types">
+                <article class="upload-type" data-file-type="document">
+                    <span class="upload-icon doc-upload-icon">📄</span>
+                    <h3 class="upload-type-title">Document</h3>
+                    <p class="upload-type-desc">Upload PDF, DOC, DOCX, TXT, RTF files</p>
+                </article>
+                <article class="upload-type" data-file-type="video">
+                    <span class="upload-icon video-upload-icon">🎬</span>
+                    <h3 class="upload-type-title">Video</h3>
+                    <p class="upload-type-desc">Upload MP4, MOV, AVI, WEBM files</p>
+                </article>
+                <article class="upload-type" data-file-type="image">
+                    <span class="upload-icon image-upload-icon">🖼️</span>
+                    <h3 class="upload-type-title">Image</h3>
+                    <p class="upload-type-desc">Upload JPG, PNG, GIF, SVG files</p>
+                </article>
+                <article class="upload-type" data-file-type="audio">
+                    <span class="upload-icon audio-upload-icon">🔊</span>
+                    <h3 class="upload-type-title">Audio</h3>
+                    <p class="upload-type-desc">Upload MP3, WAV, OGG, M4A files</p>
+                </article>
+                <article class="upload-type" data-file-type="text">
+                    <span class="upload-icon text-upload-icon">📝</span>
+                    <h3 class="upload-type-title">Text</h3>
+                    <p class="upload-type-desc">Enter text content directly</p>
+                </article>
+            </section>
+        </section>
+
+        <section class="card-grid">
+            <article class="card">
+                <header class="card-header">
+                    <h2 class="card-title">
+                        <span>📄</span>
+                        <span>Recent Documents</span>
+                    </h2>
+                </header>
+                <section class="card-body">
+                    <ul class="document-list" id="recentDocumentsList">
+                        <li class="document-item">
+                            <span class="doc-icon">📄</span>
+                            <article class="doc-info">
+                                <h3 class="doc-title">Loading recent documents...</h3>
+                                <aside class="doc-meta">
+                                    <span>Please wait</span>
+                                </aside>
+                            </article>
+                        </li>
+                    </ul>
+                </section>
+            </article>
+
+            <article class="card">
+                <header class="card-header">
+                    <h2 class="card-title">
+                        <span>🗂️</span>
+                        <span>Quick Actions</span>
+                    </h2>
+                </header>
+                <section class="card-body">
+                    <p>Manage your constitutional document collection with these quick actions:</p>
+                    <nav class="btn-grid">
+                        <a href="../hierarcy.html" class="btn">
+                            <span>📁</span>
+                            <span>File Manager</span>
+                        </a>
+                        <a href="../admin-add.html" class="btn btn-success">
+                            <span>📤</span>
+                            <span>Upload Documents</span>
+                        </a>
+                        <a href="#" class="btn btn-warning">
+                            <span>🔍</span>
+                            <span>Search Archive</span>
+                        </a>
+                    </nav>
+                </section>
+            </article>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <p>© 2025 Constitution Vault Admin Portal | Powered by ConstitutionVault</p>
+    </footer>
+
+    <script src="admin_home.js" type="module"></script>
+</body>
+</html>
