@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Home</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -14,203 +15,166 @@
       <a href="#"><i class="fas fa-folder"></i> My Docs</a>
       <a href="#"><i class="fas fa-share-alt"></i> Shared</a>
       <a href="#"><i class="fas fa-trash"></i> Trash</a>
-      <div class="user-menu">
+      <menu class="user-menu">
         <button class="user-btn">
           <i class="fas fa-user-circle"></i> User <i class="fas fa-caret-down"></i>
         </button>
-        <div class="dropdown-content">
-          <a href="#"><i class="fas fa-user"></i> Profile</a>
-          <a href="#"><i class="fas fa-cog"></i> Settings</a>
-          <a href="#"><i class="fas fa-sign-out-alt"></i> Logout</a>
-        </div>
-      </div>
+        <menu class="dropdown-content">
+          <li><a href="#"><i class="fas fa-user"></i> Profile</a></li>
+          <li><a href="#"><i class="fas fa-cog"></i> Settings</a></li>
+          <li><a href="#"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+        </menu>
+      </menu>
     </nav>
   </header>
 
   <main>
-    <div class="welcome-container">
+    <article class="welcome-container">
       <h1 class="welcome">Welcome back, User[for now]! Here's your personalized dashboard</h1>
-      <div class="search-container">
-        <i class="fas fa-search search-icon"></i>
-        <input type="text" class="search-input" placeholder="Search documents...">
-      </div>
-    </div>
+      <button class="search-btn">
+        <i class="fas fa-search"></i>
+        <h4>Search</h4>
+      </button>
+    </article>
 
-    <div class="stats-container">
-      <div class="stat-card">
+    <section class="stats-container">
+      <article class="stat-card">
         <i class="fas fa-file-alt stat-icon"></i>
-        <div class="stat-value">0</div>
-        <div class="stat-label">Total Documents</div>
-      </div>
-      <div class="stat-card">
+        <output class="stat-value">0</output>
+        <p class="stat-label">Total Documents</p>
+      </article>
+      <article class="stat-card">
         <i class="fas fa-eye stat-icon"></i>
-        <div class="stat-value">0</div>
-        <div class="stat-label">Viewed</div>
-      </div>
-      <div class="stat-card">
+        <output class="stat-value">0</output>
+        <p class="stat-label">Viewed</p>
+      </article>
+      <article class="stat-card">
         <i class="fas fa-star stat-icon"></i>
-        <div class="stat-value">0</div>
-        <div class="stat-label">Favorites</div>
-      </div>
-      <div class="stat-card">
+        <output class="stat-value">0</output>
+        <p class="stat-label">Favorites</p>
+      </article>
+      <article class="stat-card">
         <i class="fas fa-share-square stat-icon"></i>
-        <div class="stat-value">0</div>
-        <div class="stat-label">Shared</div>
-      </div>
-    </div>
+        <output class="stat-value">0</output>
+        <p class="stat-label">Shared</p>
+      </article>
+    </section>
 
-    <div class="quick-actions">
-      <!-- <div class="quick-action">
-        <i class="fas fa-upload"></i>
-        <div class="quick-action-text">
-          <h4>Upload Document</h4>
-          <p>Add new files to your vault</p>
-        </div>
-      </div> -->
-      <div class="quick-action">
+    <nav class="quick-actions">
+      <article class="quick-action">
         <i class="fas fa-folder-plus"></i>
-        <div class="quick-action-text">
+        <section class="quick-action-text">
           <h4>Create Folder</h4>
           <p>Organize your documents</p>
-        </div>
-      </div>
-      <div class="quick-action">
+        </section>
+      </article>
+      <article class="quick-action">
         <i class="fas fa-users"></i>
-        <div class="quick-action-text">
+        <section class="quick-action-text">
           <h4>Share</h4>
           <p>Collaborate with others</p>
-        </div>
-      </div>
-      <div class="quick-action">
+        </section>
+      </article>
+      <article class="quick-action">
         <i class="fas fa-sliders-h"></i>
-        <div class="quick-action-text">
+        <section class="quick-action-text">
           <h4>Settings</h4>
           <p>Customize your vault</p>
-        </div>
-      </div>
-    </div>
+        </section>
+      </article>
+    </nav>
 
     <section class="recent-activity">
       <h2 class="section-title"><i class="fas fa-clock"></i> Recent Activity</h2>
-      <!-- <div class="activity-item">
-        <i class="fas fa-file-upload activity-icon"></i>
-        <div class="activity-content">
-          <p class="activity-text">You Viewed <strong>???</strong></p>
-          <p class="activity-time">Time?</p>
-        </div>
-      </div>
-      <div class="activity-item">
-        <i class="fas fa-eye activity-icon"></i>
-        <div class="activity-content">
-          <p class="activity-text">You viewed <strong>???</strong></p>
-          <p class="activity-time">Yesterday, 4:30 PM</p>
-        </div>
-      </div>
-      <div class="activity-item">
-        <i class="fas fa-share-alt activity-icon"></i>
-        <div class="activity-content">
-          <p class="activity-text">You shared <strong>???</strong> with Sarah</p>
-          <p class="activity-time">Yesterday, 11:15 AM</p>
-        </div>
-      </div>
-      <div class="activity-item">
-        <i class="fas fa-star activity-icon"></i>
-        <div class="activity-content">
-          <p class="activity-text">You favorited <strong>???</strong></p>
-          <p class="activity-time">Monday, 9:45 AM</p>
-        </div> -->
-      </div>
     </section>
 
     <section class="document-row">
-      <div class="section-header">
+      <header class="section-header">
         <h2 class="section-title"><i class="fas fa-magic"></i> Suggestions</h2>
-        <div class="section-actions">
+        <menu class="section-actions">
           <button class="allsuggestions">See All</button>
           <button class="btn btn-primary">Refresh</button>
-        </div>
-      </div>
+        </menu>
+      </header>
       <p class="section-description">Based on your reading history and preferences</p>
-      <div class="doc-scroll suggestions">
+      <output class="doc-scroll suggestions">
         <!-- Cards will be inserted here by JavaScript -->
-      </div>
+      </output>
     </section>
 
     <section class="document-row">
-      <div class="section-header">
+      <header class="section-header">
         <h2 class="section-title"><i class="fas fa-history"></i> Recently Viewed</h2>
-        <div class="section-actions">
+        <menu class="section-actions">
           <button class="btn btn-outline">See All</button>
-        </div>
-      </div>
+        </menu>
+      </header>
       <p class="section-description">Documents you've accessed recently</p>
-      <div class="doc-scroll history">
+      <output class="doc-scroll history">
         <!-- Cards will be inserted here by JavaScript -->
-      </div>
+      </output>
     </section>
 
     <section class="document-row">
-      <div class="section-header">
+      <header class="section-header">
         <h2 class="section-title"><i class="fas fa-star"></i> Favorites</h2>
-        <div class="section-actions">
+        <menu class="section-actions">
           <button class="btn btn-outline">Manage</button>
-        </div>
-      </div>
+        </menu>
+      </header>
       <p class="section-description">Your most important documents</p>
-      <div class="doc-scroll favorites">
+      <output class="doc-scroll favorites">
         <!-- Cards will be inserted here by JavaScript -->
-      </div>
+      </output>
     </section>
+    
     <section class="view-all-container">
-        <div class="view-all-header">
-          <h2 class="view-all-title"><i class="fas fa-file-alt"></i> All Documents</h2>
-          <div class="view-all-controls">
-            <button class="btn btn-outline"><i class="fas fa-sync-alt"></i> Refresh</button>
-            <button class="btn btn-primary"><i class="fas fa-download"></i> Export List</button>
-          </div>
-        </div>
+      <header class="view-all-header">
+        <h2 class="view-all-title"><i class="fas fa-file-alt"></i> All Documents</h2>
+        <menu class="view-all-controls">
+          <button class="btn btn-outline"><i class="fas fa-sync-alt"></i> Refresh</button>
+          <button class="btn btn-primary"><i class="fas fa-download"></i> Export List</button>
+        </menu>
+      </header>
+      
+      <form class="filter-controls">
+        <select class="filter-dropdown">
+          <option>All Categories</option>
+          <option>Finance</option>
+          <option>Project</option>
+          <option>Research</option>
+          <option>Marketing</option>
+        </select>
         
-        <div class="filter-controls">
-          <select class="filter-dropdown">
-            <option>All Categories</option>
-            <option>Finance</option>
-            <option>Project</option>
-            <option>Research</option>
-            <option>Marketing</option>
-          </select>
-          
-          <select class="filter-dropdown">
-            <option>All Types</option>
-            <option>PDF</option>
-            <option>DOCX</option>
-            <option>XLSX</option>
-            <option>PPTX</option>
-          </select>
-          
-          <select class="filter-dropdown">
-            <option>Sort by: Recently Added</option>
-            <option>Sort by: Name (A-Z)</option>
-            <option>Sort by: Most Viewed</option>
-            <option>Sort by: Last Modified</option>
-          </select>
-          
-          <input type="text" class="search-input" placeholder="Search in all documents..." style="flex-grow: 1; max-width: 300px;">
-        </div>
+        <select class="filter-dropdown">
+          <option>All Types</option>
+          <option>PDF</option>
+          <option>DOCX</option>
+          <option>XLSX</option>
+          <option>PPTX</option>
+        </select>
         
-        <div class="documents-grid" id="all-documents-grid">
-          <!-- Documents will be inserted here by JavaScript -->
-        </div>
+        <select class="filter-dropdown">
+          <option>Sort by: Recently Added</option>
+          <option>Sort by: Name (A-Z)</option>
+          <option>Sort by: Most Viewed</option>
+          <option>Sort by: Last Modified</option>
+        </select>
         
-        <div class="pagination">
-          <button class="page-btn"><i class="fas fa-angle-left"></i></button>
-          <button class="page-btn active">1</button>
-          <button class="page-btn">2</button>
-          <button class="page-btn">3</button>
-          <span>...</span>
-          <button class="page-btn">8</button>
-          <button class="page-btn"><i class="fas fa-angle-right"></i></button>
-        </div>
-        </section>
+      </form>
+      
+      <output class="documents-grid" id="all-documents-grid">
+        <!-- Documents will be inserted here by JavaScript -->
+      </output>
+      
+      <nav class="pagination">
+        <button class="page-btn"><i class="fas fa-angle-left"></i></button>
+        <button class="page-btn active">1</button>
+        <button class="page-btn">2</button>
+        <button class="page-btn">3</button>
+        <button class="page-btn"><i class="fas fa-angle-right"></i></button>
+      </nav>
+    </section>
   </main>
 
   <script type="module" src="home.js"></script>
