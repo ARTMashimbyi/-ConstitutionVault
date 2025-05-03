@@ -1,6 +1,6 @@
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
-import { getFirestore, collection, query, orderBy, limit, getDocs, updateDoc, increment, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+import { getFirestore, collection, query, orderBy, limit, getDocs, updateDoc, increment, doc, onSnapshot, arrayUnion, arrayRemove,getDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 const firebaseConfig = {
     apiKey: "AIzaSyAU_w_Oxi6noX_A1Ma4XZDfpIY-jkoPN-c",
     authDomain: "constitutionvault-1b5d1.firebaseapp.com",
@@ -15,8 +15,12 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 let loadedDocuments = [];
-let currentUser = null;
-const currentUserId = localStorage.getItem("currentUserId") || null;
+let userInteractions = {};
+
+const currentUserId = localStorage.getItem("currentUserId") || null;//retrieve uid from local storage(sign in)
+console.log("Current User ID:", currentUserId);
+
+
 if(!currentUserId){
     alert("Please login to view documents.");
     window.location.href = "../user%20signup/index.html";
@@ -26,6 +30,7 @@ async function initApp() {
     try {
       showLoading(true);
       await loadAllDocuments();
+      await loadUserInteractions(currentUserId);
       setupEventListeners();
       //renderAllSections(); //since in loadAllDocuments
     } catch (error) {
@@ -45,6 +50,23 @@ async function loadAllDocuments() {
         }));
         renderAllSections();
     });
+}
+
+async function loadUserInteractions(userId) {
+    const userRef = doc(db, "users", userId);
+    const userSnap = await getDoc(userRef);
+    if (userSnap.exists()) {
+        userInteractions = userSnap.data().userInteractions || {
+            clicks: {},
+            viewed: [],
+            isFavorite: [],
+            shared: []
+        };
+        console.log("User interactions loaded:", userInteractions);
+        updateStats(userInteractions);
+    } else {
+        console.error("User document does not exist.");
+    }
 }
 
 function renderAllDocuments() {
@@ -121,12 +143,29 @@ function createDocCard(doc) {
 
 async function incrementViewCount(docId) {
     try {
+      console.log("in increment id:", currentUserId);
+      
       const docRef = doc(db, "constitutionalDocuments", docId);
-      await updateDoc(docRef, {
+      const userRef = doc(db, "users", currentUserId);
+
+      const userSnap = await getDoc(userRef);
+      if (!userSnap.exists()) {
+        console.error("Document does not exist.");
+        return;
+      }
+      
+      await Promise.all([
+        updateDoc(docRef, {
         clicks: increment(1),
         lastViewed: new Date().toISOString()
-      });
+      }),
+      updateDoc(userRef, {
+          [`userInteractions.clicks.${docId}`]: increment(1),
+          [`userInteractions.viewed`]: arrayUnion(docId)
+        }, { merge: true })
+      ]);
       
+      await loadUserInteractions(currentUserId); // Reload user interactions
       updateStats(); // Update stats after incrementing view count
     } catch (error) {
       console.error("Error incrementing view count:", error);
@@ -162,11 +201,22 @@ function renderDocuments(sectionSelector, docs) {
 }
 
 // Toggle favorite status in Firestore
-async function toggleFavorite(docId, isFavorite) {
+async function toggleFavorite(docId, shouldFavorite) {
   try {
-    const docRef = doc(db, "constitutionalDocuments", docId);
-    await updateDoc(docRef, { isFavorite });
+    const userRef = doc(db, "users", currentUserId);
+    const userSnap = await getDoc(userRef);
 
+    if(!userSnap.exists()) {
+        console.error("User document does not exist.");
+        return;
+    }
+
+    await updateDoc(userRef, {
+      [`userInteractions.isFavorite`]: shouldFavorite ? arrayUnion(docId) : arrayRemove(docId)
+    });  
+
+    await loadUserInteractions(currentUserId);
+    renderAllSections(); // Re-render sections after toggling favorite
     updateStats(); // Update stats after toggling favorite
   } catch (error) {
     console.error("Error updating favorite:", error);
@@ -174,13 +224,27 @@ async function toggleFavorite(docId, isFavorite) {
 }
 
 // Render all document sections
-function renderAllSections() {
-    // Render suggestions (first 3 documents)
-    const mostClicked = [...loadedDocuments].sort((a, b) => (b.clicks || 0) - (a.clicks || 0)).slice(0, 3);
-    renderDocuments('.suggestions', mostClicked);
+async function renderAllSections() {
+    await loadUserInteractions(currentUserId); // Reload user interactions
+    // Render suggestions ad favorites(first 3 documents)
+    loadedDocuments.forEach(doc => {
+      doc.isFavorite = userInteractions.isFavorite?.includes(doc.id);
+    });
+
+    const mostClicked = Object.entries(userInteractions.clicks || {})
+        .sort(([, aClicks], [, bClicks]) => bClicks - aClicks)
+        .slice(0, 3)
+        .map(([docId]) => docId);
+    //console.log("mostClicked:", mostClicked);
+    const suggested = loadedDocuments.filter(doc => mostClicked.includes(doc.id));
+    
+    
+    renderDocuments('.suggestions', suggested);
+
 
     // Render favorites
-    renderDocuments('.favorites', loadedDocuments.filter(doc => doc.isFavorite));
+    const favorites = loadedDocuments.filter(doc => doc.isFavorite);
+    renderDocuments('.favorites', favorites);
   
     // Render all documents
     renderAllDocuments();
@@ -195,7 +259,7 @@ function applyFilters() {
     const typeFilter = document.querySelector('.filter-dropdown:nth-of-type(2)')?.value;
     const searchTerm = document.querySelector('.view-all-container .search-input')?.value.toLowerCase();
   
-    let filtered = [...documents];
+    let filtered = [...loadedDocuments];
   
     // Apply category filter
     if (categoryFilter && categoryFilter !== 'All Categories') {
@@ -245,14 +309,14 @@ function applyFilters() {
       searchInput.addEventListener('input', (e) => {
         const searchTerm = e.target.value.toLowerCase();
         if (searchTerm.length > 2) {
-          const filtered = documents.filter(doc =>
+          const filtered = loadedDocuments.filter(doc =>
             doc.title?.toLowerCase().includes(searchTerm) ||
             doc.description?.toLowerCase().includes(searchTerm) ||
             doc.category?.toLowerCase().includes(searchTerm)
           );
           renderDocuments('.suggestions', filtered.slice(0, 3));
         } else {
-          renderDocuments('.suggestions', documents.slice(0, 3));
+          renderDocuments('.suggestions', loadedDocuments.slice(0, 3));
         }
       });
     }
@@ -301,11 +365,17 @@ function applyFilters() {
     }
   }
 
-  function updateStats(){
+  function updateStats(user){
     const totalDocs = loadedDocuments.length;
-    const totalViews = loadedDocuments.filter(doc => doc.viewed || 0).length;
-    const totalFav = loadedDocuments.filter(doc => doc.isFavorite).length;
-    const totalShares = loadedDocuments.filter(doc => doc.shared || 0).length;
+    const totalViews = userInteractions.viewed?.length || 0;
+    const totalFav = userInteractions.isFavorite?.length || 0;
+    const totalShares = userInteractions.shared?.length || 0;
+
+    // console.log("viewed:", totalViews);
+    // console.log("favorites:", totalFav);
+    // console.log("userInteractions:", userInteractions);
+    
+    
 
     const stat = document.querySelectorAll('.stat-card');
 
