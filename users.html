@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
-    <script src ="users.js" type="module" defer></script>
+    
+    <script src ="scripts/users.js" type="module" defer></script>
     <style>
        * {
             box-sizing: border-box;
@@ -25,7 +26,6 @@
 </head>
 <body>
     <p>Welcome to Constitution Vault</p>
-    <input type="button" value="History" style="float: right;">
     <a href="GoogleAuth.html" class="button-class">Home</a>
     
     <section class="row">
@@ -33,9 +33,9 @@
             <h2>Suggestions</h2>
             <p>Some suggestions will go here</p>
         </section>
-        <section id="history" class="column" style="background-color: rgb(10, 113, 113);">
+        <section  class="column" style="background-color: rgb(10, 113, 113);">
             <h2>History</h2>
-            <p>History to be shown here</p>
+            <li id="history"></li>
         </section>
         <section class="column" style="background-color: rgb(13, 120, 120);">
             <h2>Recommendations</h2>
