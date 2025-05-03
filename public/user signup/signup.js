@@ -34,6 +34,7 @@ document.getElementById("google-signup").addEventListener("click", async () => {
     const token = await user.getIdToken();
 
     console.log("User signed in:", user.uid);
+    localStorage.setItem("currentUserId", user.uid);
 
     // Check if user UID exists in Firestore
     const usersRef = collection(db, "users");
