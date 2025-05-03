@@ -69,26 +69,28 @@ async function loadUserInteractions(userId) {
     }
 }
 
+// Render all documents in the main grid
 function renderAllDocuments() {
-    const container = document.getElementById('all-documents-grid');
-    if (!container) return;
-  
-    container.innerHTML = '';
-  
-    if (loadedDocuments.length === 0) {
-      container.innerHTML = `
-        <div class="empty-state" style="grid-column: 1/-1">
-          <i class="fas fa-folder-open"></i>
-          <p>No documents found</p>
-        </div>
-      `;
-      return;
-    }
-  
-    loadedDocuments.forEach(doc => {
-      container.appendChild(createDocCard(doc));
-    });
+  const container = document.getElementById('all-documents-grid');
+  if (!container) return;
+
+  container.innerHTML = '';
+
+  if (loadedDocuments.length === 0) {
+    container.innerHTML = `
+      <article class="empty-state" style="grid-column: 1/-1">
+        <i class="fas fa-folder-open"></i>
+        <p>No documents found</p>
+      </article>
+    `;
+    return;
   }
+
+  loadedDocuments.forEach(doc => {
+    container.appendChild(createDocCard(doc));
+  });
+}
+
 
 function isDocumentNew(uploadDate) {
     if (!uploadDate) return false;
@@ -97,49 +99,57 @@ function isDocumentNew(uploadDate) {
     return uploadTime > weekAgo;
 }
 
-// Create document card element
+
+// Create semantic document card element
 function createDocCard(doc) {
-  const card = document.createElement('div');
+  const card = document.createElement('article');
   card.className = 'doc-card';
   
   if (doc.isNew) {
-    card.innerHTML += `<div class="doc-badge">NEW</div>`;
+    const badge = document.createElement('mark');
+    badge.className = 'doc-badge';
+    badge.textContent = 'NEW';
+    card.appendChild(badge);
   }
-
-  card.innerHTML += `
+  
+  card.innerHTML = `
     <h3>${doc.title || 'Untitled Document'}</h3>
-    <div class="doc-meta">
-      <span><i class="fas fa-file"></i> ${doc.fileType || 'Unknown'}</span>
-      <span><i class="fas fa-eye"></i> ${doc.clicks || 0}</span>
-      <span><i class="fas fa-tag"></i> ${doc.category || 'Uncategorized'}</span>
-    </div>
-    <p>${doc.institution || ''}</p>
-    <div class="doc-actions">
-      <button class="action-btn view-btn"><i class="fas fa-eye"></i> View</button>
-      <button class="action-btn fav-btn ${doc.isFavorite ? 'active' : ''}">
-        <i class="fas fa-star"></i>
-      </button>
-    </div>
+    <menu class="doc-meta">
+      <li><i class="fas fa-file"></i> ${doc.fileType || 'Unknown'}</li>
+      <li><i class="fas fa-eye"></i> ${doc.clicks || 0}</li>
+      <li><i class="fas fa-tag"></i> ${doc.category || 'Uncategorized'}</li>
+    </menu>
+    ${doc.institution ? `<p>${doc.institution}</p>` : ''}
+    <menu class="doc-actions">
+      <li><button class="action-btn view-btn"><i class="fas fa-eye"></i> View</button></li>
+      <li>
+        <button class="action-btn fav-btn ${doc.isFavorite ? 'active' : ''}" 
+                aria-label="${doc.isFavorite ? 'Remove from favorites' : 'Add to favorites'}">
+          <i class="fas fa-star"></i>
+        </button>
+      </li>
+    </menu>
   `;
-
+  
   // Add event listeners
   const favBtn = card.querySelector('.fav-btn');
   favBtn.addEventListener('click', async (e) => {
     e.stopPropagation();
     await toggleFavorite(doc.id, !doc.isFavorite);
   });
-
+  
   const viewBtn = card.querySelector('.view-btn');
   viewBtn.addEventListener('click', async (e) => {
     e.stopPropagation();
     await incrementViewCount(doc.id);
     openDocument(doc);
   });
-
+  
   card.addEventListener('click', () => openDocument(doc));
-
+  
   return card;
-}
+  }
+  
 
 async function incrementViewCount(docId) {
     try {
@@ -180,25 +190,26 @@ function openDocument(doc) {
 
 // Render documents to a specific section
 function renderDocuments(sectionSelector, docs) {
-    const container = document.querySelector(sectionSelector);
-    if (!container) return;
-  
-    container.innerHTML = '';
-  
-    if (!docs || docs.length === 0) {
-      container.innerHTML = `
-        <div class="empty-state">
-          <i class="fas fa-folder-open"></i>
-          <p>No documents found</p>
-        </div>
-      `;
-      return;
-    }
-  
-    docs.forEach(doc => {
-      container.appendChild(createDocCard(doc));
-    });
+  const container = document.querySelector(sectionSelector);
+  if (!container) return;
+
+  container.innerHTML = '';
+
+  if (!docs || docs.length === 0) {
+    container.innerHTML = `
+      <article class="empty-state">
+        <i class="fas fa-folder-open"></i>
+        <p>No documents found</p>
+      </article>
+    `;
+    return;
+  }
+
+  docs.forEach(doc => {
+    container.appendChild(createDocCard(doc));
+  });
 }
+
 
 // Toggle favorite status in Firestore
 async function toggleFavorite(docId, shouldFavorite) {
@@ -235,7 +246,7 @@ async function renderAllSections() {
         .sort(([, aClicks], [, bClicks]) => bClicks - aClicks)
         .slice(0, 3)
         .map(([docId]) => docId);
-    //console.log("mostClicked:", mostClicked);
+    console.log("mostClicked:", mostClicked);
     const suggested = loadedDocuments.filter(doc => mostClicked.includes(doc.id));
     
     
@@ -255,52 +266,51 @@ async function renderAllSections() {
 
 // Apply filters to documents
 function applyFilters() {
-    const categoryFilter = document.querySelector('.filter-dropdown:nth-of-type(1)')?.value;
-    const typeFilter = document.querySelector('.filter-dropdown:nth-of-type(2)')?.value;
-    const searchTerm = document.querySelector('.view-all-container .search-input')?.value.toLowerCase();
-  
-    let filtered = [...loadedDocuments];
-  
-    // Apply category filter
-    if (categoryFilter && categoryFilter !== 'All Categories') {
-      filtered = filtered.filter(doc => doc.category === categoryFilter);
-    }
-  
-    // Apply type filter
-    if (typeFilter && typeFilter !== 'All Types') {
-      filtered = filtered.filter(doc => doc.fileType === typeFilter);
-    }
-  
-    // Apply search
-    if (searchTerm) {
-      filtered = filtered.filter(doc =>
-        (doc.title?.toLowerCase().includes(searchTerm) ||
-        doc.description?.toLowerCase().includes(searchTerm) ||
-        doc.category?.toLowerCase().includes(searchTerm))
-      );
-    }
-  
-    // Re-render with filtered documents
-    const container = document.getElementById('all-documents-grid');
-    if (!container) return;
-  
-    container.innerHTML = '';
-  
-    if (filtered.length === 0) {
-      container.innerHTML = `
-        <div class="empty-state" style="grid-column: 1/-1">
-          <i class="fas fa-search"></i>
-          <p>No documents match your filters</p>
-        </div>
-      `;
-      return;
-    }
-  
-    filtered.forEach(doc => {
-      container.appendChild(createDocCard(doc));
-    });
+  const categoryFilter = document.querySelector('.filter-controls select:nth-of-type(1)')?.value;
+  const typeFilter = document.querySelector('.filter-controls select:nth-of-type(2)')?.value;
+  const searchTerm = document.querySelector('.view-all-container .search-input')?.value.toLowerCase();
+
+  let filtered = [...loadedDocuments];
+
+  // Apply category filter
+  if (categoryFilter && categoryFilter !== 'All Categories') {
+    filtered = filtered.filter(doc => doc.category === categoryFilter);
   }
-  
+
+  // Apply type filter
+  if (typeFilter && typeFilter !== 'All Types') {
+    filtered = filtered.filter(doc => doc.fileType === typeFilter);
+  }
+
+  // Apply search
+  if (searchTerm) {
+    filtered = filtered.filter(doc =>
+      (doc.title?.toLowerCase().includes(searchTerm) ||
+      doc.description?.toLowerCase().includes(searchTerm) ||
+      doc.category?.toLowerCase().includes(searchTerm))
+    );
+  }
+
+  // Re-render with filtered documents
+  const container = document.getElementById('all-documents-grid');
+  if (!container) return;
+
+  container.innerHTML = '';
+
+  if (filtered.length === 0) {
+    container.innerHTML = `
+      <article class="empty-state" style="grid-column: 1/-1">
+        <i class="fas fa-search"></i>
+        <p>No documents match your filters</p>
+      </article>
+    `;
+    return;
+  }
+
+  filtered.forEach(doc => {
+    container.appendChild(createDocCard(doc));
+  });
+}  
   // Set up all event listeners
   function setupEventListeners() {
     // Search functionality
