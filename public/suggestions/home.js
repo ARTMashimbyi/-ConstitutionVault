@@ -147,7 +147,7 @@ function createDocCard(doc) {
     openDocument(doc);
   });
   
-  card.addEventListener('click', () => openDocument(doc));
+  //card.addEventListener('click', () => openDocument(doc));
   
   return card;
   }
