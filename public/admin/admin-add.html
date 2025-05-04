@@ -4,7 +4,6 @@
     <meta charset="UTF-8" />
     <title>ConstitutionVault | Admin Upload</title>
     <link rel="stylesheet" href="admin-add.css" />
-    
   </head>
   <body>
     <header>
@@ -15,7 +14,6 @@
       <section>
         <h2>Upload Constitutional Archive Data</h2>
         <form id="uploadForm" enctype="multipart/form-data">
-
           <fieldset>
             <legend>Add File</legend>
 
@@ -28,9 +26,9 @@
               <option value="audio">Audio</option>
             </select>
 
-            <!-- File input with a note below -->
-            <label for="document" id="fileLabel">Upload File</label>
-            <input type="file" id="document" name="document" required />
+            <!-- File input -->
+            <label for="file" id="fileLabel">Upload File</label>
+            <input type="file" id="file" name="file" required />
             <p class="max-size-note">Maximum file size allowed: 100 MB</p>
 
             <!-- Basic metadata -->
@@ -38,7 +36,14 @@
             <input type="text" id="title" name="title" required />
 
             <label for="date">Date</label>
-            <input type="date" id="date" name="date" required class="readonly-field" readonly />
+            <input
+              type="date"
+              id="date"
+              name="date"
+              required
+              class="readonly-field"
+              readonly
+            />
 
             <label for="institution">Institution/Place</label>
             <input type="text" id="institution" name="institution" />
@@ -53,12 +58,19 @@
             <input type="text" id="keywords" name="keywords" />
 
             <label for="directory">Directory Location</label>
-            <input type="text" id="directory" name="directory" required class="readonly-field" readonly />
+            <input
+              type="text"
+              id="directory"
+              name="directory"
+              required
+              class="readonly-field"
+              readonly
+            />
 
             <button type="submit">Upload</button>
           </fieldset>
         </form>
-       
+
         <p
           id="uploadStatus"
           style="display: none; color: green; font-weight: bold"
@@ -68,8 +80,8 @@
     <footer>
       <p>&copy; 2025 ConstitutionVault | All Rights Reserved</p>
     </footer>
-    
 
-<script type="module" src="admin-add.js"></script>
+    <script type="module" src="admin-add.js"></script>
+     
   </body>
 </html>
