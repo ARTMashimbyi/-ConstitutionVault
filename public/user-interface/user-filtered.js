@@ -1,10 +1,10 @@
 // public/user-interface/user-search.js
 
-import { initializeSearchInterface } from "../search/SearchInterface.js";
-
+import { initializeUserFilteredSearch } from "../search/UserFilteredSearchInterface.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   // This will mount your search bar + results into the <section id="search-container">
-  initializeSearchInterface("search-container");
   
+  initializeUserFilteredSearch("search-container");
+
 });
