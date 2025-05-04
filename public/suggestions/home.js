@@ -23,7 +23,7 @@ console.log("Current User ID:", currentUserId);
 
 if(!currentUserId){
     alert("Please login to view documents.");
-    window.location.href = "../user%20signup/index.html";
+    window.location.href = "../user signup/index.html";
 }
 
 async function initApp() {
