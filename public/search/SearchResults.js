@@ -2,100 +2,109 @@
 
 /**
  * Renders a list of search results into the given container element.
- * Each result object must have:
+ * Each result object may have:
  *   • title: string
  *   • url: string
  *   • fileType: "document"|"image"|"audio"|"video"
  *   • description?: string
+ *   • author?: string
+ *   • institution?: string
+ *   • category?: string
+ *   • keywords?: string[]
  *
  * @param {HTMLElement} container
- * @param {Array<{ title: string, url: string, fileType: string, description?: string }>} results
+ * @param {Array<Object>} results
  */
 export function renderSearchResults(container, results) {
-  // Clear any existing content
+  // 1) Clear any existing results
   container.innerHTML = "";
 
-  // No-results message
-  if (!results || results.length === 0) {
+  // 2) Handle no-results
+  if (!Array.isArray(results) || results.length === 0) {
     const msg = document.createElement("p");
     msg.className   = "no-results";
     msg.textContent = "No results found.";
-    container.append(msg);
+    container.appendChild(msg);
     return;
   }
 
-  // Render each item
+  // 3) Render each result
   results.forEach(item => {
     const article = document.createElement("article");
     article.className = "search-result";
 
-    // Title
+    // 3.1 Title
     const h3 = document.createElement("h3");
     h3.textContent = item.title;
-    article.append(h3);
+    article.appendChild(h3);
 
-    // Description
+    // 3.2 Metadata
+    const metaParts = [];
+    if (item.author)      metaParts.push(`By ${item.author}`);
+    if (item.institution) metaParts.push(item.institution);
+    if (item.category)    metaParts.push(`Category: ${item.category}`);
+    if (Array.isArray(item.keywords) && item.keywords.length) {
+      metaParts.push(`Keywords: ${item.keywords.join(", ")}`);
+    }
+    if (metaParts.length) {
+      const meta = document.createElement("small");
+      meta.textContent = metaParts.join(" • ");
+      article.appendChild(meta);
+    }
+
+    // 3.3 Description
     if (item.description) {
       const p = document.createElement("p");
       p.textContent = item.description;
-      article.append(p);
+      article.appendChild(p);
     }
 
-    // Inline preview for supported types
+    // 3.4 Snippet preview
+    const fig = document.createElement("figure");
+    let previewEl;
     switch (item.fileType) {
-      case "image": {
-        const img = document.createElement("img");
-        img.src = item.url;
-        img.alt = item.title;
-        article.append(img);
+      case "image":
+        previewEl = document.createElement("img");
+        previewEl.src = item.url;
+        previewEl.alt = item.title;
         break;
-      }
-      case "audio": {
-        const audio = document.createElement("audio");
-        audio.controls = true;
-        audio.src      = item.url;
-        article.append(audio);
+      case "audio":
+        previewEl = document.createElement("audio");
+        previewEl.controls = true;
+        previewEl.src      = item.url;
         break;
-      }
-      case "video": {
-        const video = document.createElement("video");
-        video.controls = true;
-        video.src      = item.url;
-        article.append(video);
+      case "video":
+        previewEl = document.createElement("video");
+        previewEl.controls = true;
+        previewEl.src      = item.url;
         break;
-      }
-      case "document": {
-        // PDF embed preview
-        const embed = document.createElement("embed");
-        embed.src    = item.url;
-        embed.type   = "application/pdf";
-        embed.width  = "100%";
-        embed.height = "400px";
-        article.append(embed);
+      case "document":
+      default:
+        previewEl = document.createElement("embed");
+        previewEl.src    = `${item.url}#page=1&view=FitH`;
+        previewEl.type   = "application/pdf";
+        previewEl.width  = "100%";
+        previewEl.height = "400px";
         break;
-      }
     }
+    previewEl.loading = "lazy";
+    fig.appendChild(previewEl);
+    article.appendChild(fig);
 
-    // Actions footer (no <div>)
+    // 3.5 Single action: View in Full
     const footer = document.createElement("footer");
     footer.className = "result-actions";
 
-    // Preview link (opens in new tab)
-    const previewLink = document.createElement("a");
-    previewLink.href        = item.url;
-    previewLink.target      = "_blank";
-    previewLink.rel         = "noopener";
-    previewLink.textContent = "Preview";
-    footer.append(previewLink);
+    const viewLink = document.createElement("a");
+    viewLink.href        = item.url;
+    // open in the same tab so browser back button works
+    viewLink.target      = "_self";
+    viewLink.textContent = "View in Full";
+    viewLink.className   = "btn btn-primary";
 
-    // Download link (native download via <a download>)
-    const downloadLink = document.createElement("a");
-    downloadLink.href        = item.url;
-    downloadLink.download    = item.title || "";
-    downloadLink.textContent = "Download";
-    footer.append(downloadLink);
+    footer.appendChild(viewLink);
+    article.appendChild(footer);
 
-    article.append(footer);
-    container.append(article);
+    container.appendChild(article);
   });
 }
