@@ -317,6 +317,8 @@ function applyFilters() {
   const typeFilter = document.querySelector('.filter-controls select:nth-of-type(2)')?.value;
   const searchTerm = document.querySelector('.view-all-container .search-input')?.value.toLowerCase();
 
+  
+
   let filtered = [...loadedDocuments];
 
   // Apply category filter
@@ -442,9 +444,7 @@ function applyFilters() {
 
         if(!value) return;
         switch (label) {
-            case 'Total Documents':
-                value.textContent = totalDocs;
-                break;
+            
             case 'Viewed':
                 value.textContent = totalViews;
                 break;
