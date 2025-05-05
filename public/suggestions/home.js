@@ -23,7 +23,7 @@ console.log("Current User ID:", currentUserId);
 
 if(!currentUserId){
     alert("Please login to view documents.");
-    window.location.href = "../user signup/index.html";
+    window.location.href = "../user%20signup/index.html";
 }
 
 async function initApp() {
@@ -70,6 +70,51 @@ async function loadUserInteractions(userId) {
         console.error("User document does not exist.");
     }
 }
+//Mukondi
+async function userHistory(user){
+  const arr1 =[];
+  const userRef = doc(db, "users", user);
+    const userSnap = await getDoc(userRef);
+    if (userSnap.exists()) {
+      try{const history = userSnap.data().userInteractions.viewed;
+      history.forEach(doc=>{
+        getTitle(doc);
+      });     
+}
+   catch{ 
+
+  const historyList = document.getElementById('history');
+  const li=`
+          No user history
+          `;
+          historyList.innerHTML=li;
+}
+}
+}
+userHistory(currentUserId);
+let html='';
+async function getTitle(data){ 
+  if(data.length){
+       const docID = data;
+        const docRef = doc(collection(db, 'constitutionalDocuments'), docID );
+        const docSnap1 = await getDoc(docRef);
+        if (docSnap1.exists()) {
+          const docData = docSnap1.data();
+          console.log(docData.title)
+          const li=`
+          <li>
+            <section >${docData.title}</section>
+          </li>
+          `;
+         html +=li;
+        }      
+      const historyList=document.getElementById('history');
+      historyList.innerHTML=html;
+      }
+      
+     
+  }
+
 
 // Render all documents in the main grid
 function renderAllDocuments() {
@@ -147,7 +192,7 @@ function createDocCard(doc) {
     openDocument(doc);
   });
   
-  card.addEventListener('click', () => openDocument(doc));
+  //card.addEventListener('click', () => openDocument(doc));
   
   return card;
   }
@@ -452,6 +497,37 @@ async function refresh(){
     }
   });
 }
+
+
+async function getSuggestions(currentDocId, currentCategory) {
+  const docsRef = collection(db, "documents");
+
+  // Try to find similar docs in same category
+  const similarQuery = query(
+    docsRef,
+    where("category", "==", currentCategory),
+    where("id", "!=", currentDocId),
+    orderBy("clicks", "desc"),
+    limit(3)
+  );
+
+  const similarSnapshot = await getDocs(similarQuery);
+
+  if (!similarSnapshot.empty) {
+    return similarSnapshot.docs.map(doc => doc.data());
+  }
+
+  // Fallback to top-viewed docs
+  const popularQuery = query(
+    docsRef,
+    orderBy("clicks", "desc"),
+    limit(3)
+  );
+
+  const popularSnapshot = await getDocs(popularQuery);
+  return popularSnapshot.docs.map(doc => doc.data());
+}
+
   
-  // Initialize the app when DOM is loaded
-  document.addEventListener('DOMContentLoaded', initApp);
+// Initialize the app when DOM is loaded
+document.addEventListener('DOMContentLoaded', initApp);
