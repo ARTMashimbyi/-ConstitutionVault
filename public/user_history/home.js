@@ -13,11 +13,11 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+export const db = getFirestore(app);
 let loadedDocuments = [];
 let userInteractions = {};
 
-const currentUserId = localStorage.getItem("currentUserId") || null;//retrieve uid from local storage(sign in)
+export const currentUserId = localStorage.getItem("currentUserId") || null;//retrieve uid from local storage(sign in)
 console.log("Current User ID:", currentUserId);
 
 
@@ -190,7 +190,7 @@ function createDocCard(doc) {
     openDocument(doc);
   });
   
-  card.addEventListener('click', () => openDocument(doc));
+  //card.addEventListener('click', () => openDocument(doc));
   
   return card;
   }

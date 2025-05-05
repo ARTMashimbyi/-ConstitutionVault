@@ -70,6 +70,51 @@ async function loadUserInteractions(userId) {
         console.error("User document does not exist.");
     }
 }
+//Mukondi
+async function userHistory(user){
+  const arr1 =[];
+  const userRef = doc(db, "users", user);
+    const userSnap = await getDoc(userRef);
+    if (userSnap.exists()) {
+      try{const history = userSnap.data().userInteractions.viewed;
+      history.forEach(doc=>{
+        getTitle(doc);
+      });     
+}
+   catch{ 
+
+  const historyList = document.getElementById('history');
+  const li=`
+          No user history
+          `;
+          historyList.innerHTML=li;
+}
+}
+}
+userHistory(currentUserId);
+let html='';
+async function getTitle(data){ 
+  if(data.length){
+       const docID = data;
+        const docRef = doc(collection(db, 'constitutionalDocuments'), docID );
+        const docSnap1 = await getDoc(docRef);
+        if (docSnap1.exists()) {
+          const docData = docSnap1.data();
+          console.log(docData.title)
+          const li=`
+          <li>
+            <section >${docData.title}</section>
+          </li>
+          `;
+         html +=li;
+        }      
+      const historyList=document.getElementById('history');
+      historyList.innerHTML=html;
+      }
+      
+     
+  }
+
 
 // Render all documents in the main grid
 function renderAllDocuments() {
@@ -452,6 +497,7 @@ async function refresh(){
     }
   });
 }
+
 
 async function getSuggestions(currentDocId, currentCategory) {
   const docsRef = collection(db, "documents");
