@@ -452,6 +452,36 @@ async function refresh(){
     }
   });
 }
+
+async function getSuggestions(currentDocId, currentCategory) {
+  const docsRef = collection(db, "documents");
+
+  // Try to find similar docs in same category
+  const similarQuery = query(
+    docsRef,
+    where("category", "==", currentCategory),
+    where("id", "!=", currentDocId),
+    orderBy("clicks", "desc"),
+    limit(3)
+  );
+
+  const similarSnapshot = await getDocs(similarQuery);
+
+  if (!similarSnapshot.empty) {
+    return similarSnapshot.docs.map(doc => doc.data());
+  }
+
+  // Fallback to top-viewed docs
+  const popularQuery = query(
+    docsRef,
+    orderBy("clicks", "desc"),
+    limit(3)
+  );
+
+  const popularSnapshot = await getDocs(popularQuery);
+  return popularSnapshot.docs.map(doc => doc.data());
+}
+
   
-  // Initialize the app when DOM is loaded
-  document.addEventListener('DOMContentLoaded', initApp);
+// Initialize the app when DOM is loaded
+document.addEventListener('DOMContentLoaded', initApp);

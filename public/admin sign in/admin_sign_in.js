@@ -121,7 +121,7 @@ function handleUserAccess(isAdmin) {
         
         // Auto-redirect regular users to user portal after 2 seconds
         redirectTimer = setTimeout(() => {
-            window.location.href = "users.html";
+            window.location.href = "../suggestions/home.html";
         }, 2000);
         
         // Show a toast notification about redirection
@@ -146,7 +146,7 @@ document.addEventListener('DOMContentLoaded', function() {
     userButton.addEventListener('click', () => {
         userModalInstance.open();
         setTimeout(() => {
-            window.location.href = "users.html";
+            window.location.href = "home.html";
         }, 1500);
     });
 });
