@@ -76,15 +76,19 @@
 
         <section class="document-row">
             <header class="section-header">
-                <h2 class="section-title"><i class="fas fa-history"></i> Recently Viewed</h2>
-                <menu class="section-actions">
-                    <button class="btn btn-primary"><i class="fas fa-sync-alt"></i> Refresh</button>
-                </menu>
+              <h2 class="section-title"><i class="fas fa-history"></i> Recently Viewed</h2>
+              <menu class="section-actions">
+                <a href="../user_history/history.html">
+                <button class="btn btn-outline" id="history_btn" >See All</button>
+                </a>
+              </menu>
             </header>
             <p class="section-description">Documents you've accessed recently</p>
-            <output class="doc-scroll history">
-            </output>
-        </section>
+            <!--history will be shown here-->
+            <section>
+              <li id="history"></li>
+            </section>
+          </section>
 
         <section class="document-row">
             <header class="section-header">
