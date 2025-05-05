@@ -1,0 +1,156 @@
+/* public/css/user-search.css */
+
+/* ─── Reset basics ─────────────────────────────────────────────────────────── */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  /* ─── Visually hidden (for screen-reader labels) ─────────────────────────── */
+  .visually-hidden {
+    position: absolute !important;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+    white-space: nowrap;
+  }
+  
+  /* ─── Page layout ──────────────────────────────────────────────────────────── */
+  body {
+    font-family: sans-serif;
+    line-height: 1.6;
+    background: #f4f7fa;
+    color: #333;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  header,
+  footer {
+    background: #004080;
+    color: #fff;
+    padding: 1.25rem;
+    text-align: center;
+  }
+  
+  main {
+    flex: 1;
+    padding: 1.5rem;
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+  
+  /* ─── Search bar ───────────────────────────────────────────────────────────── */
+  .search-bar {
+    display: flex;
+    margin-bottom: 1.5rem;
+  }
+  
+  .search-input {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    font-size: 1.05rem;
+    border: 1px solid #bbb;
+    border-radius: 6px;
+    transition: border-color 0.2s;
+  }
+  
+  .search-input:focus {
+    border-color: #004080;
+    outline: none;
+  }
+  
+  /* ─── Results grid: responsive 2-column layout ────────────────────────────── */
+  #search-results {
+    display: grid;
+    gap: 1.5rem;
+    /* each card min 320px, but grow to fill space; auto-fit gives 2 columns on desktop */
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  }
+  
+  /* ─── Individual result card ─────────────────────────────────────────────── */
+  .search-result {
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  
+  .search-result:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  }
+  
+  .search-result h3 {
+    font-size: 1.3rem;
+    margin-bottom: 0.75rem;
+    color: #004080;
+  }
+  
+  .search-result small {
+    font-size: 0.85rem;
+    color: #555;
+    margin-bottom: 0.75rem;
+  }
+  
+  .search-result p {
+    font-size: 0.95rem;
+    color: #555;
+    margin-bottom: 0.75rem;
+  }
+  
+  /* ─── Snippet preview ─────────────────────────────────────────────────────── */
+  .search-result figure {
+    margin: 0 0 1rem;
+    border-radius: 4px;
+    overflow: hidden;
+    max-height: 280px;
+  }
+  
+  .search-result figure > * {
+    width: 100% !important;
+    height: auto !important;
+    pointer-events: none;
+    display: block;
+  }
+  
+  /* ─── Action buttons ──────────────────────────────────────────────────────── */
+  .result-actions {
+    margin-top: auto;
+    padding-top: 1rem;
+    border-top: 1px solid #e3e7ec;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+  }
+  
+  .result-actions a {
+    background: #004080;
+    color: #fff;
+    padding: 0.6rem 1.2rem;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: background 0.2s;
+  }
+  
+  .result-actions a:hover {
+    background: #002d5c;
+  }
+  
+  /* ─── No-results message ─────────────────────────────────────────────────── */
+  .no-results {
+    text-align: center;
+    font-style: italic;
+    color: #777;
+    padding: 2rem 0;
+  }

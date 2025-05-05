@@ -760,10 +760,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const logoutBtn = document.querySelector('.logout-btn');
     if (logoutBtn) {
         logoutBtn.addEventListener('click', function() {
-            if (confirm('Are you sure you want to logout?')) {
+            /*if (confirm('Are you sure you want to logout?')) {
                 // Redirect to login page or perform logout actions
-                window.location.href = '../index.html';
-            }
+                window.location.href = './home_page/admin_home.html';
+            }*/
+                window.location.href = './home_page/admin_home.html';
         });
     }
 });
