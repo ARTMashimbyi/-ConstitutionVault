@@ -1,6 +1,10 @@
+# Ignore the private key JSON file
+firebase-query-api/private_key.json
+
 # Ignore any JSON service‑account key in keys/
 # (so your private key never gets committed)
-/keys/*.json
+# /keys/*.json
 
 # Ignore the entire node_modules folder
 /node_modules/
+

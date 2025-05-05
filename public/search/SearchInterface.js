@@ -57,44 +57,27 @@ export function initializeSearchInterface(containerId) {
   async function handleSearch(query) {
     resultsSection.innerHTML = "🔄 Loading…";
     try {
-      // 1) Fetch all docs
-      const snapshot = await getDocs(
-        collection(db, "constitutionalDocuments")
-      );
-
-      // 2) Filter by title/description
-      const lower = query.trim().toLowerCase();
-      const hits  = [];
-      snapshot.forEach(doc => {
-        const data = { id: doc.id, ...doc.data() };
-        if (
-          !lower ||
-          data.title?.toLowerCase().includes(lower) ||
-          data.description?.toLowerCase().includes(lower)
-        ) {
-          hits.push(data);
-        }
+      const response = await fetch('http://localhost:3000/query', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ query: query.trim() }),
       });
-
-      // 3) Sort alphabetically by title
-      hits.sort((a, b) =>
-        (a.title || "").localeCompare(b.title || "")
-      );
-
-      // 4) Build the results array with downloadURL & fileType
-      const results = hits.map(item => ({
-        title:       item.title,
-        description: item.description || "",
-        url:         item.downloadURL || "",
-        fileType:    item.fileType   || "document"
-      }));
-
-      // 5) Render
-      renderSearchResults(resultsSection, results);
-
+  
+      if (!response.ok) {
+        throw new Error('Failed to fetch results from the API');
+      }
+  
+      const data = await response.json();
+      const resultsArray = data.results; // fix: get the array
+  
+      renderSearchResults(resultsSection, resultsArray);
+  
     } catch (err) {
       console.error("Error fetching documents:", err);
       resultsSection.innerHTML = "<p>❌ Failed to load results.</p>";
     }
   }
+  
 }
