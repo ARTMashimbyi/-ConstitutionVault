@@ -16,18 +16,54 @@
  * @param {Array<Object>} results
  */
 export function renderSearchResults(container, results) {
+<<<<<<< HEAD
+  // Clear any previous results
+  container.innerHTML = '';
+=======
   // 1) Clear any existing results
   container.innerHTML = "";
+>>>>>>> ad896a039b80097861da9eab0a2a2739fe661bbe
 
   // 2) Handle no-results
   if (!Array.isArray(results) || results.length === 0) {
     const msg = document.createElement("p");
-    msg.className   = "no-results";
+    msg.className = "no-results";
     msg.textContent = "No results found.";
     container.appendChild(msg);
     return;
   }
 
+<<<<<<< HEAD
+  // Render each item (ranked by order)
+  results.forEach((item, index) => {
+    const rank = index + 1;
+
+    const article = document.createElement("article");
+    article.className = "search-result";
+
+    // Rank number + title
+    const h3 = document.createElement("h3");
+    h3.textContent = `${rank}. ${item.title}`;
+    article.append(h3);
+    // 🔗 Preview Link (force open)
+    if (item.link) {
+      const button = document.createElement("button");
+      button.textContent = "Preview Document";
+      button.addEventListener("click", () => {
+        window.open(item.link, "_blank", "noopener");
+      });
+      article.append(button);
+    }
+     // 🎓 Institution
+     if (item.institution) {
+      const inst = document.createElement("p");
+      inst.textContent = `Institution: ${item.institution}`;
+      article.append(inst);
+    }
+    
+
+    container.append(article);
+=======
   // 3) Render each result
   results.forEach(item => {
     const article = document.createElement("article");
@@ -106,5 +142,6 @@ export function renderSearchResults(container, results) {
     article.appendChild(footer);
 
     container.appendChild(article);
+>>>>>>> ad896a039b80097861da9eab0a2a2739fe661bbe
   });
 }

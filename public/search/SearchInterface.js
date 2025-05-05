@@ -67,6 +67,25 @@ export function initializeSearchInterface(containerId) {
     resultsSection.innerHTML = "<p>🔄 Loading…</p>";
 
     try {
+<<<<<<< HEAD
+      const response = await fetch('http://localhost:3000/query', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ query: query.trim() }),
+      });
+  
+      if (!response.ok) {
+        throw new Error('Failed to fetch results from the API');
+      }
+  
+      const data = await response.json();
+      const resultsArray = data.results; // fix: get the array
+  
+      renderSearchResults(resultsSection, resultsArray);
+  
+=======
       // pull every doc
       const snapshot = await getDocs(
         collection(db, "constitutionalDocuments")
@@ -122,9 +141,15 @@ export function initializeSearchInterface(containerId) {
       // hand off to SearchResults
       renderSearchResults(resultsSection, results);
 
+>>>>>>> ad896a039b80097861da9eab0a2a2739fe661bbe
     } catch (err) {
       console.error("Error fetching or filtering documents:", err);
       resultsSection.innerHTML = "<p>❌ Failed to load results.</p>";
     }
   }
+<<<<<<< HEAD
+  
 }
+=======
+}
+>>>>>>> ad896a039b80097861da9eab0a2a2739fe661bbe
