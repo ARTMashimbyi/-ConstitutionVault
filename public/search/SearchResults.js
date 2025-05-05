@@ -22,7 +22,7 @@ export function renderSearchResults(container, results) {
   // 2) Handle no-results
   if (!Array.isArray(results) || results.length === 0) {
     const msg = document.createElement("p");
-    msg.className = "no-results";
+    msg.className   = "no-results";
     msg.textContent = "No results found.";
     container.appendChild(msg);
     return;
