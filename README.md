@@ -2,7 +2,7 @@
 
 # Constitution Vault
 
-[![codecov](https://codecov.io/gh/ARTMashimbyi/-ConstitutionVault/branch/main/graph/badge.svg)](https://codecov.io/gh/ARTMashimbyi/-ConstitutionVault)
+[![codecov](https://codecov.io/gh/codecov/cpp-11-Standard/branch/master/graph/badge.svg)](https://codecov.io/gh/codecov/cpp-11-Standard)
 
 Your project description goes here.
 
