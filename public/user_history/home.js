@@ -29,6 +29,7 @@ if(!currentUserId){
 async function initApp() {
     try {
       showLoading(true);
+      search();
       await loadAllDocuments();
       await loadUserInteractions(currentUserId);
       setupEventListeners();
@@ -459,6 +460,13 @@ function applyFilters() {
         }
     });
   }
+
+  async function search() {
+    const searchBtn = document.querySelector('.search-btn');
+        searchBtn.addEventListener('click', () => {
+            window.location.href = "../user-interface/user-search.html";
+    });
+}
   
   // Initialize the app when DOM is loaded
   document.addEventListener('DOMContentLoaded', initApp);
