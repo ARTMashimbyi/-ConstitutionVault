@@ -1,3 +1,5 @@
+//edit.js
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
 import {
   getFirestore,
@@ -31,7 +33,7 @@ window.addEventListener("DOMContentLoaded", () => {
   const docId = urlParams.get('id');
   console.log("Document ID from URL:", docId);
 
-  // Get form and input fields
+
   const editForm = document.getElementById('editDocForm');
   const titleInput = document.getElementById('docTitle');
   const institutionInput = document.getElementById('docInstitution');
@@ -81,7 +83,7 @@ window.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Load document if we have an ID
+ 
   if (docId) {
     loadDocument();
   } else {
@@ -89,14 +91,14 @@ window.addEventListener("DOMContentLoaded", () => {
     statusMsg.style.color = "red";
   }
 
-  // Handle form submission
+  
   editForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     
     try {
       const docRef = doc(collection(db, "constitutionalDocuments"), docId);
       
-      // Process keywords from comma-separated string to array
+      
       const keywordsString = keywordsInput.value;
       const keywordsArray = keywordsString
         ? keywordsString.split(',').map(keyword => keyword.trim())
@@ -109,13 +111,13 @@ window.addEventListener("DOMContentLoaded", () => {
         category: categoryInput.value,
         keywords: keywordsArray,
         date: dateInput.value,
-        updatedAt: new Date().toISOString() // Add update timestamp
+        updatedAt: new Date().toISOString() 
       });
       
       statusMsg.textContent = "✅ Document updated successfully!";
       statusMsg.style.color = "green";
       
-      // Redirect after short delay
+      
       setTimeout(() => {
         window.location.href = `../admin/hierarcy.html?id=${docId}`;
       }, 1500);
@@ -126,9 +128,9 @@ window.addEventListener("DOMContentLoaded", () => {
     }
   });
   
-  // Handle cancel button
+  
   cancelButton.addEventListener('click', () => {
-    // Return to document page
+    
     window.location.href = `../admin/hierarcy.html?id=${docId}`;
   });
 });
