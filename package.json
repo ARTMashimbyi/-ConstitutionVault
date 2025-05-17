@@ -1,5 +1,28 @@
 {
   "dependencies": {
     "@google-cloud/storage": "^7.16.0"
-  }
+  },
+  "name": "-constitutionvault",
+  "version": "1.0.0",
+  "description": "[![codecov](https://codecov.io/gh/ARTMashimbyi/-ConstitutionVault/branch/main/graph/badge.svg)](https://codecov.io/gh/ARTMashimbyi/-ConstitutionVault)\r Your project description goes here.",
+  "main": "set-cors.js",
+  "devDependencies": {
+    "@babel/core": "^7.27.1",
+    "@babel/preset-env": "^7.27.2",
+    "@testing-library/dom": "^10.4.0",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/user-event": "^14.6.1",
+    "babel-jest": "^29.7.0",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "util": "^0.12.5",
+    "whatwg-url": "^14.2.0"
+  },
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
 }
