@@ -164,7 +164,8 @@ uploadForm.addEventListener("submit", async (e) => {
       directory: formData.get("directory"),
       storagePath,
       downloadURL,
-      uploadedAt: new Date().toISOString()
+      uploadedAt: new Date().toISOString(),
+      clicks:0
     };
 
     if (fileType === "text") {
