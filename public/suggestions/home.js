@@ -196,6 +196,8 @@ function createDocCard(doc) {
   
   return card;
   }
+
+
   
 
 async function incrementViewCount(docId) {
@@ -288,14 +290,13 @@ async function renderAllSections() {
     loadedDocuments.forEach(doc => {
       doc.isFavorite = userInteractions.isFavorite?.includes(doc.id);
     });
-
-    const mostClicked = Object.entries(userInteractions.clicks || {})
-        .sort(([, aClicks], [, bClicks]) => bClicks - aClicks)
-        .slice(0, 3)
-        .map(([docId]) => docId);
-    console.log("mostClicked:", mostClicked);
-    const suggested = loadedDocuments.filter(doc => mostClicked.includes(doc.id));
     
+    const suggested = loadedDocuments
+        .filter(doc => doc.id) //filter out current doc
+        .sort((a, b) => (b.clicks || 0)  - (a.clicks || 0))
+        .slice(0, 3);
+    
+    console.log("Suggested documents:", suggested);
     
     renderDocuments('.suggestions', suggested);
 
@@ -467,6 +468,16 @@ async function search() {
     });
 }
 
+function logOut(){
+  const logOutBtn = document.querySelector('a[href="#"] .fa-sign-out-alt')?.parentElement;
+  logOutBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    localStorage.clear();
+
+    window.location.href = "../index.html";
+  });
+}
+
 async function refresh(){
   const refreshBtn = document.querySelector('.view-all-controls .btn-outline');
   const refreshBtn2 = document.querySelector('.section-actions .btn-primary');
@@ -498,36 +509,9 @@ async function refresh(){
   });
 }
 
-
-async function getSuggestions(currentDocId, currentCategory) {
-  const docsRef = collection(db, "documents");
-
-  // Try to find similar docs in same category
-  const similarQuery = query(
-    docsRef,
-    where("category", "==", currentCategory),
-    where("id", "!=", currentDocId),
-    orderBy("clicks", "desc"),
-    limit(3)
-  );
-
-  const similarSnapshot = await getDocs(similarQuery);
-
-  if (!similarSnapshot.empty) {
-    return similarSnapshot.docs.map(doc => doc.data());
-  }
-
-  // Fallback to top-viewed docs
-  const popularQuery = query(
-    docsRef,
-    orderBy("clicks", "desc"),
-    limit(3)
-  );
-
-  const popularSnapshot = await getDocs(popularQuery);
-  return popularSnapshot.docs.map(doc => doc.data());
-}
-
   
 // Initialize the app when DOM is loaded
-document.addEventListener('DOMContentLoaded', initApp);
+document.addEventListener('DOMContentLoaded', async () => {
+    await initApp();
+    logOut();
+});
