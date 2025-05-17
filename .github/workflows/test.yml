@@ -16,16 +16,13 @@ jobs:
           node-version: 18
 
       - name: Install dependencies
-        run: npm install
-        working-directory: ./public
+        run: npm install # ← Runs in root by default
 
       - name: Make Jest binary executable (for Linux)
         run: chmod +x ./node_modules/.bin/jest
-        working-directory: ./public
 
       - name: Run tests with coverage
         run: npm test -- --coverage
-        working-directory: ./public
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
