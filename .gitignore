@@ -1,7 +1,8 @@
-# Ignore any JSON service‑account key in keys/
-# (so your private key never gets committed)
-/key/*.json
+# Ignore service-account JSON keys
+key/*.json
 
-# Ignore the entire node_modules folder
+# But keep the folder placeholder
+!key/.gitkeep
+
+# Ignore node_modules
 /node_modules/
-node_modules

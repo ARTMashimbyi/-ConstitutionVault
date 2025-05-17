@@ -1,0 +1,6 @@
+# Auto-detect text files and normalize them to LF in the repo
+* text=auto
+
+# But keep JSON and lockfiles in LF (if you prefer)
+*.json text eol=lf
+*.lock text eol=lf
