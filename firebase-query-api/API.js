@@ -7,7 +7,7 @@ require('dotenv').config();
 
 // Initialize Firebase Admin
 console.log("Initializing Firebase Admin...");
-const serviceAccount = require('./private_key.json');
+const serviceAccount = require('./key/private_key.json');
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
   storageBucket: process.env.FIREBASE_STORAGE_BUCKET
