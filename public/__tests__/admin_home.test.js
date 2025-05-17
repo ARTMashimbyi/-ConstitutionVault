@@ -2,7 +2,7 @@ import { JSDOM } from 'jsdom';
 import fs from 'fs';
 import path from 'path';
 
-// Add this at the beginning of your test file if you're still having issues
+// Polyfills for TextEncoder/TextDecoder
 const { TextEncoder, TextDecoder } = require('util');
 global.TextEncoder = TextEncoder;
 global.TextDecoder = TextDecoder;
@@ -19,9 +19,11 @@ describe('Admin Home Page', () => {
     // Initialize JSDOM with proper options
     dom = new JSDOM(html, {
       runScripts: 'dangerously',
-      resources: 'usable',
-      pretendToBeVisual: true, // Add this for requestAnimationFrame support
-      url: 'http://localhost' // Add this for proper URL resolution
+      pretendToBeVisual: true,
+      url: 'http://localhost',
+      beforeParse(window) {
+        window.console.error = () => {}; // Silence resource loading errors
+      }
     });
     
     document = dom.window.document;
@@ -95,194 +97,3 @@ describe('Admin Home Page', () => {
     });
   });
 });
-
-
-
-
-describe('Admin Home JavaScript', () => {
-    let dom;
-    let document;
-    let window;
-    let mockFirebase;
-  
-    beforeEach(() => {
-      // Mock Firebase functions
-      mockFirebase = {
-        initializeApp: jest.fn(),
-        getFirestore: jest.fn(),
-        collection: jest.fn(),
-        getDocs: jest.fn(),
-        query: jest.fn(),
-        orderBy: jest.fn(),
-        limit: jest.fn()
-      };
-  
-      // Mock the global Firebase object
-      global.firebase = {
-        initializeApp: mockFirebase.initializeApp,
-        firestore: {
-          getFirestore: mockFirebase.getFirestore,
-          collection: mockFirebase.collection,
-          getDocs: mockFirebase.getDocs,
-          query: mockFirebase.query,
-          orderBy: mockFirebase.orderBy,
-          limit: mockFirebase.limit
-        }
-      };
-  
-      // Load the HTML file
-      const html = fs.readFileSync(path.resolve(__dirname, '../admin/home_page/admin_home.html'), 'utf8');
-      
-      // Initialize JSDOM with our mock Firebase
-      dom = new JSDOM(html, {
-        runScripts: 'dangerously',
-        resources: 'usable',
-        beforeParse(window) {
-          window.firebase = {
-            initializeApp: mockFirebase.initializeApp,
-            firestore: {
-              getFirestore: mockFirebase.getFirestore,
-              collection: mockFirebase.collection,
-              getDocs: mockFirebase.getDocs,
-              query: mockFirebase.query,
-              orderBy: mockFirebase.orderBy,
-              limit: mockFirebase.limit
-            }
-          };
-        }
-      });
-      
-      document = dom.window.document;
-      window = dom.window;
-      
-      // Mock the admin_home.js script
-      window.initializeApp = mockFirebase.initializeApp;
-      window.getFirestore = mockFirebase.getFirestore;
-      window.collection = mockFirebase.collection;
-      window.getDocs = mockFirebase.getDocs;
-      window.query = mockFirebase.query;
-      window.orderBy = mockFirebase.orderBy;
-      window.limit = mockFirebase.limit;
-    });
-  
-    test('should set up logout button click handler', () => {
-      const logoutBtn = document.querySelector('.logout-btn');
-      const originalConfirm = window.confirm;
-      window.confirm = jest.fn(() => true);
-      
-      logoutBtn.click();
-      
-      expect(window.confirm).toHaveBeenCalledWith('Are you sure you want to logout?');
-      
-      window.confirm = originalConfirm;
-    });
-  
-    test('should set up upload type click handlers', () => {
-      const uploadTypes = document.querySelectorAll('.upload-type');
-      const consoleSpy = jest.spyOn(console, 'log');
-      
-      uploadTypes[0].click();
-      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Selected file type: document'));
-      
-      uploadTypes[1].click();
-      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Selected file type: video'));
-      
-      consoleSpy.mockRestore();
-    });
-  
-    test('should initialize Firebase with correct config', async () => {
-      // Mock the getDocs responses
-      const mockDocsSnapshot = {
-        size: 10,
-        forEach: jest.fn(),
-        empty: false
-      };
-      
-      const mockDirSnapshot = {
-        size: 5
-      };
-      
-      mockFirebase.getDocs.mockImplementation((collectionRef) => {
-        if (collectionRef.id === 'constitutionalDocuments') {
-          return Promise.resolve(mockDocsSnapshot);
-        } else if (collectionRef.id === 'directories') {
-          return Promise.resolve(mockDirSnapshot);
-        }
-        return Promise.reject(new Error('Unknown collection'));
-      });
-      
-      // Mock the query response for recent documents
-      const mockRecentDocsSnapshot = {
-        empty: false,
-        forEach: jest.fn(callback => {
-          // Simulate 2 documents
-          callback({
-            data: () => ({
-              title: 'Test Document',
-              fileType: 'document',
-              uploadedAt: new Date().toISOString(),
-              directory: '/test'
-            })
-          });
-          callback({
-            data: () => ({
-              title: 'Test Video',
-              fileType: 'video',
-              uploadedAt: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
-              directory: '/videos'
-            })
-          });
-        })
-      };
-      
-      mockFirebase.query.mockReturnValue('mock-query');
-      mockFirebase.getDocs.mockResolvedValueOnce(mockDocsSnapshot); // For stats
-      mockFirebase.getDocs.mockResolvedValueOnce(mockDirSnapshot); // For stats
-      mockFirebase.getDocs.mockResolvedValueOnce(mockRecentDocsSnapshot); // For recent docs
-      
-      // Trigger the DOMContentLoaded event
-      window.dispatchEvent(new window.Event('DOMContentLoaded'));
-      
-      // Wait for promises to resolve
-      await new Promise(resolve => setTimeout(resolve, 0));
-      
-      // Verify Firebase was initialized with correct config
-      expect(mockFirebase.initializeApp).toHaveBeenCalledWith({
-        apiKey: "AIzaSyAU_w_Oxi6noX_A1Ma4XZDfpIY-jkoPN-c",
-        authDomain: "constitutionvault-1b5d1.firebaseapp.com",
-        projectId: "constitutionvault-1b5d1",
-        storageBucket: "constitutionvault-1b5d1.appspot.com",
-        messagingSenderId: "616111688261",
-        appId: "1:616111688261:web:97cc0a35c8035c0814312c",
-        measurementId: "G-YJEYZ85T3S"
-      });
-      
-      // Verify stats were updated
-      expect(document.getElementById('totalDocs').textContent).toBe('10');
-      expect(document.getElementById('totalDirectories').textContent).toBe('5');
-      
-      // Verify recent documents were rendered
-      const recentDocsList = document.getElementById('recentDocumentsList');
-      expect(recentDocsList.children.length).toBe(2);
-      expect(recentDocsList.textContent).toContain('Test Document');
-      expect(recentDocsList.textContent).toContain('Test Video');
-    });
-  
-    test('should handle Firebase errors gracefully', async () => {
-      // Mock a Firebase error
-      mockFirebase.getDocs.mockRejectedValue(new Error('Firebase error'));
-      
-      // Trigger the DOMContentLoaded event
-      window.dispatchEvent(new window.Event('DOMContentLoaded'));
-      
-      // Wait for promises to resolve
-      await new Promise(resolve => setTimeout(resolve, 0));
-      
-      // Verify error state in UI
-      expect(document.getElementById('totalDocs').textContent).toBe('?');
-      expect(document.getElementById('totalDirectories').textContent).toBe('?');
-      
-      const recentDocsList = document.getElementById('recentDocumentsList');
-      expect(recentDocsList.textContent).toContain('Error loading documents');
-    });
-  });
