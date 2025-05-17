@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Home</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1><i class="fas fa-book-open"></i> Document Vault</h1>
+    <nav>
+      <a href="#"><i class="fas fa-home"></i> Home</a>
+      <a href="#"><i class="fas fa-folder"></i> My Docs</a>
+      <a href="#"><i class="fas fa-share-alt"></i> Shared</a>
+      <a href="#"><i class="fas fa-trash"></i> Trash</a>
+      <menu class="user-menu">
+        <button class="user-btn">
+          <i class="fas fa-user-circle"></i> User <i class="fas fa-caret-down"></i>
+        </button>
+        <menu class="dropdown-content">
+          <li><a href="../user-interface/user-search.html"><i class="fas fa-user"></i> Profile</a></li>
+          <li><a href="../user_settings/index.html"><i class="fas fa-cog"></i> Settings</a></li>
+          <li><a href="../index.html"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+        </menu>
+      </menu>
+    </nav>
+  </header>
+
+  <main>
+    <article class="welcome-container">
+      <h1 class="welcome">Welcome back, User[for now]! Here's your personalized dashboard</h1>
+      <button class="search-btn">
+        <i class="fas fa-search"></i>
+        <h4>Search</h4>
+      </button>
+    </article>
+
+    <section class="stats-container">
+      
+      <article class="stat-card">
+        <i class="fas fa-eye stat-icon"></i>
+        <output class="stat-value">0</output>
+        <p class="stat-label">Viewed</p>
+      </article>
+      <article class="stat-card">
+        <i class="fas fa-star stat-icon"></i>
+        <output class="stat-value">0</output>
+        <p class="stat-label">Favorites</p>
+      </article>
+      <article class="stat-card">
+        <i class="fas fa-share-square stat-icon"></i>
+        <output class="stat-value">0</output>
+        <p class="stat-label">Shared</p>
+      </article>
+    </section>
+
+   
+
+    <section class="recent-activity">
+      <h2 class="section-title"><i class="fas fa-clock"></i> Recent Activity</h2>
+    </section>
+
+    <section class="document-row">
+      <header class="section-header">
+        <h2 class="section-title"><i class="fas fa-magic"></i> Suggestions</h2>
+        <menu class="section-actions">
+          <button class="allsuggestions">See All</button>
+          <button class="btn btn-primary">Refresh</button>
+        </menu>
+      </header>
+      <p class="section-description">Based on your reading history and preferences</p>
+      <output class="doc-scroll suggestions">
+        <!-- Cards will be inserted here by JavaScript -->
+      </output>
+    </section>
+
+    <section class="document-row">
+      <header class="section-header">
+        <h2 class="section-title"><i class="fas fa-history"></i> Recently Viewed</h2>
+        <menu class="section-actions">
+          <a href="history.html">
+          <button class="btn btn-outline" id="history_btn" >See All</button>
+          </a>
+        </menu>
+      </header>
+      <p class="section-description">Documents you've accessed recently</p>
+      <!--history will be shown here-->
+      <section>
+        <li id="history"></li>
+      </section>
+    </section>
+
+    <section class="document-row">
+      <header class="section-header">
+        <h2 class="section-title"><i class="fas fa-star"></i> Favorites</h2>
+        <menu class="section-actions">
+          <button class="btn btn-outline">Manage</button>
+        </menu>
+      </header>
+      <p class="section-description">Your most important documents</p>
+      <output class="doc-scroll favorites">
+        <!-- Cards will be inserted here by JavaScript -->
+      </output>
+    </section>
+    
+    <section class="view-all-container">
+      <header class="view-all-header">
+        <h2 class="view-all-title"><i class="fas fa-file-alt"></i> All Documents</h2>
+        <menu class="view-all-controls">
+          <button class="btn btn-outline"><i class="fas fa-sync-alt"></i> Refresh</button>
+          <button class="btn btn-primary"><i class="fas fa-download"></i> Export List</button>
+        </menu>
+      </header>
+      
+      <form class="filter-controls">
+        <select class="filter-dropdown">
+          <option>All Categories</option>
+          <option>Finance</option>
+          <option>Project</option>
+          <option>Research</option>
+          <option>Marketing</option>
+        </select>
+        
+        <select class="filter-dropdown">
+          <option>All Types</option>
+          <option>PDF</option>
+          <option>DOCX</option>
+          <option>XLSX</option>
+          <option>PPTX</option>
+        </select>
+        
+        <select class="filter-dropdown">
+          <option>Sort by: Recently Added</option>
+          <option>Sort by: Name (A-Z)</option>
+          <option>Sort by: Most Viewed</option>
+          <option>Sort by: Last Modified</option>
+        </select>
+        
+      </form>
+      
+      <output class="documents-grid" id="all-documents-grid">
+        <!-- Documents will be inserted here by JavaScript -->
+      </output>
+      
+      <nav class="pagination">
+        <button class="page-btn"><i class="fas fa-angle-left"></i></button>
+        <button class="page-btn active">1</button>
+        <button class="page-btn">2</button>
+        <button class="page-btn">3</button>
+        <button class="page-btn"><i class="fas fa-angle-right"></i></button>
+      </nav>
+    </section>
+  </main>
+
+  <script type="module" src="home.js"></script>
+</body>
+</html>
