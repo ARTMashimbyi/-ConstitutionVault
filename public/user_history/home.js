@@ -49,7 +49,7 @@ async function loadAllDocuments() {
             ...doc.data(),
             isNew: isDocumentNew(doc.data().uploadDate)
         }));
-        console.log(loadedDocuments[0]);
+       // console.log(loadedDocuments[0]);
         renderAllSections();
     });
 }
@@ -64,23 +64,32 @@ async function loadUserInteractions(userId) {
             isFavorite: [],
             shared: []
         };
-        console.log("User interactions loaded:", userInteractions);
+        //console.log("User interactions loaded:", userInteractions);
         updateStats(userInteractions);
     } else {
         console.error("User document does not exist.");
     }
 }
 // Mukondi
+const arr1=[];
 async function userHistory(user){
   const arr1 =[];
-  const userRef = doc(db, "users", user);
+  const userRef = doc(db, "user_history", user);
     const userSnap = await getDoc(userRef);
     if (userSnap.exists()) {
-      try{const history = userSnap.data().userInteractions.viewed;
+      try{const history = userSnap.data().viewed;
       history.forEach(doc=>{
-        getTitle(doc);
+        arr1.unshift(doc);
       });     
-}
+  
+        //arr1.forEach(doc=>{
+          //getTitle(arr1[0]);
+          //console.log(doc);
+       // });
+      
+     
+      
+      }
    catch{ 
 
   const historyList = document.getElementById('history');
@@ -111,8 +120,6 @@ async function getTitle(data){
       const historyList=document.getElementById('history');
       historyList.innerHTML=html;
       }
-      
-     
   }
 
 // Render all documents in the main grid
@@ -202,7 +209,7 @@ async function incrementViewCount(docId) {
       console.log("in increment id:", currentUserId);
       
       const docRef = doc(db, "constitutionalDocuments", docId);
-      const userRef = doc(db, "users", currentUserId);
+      const userRef = doc(db, "user_history", currentUserId);
 
       const userSnap = await getDoc(userRef);
       if (!userSnap.exists()) {
@@ -212,12 +219,11 @@ async function incrementViewCount(docId) {
       
       await Promise.all([
         updateDoc(docRef, {
-        clicks: increment(1),
-        lastViewed: new Date().toISOString()
+        [`viewed`]: arrayRemove(docId)
       }),
       updateDoc(userRef, {
-          [`userInteractions.clicks.${docId}`]: increment(1),
-          [`userInteractions.viewed`]: arrayUnion(docId)
+          
+          [`viewed`]: arrayUnion(docId)
         }, { merge: true })
       ]);
       
@@ -294,7 +300,7 @@ async function renderAllSections() {
         .sort(([, aClicks], [, bClicks]) => bClicks - aClicks)
         .slice(0, 3)
         .map(([docId]) => docId);
-    console.log("mostClicked:", mostClicked);
+   // console.log("mostClicked:", mostClicked);
     const suggested = loadedDocuments.filter(doc => mostClicked.includes(doc.id));
     
     

@@ -41,20 +41,30 @@ async function initApp() {
       showLoading(false);
     }
 }
-
-async function loadAllDocuments(user) {
-                
-    const userRef = doc(db, "users", user);
+const arr1 =[]; //update history to show latest first
+async function loadAllDocuments(user) {            
+    const userRef = doc(db, "user_history", user);
     const userSnap = await getDoc(userRef);
 
     if (userSnap.exists()) {
-        const history = userSnap.data().userInteractions.viewed;
-        
+        const history = userSnap.data().viewed;
         history.forEach(doc=>{
-        getTitle(doc);
-      });       
+        arr1.unshift(doc);
+        
+      });   
+      
       
 }
+try{
+        arr1.forEach(doc=>{
+          getTitle(doc);
+          console.log(doc);
+        });
+      }
+      catch{
+        console.log("no history");
+      }    
+console.log(arr1[0]);
 }
 
 async function loadUserInteractions(userId) {
@@ -73,27 +83,7 @@ async function loadUserInteractions(userId) {
         console.error("User document does not exist.");
     }
 }
-// async function userHistory(user){
-  
-//   const userRef = doc(db, "users", user);
-//     const userSnap = await getDoc(userRef);
-//     if (userSnap.exists()) {
-//       const history = userSnap.data().userInteractions.viewed;
-//       history.forEach(doc=>{
-//         getTitle(doc);
-//       });     
-// }
-// else{
-//   const historyList = document.getElementById('history');
-//   const li=`
-//           <li>
-//           <section >"No user history"</section>
-//           </li>
-//           `;
-//           historyList.innerHTML=li;
-// }
-// }
-// userHistory(currentUserId);
+
 
 async function getTitle(data){ 
   if(data.length){
@@ -183,7 +173,7 @@ function createDocCard(doc) {
     openDocument(doc);
   });
   
-  card.addEventListener('click', () => openDocument(doc));
+  //card.addEventListener('click', () => openDocument(doc));
   console.log("card loaded");
   return card;
   }
@@ -194,7 +184,7 @@ async function incrementViewCount(docId) {
       console.log("in increment id:", currentUserId);
       
       const docRef = doc(db, "constitutionalDocuments", docId);
-      const userRef = doc(db, "users", currentUserId);
+      const userRef = doc(db, "user_history", currentUserId);
 
       const userSnap = await getDoc(userRef);
       if (!userSnap.exists()) {
@@ -203,16 +193,18 @@ async function incrementViewCount(docId) {
       }
       
       await Promise.all([
-        updateDoc(docRef, {
-        clicks: increment(1),
-        lastViewed: new Date().toISOString()
-      }),
+       
       updateDoc(userRef, {
-          [`userInteractions.clicks.${docId}`]: increment(1),
-          [`userInteractions.viewed`]: arrayUnion(docId)
+         // [`userInteractions.clicks.${docId}`]: increment(1),
+          [`viewed`]: arrayRemove(docId)
+        }, { merge: true }),
+    
+       updateDoc(userRef, {
+         // [`userInteractions.clicks.${docId}`]: increment(1),
+          [`viewed`]: arrayUnion(docId)
         }, { merge: true })
       ]);
-      
+      console.log("db updated");
       await loadUserInteractions(currentUserId); // Reload user interactions
       updateStats(); // Update stats after incrementing view count
     } catch (error) {
