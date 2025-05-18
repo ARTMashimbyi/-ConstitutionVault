@@ -11,6 +11,7 @@
  *   • institution?: string
  *   • category?: string
  *   • keywords?: string[]
+ *   • snippet?: string    // snippet of matched text
  *
  * @param {HTMLElement} container
  * @param {Array<Object>} results
@@ -59,9 +60,18 @@ export function renderSearchResults(container, results) {
       article.appendChild(p);
     }
 
-    // 3.4 Snippet preview
+    // 3.4 Snippet preview (if provided)
+    if (item.snippet) {
+      const snipP = document.createElement("p");
+      snipP.className = "result-snippet";
+      snipP.textContent = item.snippet;
+      article.appendChild(snipP);
+    }
+
+    // 3.5 Media/document preview
     const fig = document.createElement("figure");
     let previewEl;
+
     switch (item.fileType) {
       case "image":
         previewEl = document.createElement("img");
@@ -91,13 +101,12 @@ export function renderSearchResults(container, results) {
     fig.appendChild(previewEl);
     article.appendChild(fig);
 
-    // 3.5 Single action: View in Full
+    // 3.6 Single action: View in Full
     const footer = document.createElement("footer");
     footer.className = "result-actions";
 
     const viewLink = document.createElement("a");
     viewLink.href        = item.url;
-    // open in the same tab so browser back button works
     viewLink.target      = "_self";
     viewLink.textContent = "View in Full";
     viewLink.className   = "btn btn-primary";

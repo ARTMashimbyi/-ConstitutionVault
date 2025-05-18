@@ -1,69 +1,89 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Edit Constitutional Document</title>
-  <link rel="stylesheet" href="style.css" />
-</head>
-<body>
-  <header>
-    <h1>Edit Constitutional Document</h1>
-  </header>
-  
-  <main>
-    <section class="document-form">
-      <form id="editDocForm">
-        <fieldset>
-          <legend>Document Information</legend>
-          
-          <article class="form-field">
-            <label for="docTitle">Title:</label>
-            <input type="text" id="docTitle" required />
-          </article>
-          
-          <article class="form-field">
-            <label for="docInstitution">Institution/Place:</label>
-            <input type="text" id="docInstitution" />
-          </article>
-          
-          <article class="form-field">
-            <label for="docAuthor">Author:</label>
-            <input type="text" id="docAuthor" />
-          </article>
-          
-          <article class="form-field">
-            <label for="docCategory">Category:</label>
-            <input type="text" id="docCategory" />
-          </article>
-          
-          <article class="form-field">
-            <label for="docKeywords">Keywords (comma separated):</label>
-            <input type="text" id="docKeywords" />
-          </article>
-          
-          <article class="form-field">
-            <label for="docDate">Date:</label>
-            <input type="date" id="docDate" />
-          </article>
-        </fieldset>
-        
-        <nav class="form-actions">
-          <button type="submit" class="btn primary">💾 Save Changes</button>
-          <button type="button" id="cancelButton" class="btn secondary">Cancel</button>
-        </nav>
-      </form>
-    </section>
-    
-    <aside class="status-container">
-      <p id="message" aria-live="polite"></p>
-    </aside>
-  </main>
-  
-  <footer>
-    <p>ConstitutionVault Document Editor</p>
-  </footer>
-  
-  <script type="module" src="edit.js"></script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Edit Constitutional Document</title>
+    <!-- assuming your edit-specific styles live alongside this file -->
+    <link rel="stylesheet" href="style.css" />
+  </head>
+
+  <body>
+    <header>
+      <h1>Edit Constitutional Document</h1>
+    </header>
+
+    <main>
+      <section class="document-form">
+        <form id="editDocForm">
+          <!-- hidden field to hold the document ID -->
+          <input type="hidden" id="docId" />
+
+          <fieldset>
+            <legend>Document Information</legend>
+
+            <div class="form-field">
+              <label for="docTitle">Title</label>
+              <input type="text" id="docTitle" required />
+            </div>
+
+            <div class="form-field">
+              <label for="docInstitution">Institution / Place</label>
+              <input type="text" id="docInstitution" />
+            </div>
+
+            <div class="form-field">
+              <label for="docAuthor">Author</label>
+              <input type="text" id="docAuthor" />
+            </div>
+
+            <div class="form-field">
+              <label for="docCategory">Category</label>
+              <input type="text" id="docCategory" />
+            </div>
+
+            <div class="form-field">
+              <label for="docKeywords">
+                Keywords <small>(comma-separated)</small>
+              </label>
+              <input type="text" id="docKeywords" />
+            </div>
+
+            <div class="form-field">
+              <label for="docCreated">Created Date</label>
+              <input
+                type="date"
+                id="docCreated"
+                disabled
+                title="Original upload date"
+              />
+            </div>
+
+            <div class="form-field">
+              <label for="docDate">Last Modified</label>
+              <input type="date" id="docDate" />
+            </div>
+          </fieldset>
+
+          <nav class="form-actions">
+            <button type="submit" class="btn primary">💾 Save Changes</button>
+            <button type="button" id="cancelButton" class="btn secondary">
+              Cancel
+            </button>
+          </nav>
+        </form>
+      </section>
+
+      <aside class="status-container">
+        <p id="message" aria-live="polite"></p>
+      </aside>
+    </main>
+
+    <footer>
+      <p>ConstitutionVault Document Editor</p>
+    </footer>
+
+    <!-- edit.js lives in the same folder as this edit.html -->
+    <script type="module" src="edit.js"></script>
+  </body>
 </html>

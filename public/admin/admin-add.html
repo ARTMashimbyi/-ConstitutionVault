@@ -2,110 +2,108 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
     <title>ConstitutionVault | Admin Upload</title>
     <link rel="stylesheet" href="admin-add.css" />
-    <style>
-      .file-container {
-        margin-bottom: 15px;
-      }
-      .text-content {
-        display: none;
-        width: 100%;
-        min-height: 150px;
-        margin-top: 5px;
-        padding: 10px;
-        font-family: Arial, sans-serif;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-      }
-      .max-size-note {
-        margin-top: 5px;
-        font-size: 0.85em;
-        color: #666;
-      }
-    </style>
   </head>
   <body>
-    <header>
-      <a href="hierarcy.html" class="back-arrow">←</a>
-      <h1>ConstitutionVault Admin Portal</h1>
+    <header class="admin-header">
+      <a href="hierarcy.html" class="back-arrow" aria-label="Back to hierarchy"
+        >←</a
+      >
+      <h1>Admin Portal</h1>
     </header>
-    <main>
-      <section>
-        <h2>Upload Constitution Vault Data</h2>
-        <form id="uploadForm" enctype="multipart/form-data">
-          <fieldset>
-            <legend>Add File</legend>
 
-            
-            <label for="fileType">File Type</label>
+    <main class="upload-page">
+      <form id="uploadForm" class="upload-form" novalidate>
+        <fieldset>
+          <legend>Upload a File</legend>
+
+          <!-- File type selector -->
+          <label for="fileType">
+            File Type
             <select id="fileType" name="fileType" required>
-              <option value="document">Document/PDF</option>
+              <option value="document">Document / PDF</option>
               <option value="video">Video</option>
               <option value="image">Image</option>
               <option value="audio">Audio</option>
               <option value="text">Text</option>
             </select>
+          </label>
 
-            
-            <div class="file-container">
-              <label for="file" id="fileLabel">Upload File</label>
-              <input type="file" id="file" name="file" />
-              <p class="max-size-note">Maximum file size allowed: 100 MB</p>
-              
-              
-              <label for="textContent" id="textContentLabel" style="display: none;">Enter Text Content</label>
-              <textarea id="textContent" name="textContent" class="text-content"></textarea>
-            </div>
+          <!-- File upload container (shown for non‐text types) -->
+          <label for="file" id="fileContainer">
+            Upload File
+            <input type="file" id="file" name="file" />
+            <p class="max-size-note">Max size: 100 MB</p>
+          </label>
 
-            
-            <label for="title">Title</label>
+          <!-- Text input container (shown only when “Text” is selected) -->
+          <label for="textContent" id="textContainer" hidden>
+            Enter Text
+            <textarea id="textContent" name="textContent" rows="5"></textarea>
+          </label>
+
+          <!-- Title -->
+          <label for="title">
+            Title
             <input type="text" id="title" name="title" required />
+          </label>
 
-            <label for="date">Date</label>
-            <input
-              type="date"
-              id="date"
-              name="date"
-              required
-              class="readonly-field"
-              readonly
-            />
+          <!-- Upload date (editable) -->
+          <label for="date">
+            Upload Date
+            <input type="date" id="date" name="date" required />
+          </label>
 
-            <label for="institution">Institution/Place</label>
+          <!-- Institution/Place -->
+          <label for="institution">
+            Institution / Place
             <input type="text" id="institution" name="institution" />
+          </label>
 
-            <label for="author" id="authorLabel">Author</label>
+          <!-- Author (only for certain types if you like) -->
+          <label for="author" id="authorContainer">
+            Author
             <input type="text" id="author" name="author" />
+          </label>
 
-            <label for="category">Category</label>
+          <!-- Category -->
+          <label for="category" id="categoryContainer">
+            Category
             <input type="text" id="category" name="category" />
+          </label>
 
-            <label for="keywords">Keywords (comma separated)</label>
+          <!-- Keywords -->
+          <label for="keywords" id="keywordsContainer">
+            Keywords (comma-separated)
             <input type="text" id="keywords" name="keywords" />
+          </label>
 
-            <label for="directory">Directory Location</label>
+          <!-- Directory -->
+          <label for="directory">
+            Directory Location
             <input
               type="text"
               id="directory"
               name="directory"
-              required
-              class="readonly-field"
               readonly
+              aria-readonly="true"
             />
+          </label>
 
-            <button type="submit">Upload</button>
-          </fieldset>
-        </form>
-
-        <p
-          id="uploadStatus"
-          style="display: none; color: green; font-weight: bold"
-        ></p>
-      </section>
+          <!-- Submit button and status -->
+          <button type="submit" class="btn-submit">Upload</button>
+          <p id="uploadStatus" role="status" aria-live="polite"></p>
+        </fieldset>
+      </form>
     </main>
-    <footer>
-      <p>&copy; 2025 ConstitutionVault | All Rights Reserved</p>
+
+    <footer class="admin-footer">
+      &copy; 2025 ConstitutionVault | All Rights Reserved
     </footer>
 
     <script type="module" src="admin-add.js"></script>
