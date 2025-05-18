@@ -52,9 +52,11 @@ async function loadAllDocuments(user) {
         arr1.unshift(doc);
         
       });   
-      
-      
-}
+    }
+      else{
+        console.log("no user snap");
+      }
+
 try{
         arr1.forEach(doc=>{
           getTitle(doc);

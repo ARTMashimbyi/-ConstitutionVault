@@ -71,49 +71,49 @@ async function loadUserInteractions(userId) {
     }
 }
 //Mukondi
-async function userHistory(user){
-  const arr1 =[];
-  const userRef = doc(db, "users", user);
-    const userSnap = await getDoc(userRef);
-    if (userSnap.exists()) {
-      try{const history = userSnap.data().userInteractions.viewed;
-      history.forEach(doc=>{
-        getTitle(doc);
-      });     
-}
-   catch{ 
+// async function userHistory(user){
+//   const arr1 =[];
+//   const userRef = doc(db, "users", user);
+//     const userSnap = await getDoc(userRef);
+//     if (userSnap.exists()) {
+//       try{const history = userSnap.data().userInteractions.viewed;
+//       history.forEach(doc=>{
+//         getTitle(doc);
+//       });     
+// }
+//    catch{ 
 
-  const historyList = document.getElementById('history');
-  const li=`
-          No user history
-          `;
-          historyList.innerHTML=li;
-}
-}
-}
-userHistory(currentUserId);
-let html='';
-async function getTitle(data){ 
-  if(data.length){
-       const docID = data;
-        const docRef = doc(collection(db, 'constitutionalDocuments'), docID );
-        const docSnap1 = await getDoc(docRef);
-        if (docSnap1.exists()) {
-          const docData = docSnap1.data();
-          console.log(docData.title)
-          const li=`
-          <li>
-            <section >${docData.title}</section>
-          </li>
-          `;
-         html +=li;
-        }      
-      const historyList=document.getElementById('history');
-      historyList.innerHTML=html;
-      }
+//   const historyList = document.getElementById('history');
+//   const li=`
+//           No user history
+//           `;
+//           historyList.innerHTML=li;
+// }
+// }
+// }
+// userHistory(currentUserId);
+// let html='';
+// async function getTitle(data){ 
+//   if(data.length){
+//        const docID = data;
+//         const docRef = doc(collection(db, 'constitutionalDocuments'), docID );
+//         const docSnap1 = await getDoc(docRef);
+//         if (docSnap1.exists()) {
+//           const docData = docSnap1.data();
+//           console.log(docData.title)
+//           const li=`
+//           <li>
+//             <section >${docData.title}</section>
+//           </li>
+//           `;
+//          html +=li;
+//         }      
+//       const historyList=document.getElementById('history');
+//       historyList.innerHTML=html;
+//       }
       
      
-  }
+//   }
 
 
 // Render all documents in the main grid
@@ -189,6 +189,7 @@ function createDocCard(doc) {
   viewBtn.addEventListener('click', async (e) => {
     e.stopPropagation();
     await incrementViewCount(doc.id);
+    await ViewCount(doc.id);
     openDocument(doc);
   });
   
@@ -224,6 +225,38 @@ async function incrementViewCount(docId) {
       
       await loadUserInteractions(currentUserId); // Reload user interactions
       updateStats(); // Update stats after incrementing view count
+    } catch (error) {
+      console.error("Error incrementing view count:", error);
+    }
+}
+// Mukondi update history
+async function ViewCount(docId) {
+    console.log("ViewCount called");
+    try {
+      console.log("in increment id:", currentUserId);
+      
+      const docRef = doc(db, "constitutionalDocuments", docId);
+      const userRef = doc(db, "user_history", currentUserId);
+      console.log(userRef);
+      const userSnap = await getDoc(userRef);
+      if (!userSnap.exists()) {
+        console.error("Document does not exist.");
+        return;
+      }
+      
+      await Promise.all([
+        updateDoc(userRef, {
+        [`viewed`]: arrayRemove(docId)},
+        { merge: true }),
+         
+      updateDoc(userRef, {
+          
+          [`viewed`]: arrayUnion(docId)
+        }, { merge: true })
+      ]);
+      
+     // await loadUserInteractions(currentUserId); // Reload user interactions
+      //updateStats(); // Update stats after incrementing view count
     } catch (error) {
       console.error("Error incrementing view count:", error);
     }

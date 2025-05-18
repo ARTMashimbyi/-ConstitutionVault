@@ -30,10 +30,11 @@ async function initApp() {
     try {
       showLoading(true);
       search();
-      await loadAllDocuments();
+      //await loadAllDocuments();
       await loadUserInteractions(currentUserId);
-      setupEventListeners();
-      renderAllSections(); //since in loadAllDocuments
+      
+      //setupEventListeners();
+      //renderAllSections(); //since in loadAllDocuments
     } catch (error) {
       console.error("Initialization error:", error);
       showError("Failed to load documents");
@@ -41,21 +42,21 @@ async function initApp() {
       showLoading(false);
     }
 }
-async function loadAllDocuments() {
-    const collectionRef = collection(db, "constitutionalDocuments");
-    onSnapshot(collectionRef, (snapshot) => {
-        loadedDocuments = snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data(),
-            isNew: isDocumentNew(doc.data().uploadDate)
-        }));
-       // console.log(loadedDocuments[0]);
-        renderAllSections();
-    });
-}
+// async function loadAllDocuments() {
+//     const collectionRef = collection(db, "constitutionalDocuments");
+//     onSnapshot(collectionRef, (snapshot) => {
+//         loadedDocuments = snapshot.docs.map(doc => ({
+//             id: doc.id,
+//             ...doc.data(),
+//             isNew: isDocumentNew(doc.data().uploadDate)
+//         }));
+//        // console.log(loadedDocuments[0]);
+//         renderAllSections();
+//     });
+// }
 
 async function loadUserInteractions(userId) {
-    const userRef = doc(db, "users", userId);
+    const userRef = doc(db, "user_history", userId);
     const userSnap = await getDoc(userRef);
     if (userSnap.exists()) {
         userInteractions = userSnap.data().userInteractions || {
@@ -73,25 +74,26 @@ async function loadUserInteractions(userId) {
 // Mukondi
 const arr1=[];
 async function userHistory(user){
-  const arr1 =[];
+  console.log("user history in function");
+  console.log(user);
   const userRef = doc(db, "user_history", user);
     const userSnap = await getDoc(userRef);
     if (userSnap.exists()) {
-      try{const history = userSnap.data().viewed;
+      console.log(userSnap);
+      try{
+        const history = userSnap.data().viewed;
       history.forEach(doc=>{
         arr1.unshift(doc);
+        console.log("history exists");
       });     
   
-        //arr1.forEach(doc=>{
-          //getTitle(arr1[0]);
-          //console.log(doc);
-       // });
-      
-     
-      
+        arr1.forEach(doc=>{
+          getTitle(doc);
+          console.log(doc);
+       });
       }
    catch{ 
-
+    console.log("catching");
   const historyList = document.getElementById('history');
   const li=`
           No user history
@@ -99,7 +101,15 @@ async function userHistory(user){
           historyList.innerHTML=li;
 }
 }
+else{
+  const historyList = document.getElementById('history');
+  const li=`
+          No user history
+          `;
+          historyList.innerHTML=li;
 }
+}
+
 userHistory(currentUserId);
 let html='';
 async function getTitle(data){ 
@@ -123,34 +133,34 @@ async function getTitle(data){
   }
 
 // Render all documents in the main grid
-function renderAllDocuments() {
-  const container = document.getElementById('all-documents-grid');
-  if (!container) return;
+// function renderAllDocuments() {
+//   const container = document.getElementById('all-documents-grid');
+//   if (!container) return;
 
-  container.innerHTML = '';
+//   container.innerHTML = '';
 
-  if (loadedDocuments.length === 0) {
-    container.innerHTML = `
-      <article class="empty-state" style="grid-column: 1/-1">
-        <i class="fas fa-folder-open"></i>
-        <p>No documents found</p>
-      </article>
-    `;
-    return;
-  }
+//   if (loadedDocuments.length === 0) {
+//     container.innerHTML = `
+//       <article class="empty-state" style="grid-column: 1/-1">
+//         <i class="fas fa-folder-open"></i>
+//         <p>No documents found</p>
+//       </article>
+//     `;
+//     return;
+//   }
 
-  loadedDocuments.forEach(doc => {
-    container.appendChild(createDocCard(doc));
-  });
-}
+//   loadedDocuments.forEach(doc => {
+//     container.appendChild(createDocCard(doc));
+//   });
+// }
 
 
-function isDocumentNew(uploadDate) {
-    if (!uploadDate) return false;
-    const uploadTime = new Date(uploadDate).getTime();
-    const weekAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
-    return uploadTime > weekAgo;
-}
+// function isDocumentNew(uploadDate) {
+//     if (!uploadDate) return false;
+//     const uploadTime = new Date(uploadDate).getTime();
+//     const weekAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
+//     return uploadTime > weekAgo;
+// }
 
 
 // Create semantic document card element
@@ -185,26 +195,27 @@ function createDocCard(doc) {
   `;
   
   // Add event listeners
-  const favBtn = card.querySelector('.fav-btn');
-  favBtn.addEventListener('click', async (e) => {
-    e.stopPropagation();
-    await toggleFavorite(doc.id, !doc.isFavorite);
-  });
+  // const favBtn = card.querySelector('.fav-btn');
+  // favBtn.addEventListener('click', async (e) => {
+  //   e.stopPropagation();
+  //   await toggleFavorite(doc.id, !doc.isFavorite);
+  // });
   
   const viewBtn = card.querySelector('.view-btn');
   viewBtn.addEventListener('click', async (e) => {
     e.stopPropagation();
-    await incrementViewCount(doc.id);
+    await ViewCount(doc.id);
+    console.log("viewcount awaited");
     openDocument(doc);
   });
   
-  card.addEventListener('click', () => openDocument(doc));
+  //card.addEventListener('click', () => openDocument(doc));
   
   return card;
   }
   
 
-async function incrementViewCount(docId) {
+async function ViewCount(docId) {
     try {
       console.log("in increment id:", currentUserId);
       
@@ -243,179 +254,179 @@ function openDocument(doc) {
 }
 
 // Render documents to a specific section
-function renderDocuments(sectionSelector, docs) {
-  const container = document.querySelector(sectionSelector);
-  if (!container) return;
+// function renderDocuments(sectionSelector, docs) {
+//   const container = document.querySelector(sectionSelector);
+//   if (!container) return;
 
-  container.innerHTML = '';
+//   container.innerHTML = '';
 
-  if (!docs || docs.length === 0) {
-    container.innerHTML = `
-      <article class="empty-state">
-        <i class="fas fa-folder-open"></i>
-        <p>No documents found</p>
-      </article>
-    `;
-    return;
-  }
+//   if (!docs || docs.length === 0) {
+//     container.innerHTML = `
+//       <article class="empty-state">
+//         <i class="fas fa-folder-open"></i>
+//         <p>No documents found</p>
+//       </article>
+//     `;
+//     return;
+//   }
 
-  docs.forEach(doc => {
-    container.appendChild(createDocCard(doc));
-  });
-}
+//   docs.forEach(doc => {
+//     container.appendChild(createDocCard(doc));
+//   });
+// }
 
 
 // Toggle favorite status in Firestore
-async function toggleFavorite(docId, shouldFavorite) {
-  try {
-    const userRef = doc(db, "users", currentUserId);
-    const userSnap = await getDoc(userRef);
+// async function toggleFavorite(docId, shouldFavorite) {
+//   try {
+//     const userRef = doc(db, "users", currentUserId);
+//     const userSnap = await getDoc(userRef);
 
-    if(!userSnap.exists()) {
-        console.error("User document does not exist.");
-        return;
-    }
+//     if(!userSnap.exists()) {
+//         console.error("User document does not exist.");
+//         return;
+//     }
 
-    await updateDoc(userRef, {
-      [`userInteractions.isFavorite`]: shouldFavorite ? arrayUnion(docId) : arrayRemove(docId)
-    });  
+//     await updateDoc(userRef, {
+//       [`userInteractions.isFavorite`]: shouldFavorite ? arrayUnion(docId) : arrayRemove(docId)
+//     });  
 
-    await loadUserInteractions(currentUserId);
-    renderAllSections(); // Re-render sections after toggling favorite
-    updateStats(); // Update stats after toggling favorite
-  } catch (error) {
-    console.error("Error updating favorite:", error);
-  }
-}
+//     await loadUserInteractions(currentUserId);
+//     renderAllSections(); // Re-render sections after toggling favorite
+//     updateStats(); // Update stats after toggling favorite
+//   } catch (error) {
+//     console.error("Error updating favorite:", error);
+//   }
+// }
 
 // Render all document sections
-async function renderAllSections() {
-    await loadUserInteractions(currentUserId); // Reload user interactions
-    // Render suggestions ad favorites(first 3 documents)
-    loadedDocuments.forEach(doc => {
-      doc.isFavorite = userInteractions.isFavorite?.includes(doc.id);
-    });
+// async function renderAllSections() {
+//     await loadUserInteractions(currentUserId); // Reload user interactions
+//     // Render suggestions ad favorites(first 3 documents)
+//     loadedDocuments.forEach(doc => {
+//       doc.isFavorite = userInteractions.isFavorite?.includes(doc.id);
+//     });
 
-    const mostClicked = Object.entries(userInteractions.clicks || {})
-        .sort(([, aClicks], [, bClicks]) => bClicks - aClicks)
-        .slice(0, 3)
-        .map(([docId]) => docId);
+    // const mostClicked = Object.entries(userInteractions.clicks || {})
+    //     .sort(([, aClicks], [, bClicks]) => bClicks - aClicks)
+    //     .slice(0, 3)
+    //     .map(([docId]) => docId);
    // console.log("mostClicked:", mostClicked);
-    const suggested = loadedDocuments.filter(doc => mostClicked.includes(doc.id));
+    //const suggested = loadedDocuments.filter(doc => mostClicked.includes(doc.id));
     
     
-    renderDocuments('.suggestions', suggested);
+    //renderDocuments('.suggestions', suggested);
 
 
     // Render favorites
-    const favorites = loadedDocuments.filter(doc => doc.isFavorite);
-    renderDocuments('.favorites', favorites);
+    // const favorites = loadedDocuments.filter(doc => doc.isFavorite);
+    // renderDocuments('.favorites', favorites);
   
     // Render all documents
-    renderAllDocuments();
+    //renderAllDocuments();
 
     //update stats
-    updateStats();
-}
+   // updateStats();
+//}
 
 // Apply filters to documents
-function applyFilters() {
-  const categoryFilter = document.querySelector('.filter-controls select:nth-of-type(1)')?.value;
-  const typeFilter = document.querySelector('.filter-controls select:nth-of-type(2)')?.value;
-  const searchTerm = document.querySelector('.view-all-container .search-input')?.value.toLowerCase();
+// function applyFilters() {
+//   const categoryFilter = document.querySelector('.filter-controls select:nth-of-type(1)')?.value;
+//   const typeFilter = document.querySelector('.filter-controls select:nth-of-type(2)')?.value;
+//   const searchTerm = document.querySelector('.view-all-container .search-input')?.value.toLowerCase();
 
   
 
-  let filtered = [...loadedDocuments];
+//   let filtered = [...loadedDocuments];
 
-  // Apply category filter
-  if (categoryFilter && categoryFilter !== 'All Categories') {
-    filtered = filtered.filter(doc => doc.category === categoryFilter);
-  }
+//   // Apply category filter
+//   if (categoryFilter && categoryFilter !== 'All Categories') {
+//     filtered = filtered.filter(doc => doc.category === categoryFilter);
+//   }
 
-  // Apply type filter
-  if (typeFilter && typeFilter !== 'All Types') {
-    filtered = filtered.filter(doc => doc.fileType === typeFilter);
-  }
+//   // Apply type filter
+//   if (typeFilter && typeFilter !== 'All Types') {
+//     filtered = filtered.filter(doc => doc.fileType === typeFilter);
+//   }
 
-  // Apply search
-  if (searchTerm) {
-    filtered = filtered.filter(doc =>
-      (doc.title?.toLowerCase().includes(searchTerm) ||
-      doc.description?.toLowerCase().includes(searchTerm) ||
-      doc.category?.toLowerCase().includes(searchTerm))
-    );
-  }
+//   // Apply search
+//   if (searchTerm) {
+//     filtered = filtered.filter(doc =>
+//       (doc.title?.toLowerCase().includes(searchTerm) ||
+//       doc.description?.toLowerCase().includes(searchTerm) ||
+//       doc.category?.toLowerCase().includes(searchTerm))
+//     );
+//   }
 
-  // Re-render with filtered documents
-  const container = document.getElementById('all-documents-grid');
-  if (!container) return;
+//   // Re-render with filtered documents
+//   const container = document.getElementById('all-documents-grid');
+//   if (!container) return;
 
-  container.innerHTML = '';
+//   container.innerHTML = '';
 
-  if (filtered.length === 0) {
-    container.innerHTML = `
-      <article class="empty-state" style="grid-column: 1/-1">
-        <i class="fas fa-search"></i>
-        <p>No documents match your filters</p>
-      </article>
-    `;
-    return;
-  }
+//   if (filtered.length === 0) {
+//     container.innerHTML = `
+//       <article class="empty-state" style="grid-column: 1/-1">
+//         <i class="fas fa-search"></i>
+//         <p>No documents match your filters</p>
+//       </article>
+//     `;
+//     return;
+//   }
 
-  filtered.forEach(doc => {
-    container.appendChild(createDocCard(doc));
-  });
-}  
+//   filtered.forEach(doc => {
+//     container.appendChild(createDocCard(doc));
+//   });
+// }  
   // Set up all event listeners
-  function setupEventListeners() {
+  //function setupEventListeners() {
     // Search functionality
-    const searchInput = document.querySelector('.search-input');
-    if (searchInput) {
-      searchInput.addEventListener('input', (e) => {
-        const searchTerm = e.target.value.toLowerCase();
-        if (searchTerm.length > 2) {
-          const filtered = loadedDocuments.filter(doc =>
-            doc.title?.toLowerCase().includes(searchTerm) ||
-            doc.description?.toLowerCase().includes(searchTerm) ||
-            doc.category?.toLowerCase().includes(searchTerm)
-          );
-          renderDocuments('.suggestions', filtered.slice(0, 3));
-        } else {
-          renderDocuments('.suggestions', loadedDocuments.slice(0, 3));
-        }
-      });
-    }
+    // const searchInput = document.querySelector('.search-input');
+    // if (searchInput) {
+    //   searchInput.addEventListener('input', (e) => {
+    //     const searchTerm = e.target.value.toLowerCase();
+    //     if (searchTerm.length > 2) {
+    //       const filtered = loadedDocuments.filter(doc =>
+    //         doc.title?.toLowerCase().includes(searchTerm) ||
+    //         doc.description?.toLowerCase().includes(searchTerm) ||
+    //         doc.category?.toLowerCase().includes(searchTerm)
+    //       );
+    //       renderDocuments('.suggestions', filtered.slice(0, 3));
+    //     } else {
+    //       renderDocuments('.suggestions', loadedDocuments.slice(0, 3));
+    //     }
+    //   });
+    // }
   
     // Quick action buttons
-    document.querySelectorAll('.quick-action').forEach(action => {
-      action.addEventListener('click', () => {
-        const actionText = action.querySelector('h4')?.textContent;
-        console.log(`${actionText} clicked`);
-      });
-    });
+    // document.querySelectorAll('.quick-action').forEach(action => {
+    //   action.addEventListener('click', () => {
+    //     const actionText = action.querySelector('h4')?.textContent;
+    //     console.log(`${actionText} clicked`);
+    //   });
+    // });
   
     // Filter event listeners
-    document.querySelectorAll('.filter-dropdown').forEach(dropdown => {
-      dropdown.addEventListener('change', applyFilters);
-    });
+    // document.querySelectorAll('.filter-dropdown').forEach(dropdown => {
+    //   dropdown.addEventListener('change', applyFilters);
+    // });
   
-    const viewAllSearch = document.querySelector('.view-all-container .search-input');
-    if (viewAllSearch) {
-      viewAllSearch.addEventListener('input', applyFilters);
-    }
+    // const viewAllSearch = document.querySelector('.view-all-container .search-input');
+    // if (viewAllSearch) {
+    //   viewAllSearch.addEventListener('input', applyFilters);
+    // }
   
     // Pagination buttons (simplified example)
-    document.querySelectorAll('.page-btn').forEach(btn => {
-      if (!btn.querySelector('i')) { // Skip arrow buttons
-        btn.addEventListener('click', function() {
-          document.querySelectorAll('.page-btn').forEach(b => b.classList.remove('active'));
-          this.classList.add('active');
-          console.log(`Loading page ${this.textContent}`);
-        });
-      }
-    });
-  }
+  //   document.querySelectorAll('.page-btn').forEach(btn => {
+  //     if (!btn.querySelector('i')) { // Skip arrow buttons
+  //       btn.addEventListener('click', function() {
+  //         document.querySelectorAll('.page-btn').forEach(b => b.classList.remove('active'));
+  //         this.classList.add('active');
+  //         console.log(`Loading page ${this.textContent}`);
+  //       });
+  //     }
+  //   });
+  // }
   
   // UI Helper functions
   function showLoading(show) {
