@@ -19,7 +19,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyAU_w_Oxi6noX_A1Ma4XZDfpIY-jkoPN-c",
   authDomain: "constitutionvault-1b5d1.firebaseapp.com",
   projectId: "constitutionvault-1b5d1",
-  storageBucket: "constitutionvault-1b5d1.appspot.com",
+  storageBucket: "constitutionvault-1b5d1.firebasestorage.app",
   messagingSenderId: "616111688261",
   appId: "1:616111688261:web:97cc0a35c8035c0814312c",
   measurementId: "G-YJEYZ85T3S"
@@ -178,7 +178,7 @@ uploadForm.addEventListener("submit", async (e) => {
     uploadStatus.textContent = "✅ Uploaded successfully! Redirecting…";
     uploadStatus.style.display = "block";
     setTimeout(() => {
-      window.location.href = "hierarchy.html";
+      window.location.href = "hierarcy.html";
     }, 1500);
 
   } catch (err) {
