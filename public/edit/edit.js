@@ -84,7 +84,7 @@ document.addEventListener("DOMContentLoaded", () => {
       statusMsg.style.color = "green";
 
       setTimeout(() => {
-        window.location.href = `hierarcy.html`;
+        window.location.href = `../admin/hierarcy.html`;
       }, 1200);
     } catch (err) {
       console.error("Error updating:", err);
@@ -95,6 +95,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // 3) cancel goes back
   cancelButton.addEventListener("click", () => {
-    window.location.href = `hierarcy.html`;
+    window.location.href = `../admin/hierarcy.html`;
   });
 });
