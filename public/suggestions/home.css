@@ -465,7 +465,11 @@ main {
   font-size: 1.1rem;
   margin-bottom: 0.75rem;
   color: var(--dark-color);
+  max-width: 100%;
   line-height: 1.3;
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .doc-meta {

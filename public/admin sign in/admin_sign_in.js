@@ -1,27 +1,9 @@
 // Import Firebase modules
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
 import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-analytics.js";
-
-// Firebase configuration
-const firebaseConfig = {
-    apiKey: "AIzaSyAU_w_Oxi6noX_A1Ma4XZDfpIY-jkoPN-c",
-    authDomain: "constitutionvault-1b5d1.firebaseapp.com",
-    projectId: "constitutionvault-1b5d1",
-    storageBucket: "constitutionvault-1b5d1.firebasestorage.app",
-    messagingSenderId: "616111688261",
-    appId: "1:616111688261:web:97cc0a35c8035c0814312c",
-    measurementId: "G-YJEYZ85T3S"
-};    
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);        
-const auth = getAuth();
-const provider = new GoogleAuthProvider();
-const db = getFirestore(app);
-
+import { trackActivity } from "./trackUser.js"; // Import the trackUser module
+import { app, auth, db } from "../path/firebaseInit.js"; // Correct centralized import
 // DOM Elements
 const signInButton = document.getElementById('signInButton');
 const signOutButton = document.getElementById('signOutButton');
@@ -162,8 +144,10 @@ onAuthStateChanged(auth, async (user) => {
         message.style.display = "block";
         userButton.style.display = "block";
         
-        // Check if user is admin
-        const isAdmin = await checkAdmin(user);
+        localStorage.setItem('currentUserId', user.uid);
+        await trackActivity(user); // Track user activity
+
+        const isAdmin = await checkAdmin(user);//check if admin
         
         // Update UI based on user role
         handleUserAccess(isAdmin);
