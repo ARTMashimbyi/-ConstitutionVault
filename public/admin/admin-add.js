@@ -1,54 +1,36 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
-import {
-  getFirestore,
-  collection,
-  addDoc,
-  getDocs,
-  query,
-  where
-} from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+// public/admin/admin-add.js
 
-import {
-  getStorage,
-  ref as storageRef,
-  uploadBytes,
-  getDownloadURL
-} from "https://www.gstatic.com/firebasejs/11.6.0/firebase-storage.js";
+// ── Removed Firebase client SDK imports; we no longer talk to Firebase directly 🔄
+// import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+// import { getFirestore, collection, addDoc, getDocs, query, where }
+//   from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+// import { getStorage, ref as storageRef, uploadBytes, getDownloadURL }
+//   from "https://www.gstatic.com/firebasejs/11.6.0/firebase-storage.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyAU_w_Oxi6noX_A1Ma4XZDfpIY-jkoPN-c",
-  authDomain: "constitutionvault-1b5d1.firebaseapp.com",
-  projectId: "constitutionvault-1b5d1",
-  storageBucket: "constitutionvault-1b5d1.firebasestorage.app",
-  messagingSenderId: "616111688261",
-  appId: "1:616111688261:web:97cc0a35c8035c0814312c",
-  measurementId: "G-YJEYZ85T3S"
-};
+// ── Everything above is gone; instead we just use fetch() to our own API
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const storage = getStorage(app);
-
-const uploadForm = document.getElementById("uploadForm");
-const uploadStatus = document.getElementById("uploadStatus");
-const directoryInput = document.getElementById("directory");
-const dateInput = document.getElementById("date");
-const fileTypeSelect = document.getElementById("fileType");
-const fileInput = document.getElementById("file");
-const fileLabel = document.getElementById("fileLabel");
-const textContent = document.getElementById("textContent");
+const uploadForm       = document.getElementById("uploadForm");
+const uploadStatus     = document.getElementById("uploadStatus");
+const directoryInput   = document.getElementById("directory");
+const dateInput        = document.getElementById("date");
+const fileTypeSelect   = document.getElementById("fileType");
+const fileInput        = document.getElementById("file");
+const fileLabel        = document.getElementById("fileLabel");
+const textContent      = document.getElementById("textContent");
 const textContentLabel = document.getElementById("textContentLabel");
 
 const fileTypeAccepts = {
   document: ".pdf,.doc,.docx,.txt,.rtf",
-  video: ".mp4,.mov,.avi,.webm",
-  image: ".jpg,.jpeg,.png,.gif,.svg",
-  audio: ".mp3,.wav,.ogg,.m4a"
+  video:    ".mp4,.mov,.avi,.webm",
+  image:    ".jpg,.jpeg,.png,.gif,.svg",
+  audio:    ".mp3,.wav,.ogg,.m4a"
 };
 
-const today = new Date();
+// Auto-fill today's date
+const today      = new Date();
 dateInput.value = today.toISOString().split("T")[0];
 
+// On load, pick up ?directory=foo from the URL
 document.addEventListener("DOMContentLoaded", () => {
   const dirParam = new URLSearchParams(window.location.search).get("directory");
   if (dirParam) directoryInput.value = dirParam;
@@ -58,134 +40,107 @@ document.addEventListener("DOMContentLoaded", () => {
 fileTypeSelect.addEventListener("change", handleFileTypeChange);
 
 function handleFileTypeChange() {
-  const selectedType = fileTypeSelect.value;
-
-  if (selectedType === "text") {
-    fileInput.style.display = "none";
-    fileLabel.style.display = "none";
-    textContent.style.display = "block";
+  const selected = fileTypeSelect.value;
+  if (selected === "text") {
+    fileInput.style.display        = "none";
+    fileLabel.style.display        = "none";
+    textContent.style.display      = "block";
     textContentLabel.style.display = "block";
-    fileInput.required = false;
-    textContent.required = true;
+    fileInput.required             = false;
+    textContent.required           = true;
   } else {
-    fileInput.style.display = "block";
-    fileLabel.style.display = "block";
-    textContent.style.display = "none";
+    fileInput.style.display        = "block";
+    fileLabel.style.display        = "block";
+    textContent.style.display      = "none";
     textContentLabel.style.display = "none";
-    fileInput.required = true;
-    textContent.required = false;
-
-    if (fileTypeAccepts[selectedType]) {
-      fileInput.setAttribute("accept", fileTypeAccepts[selectedType]);
+    fileInput.required             = true;
+    textContent.required           = false;
+    if (fileTypeAccepts[selected]) {
+      fileInput.setAttribute("accept", fileTypeAccepts[selected]);
     } else {
       fileInput.removeAttribute("accept");
     }
   }
 }
 
-uploadForm.addEventListener("submit", async (e) => {
+uploadForm.addEventListener("submit", async e => {
   e.preventDefault();
   uploadStatus.style.display = "none";
 
   const formData = new FormData(uploadForm);
   const fileType = formData.get("fileType");
 
+  // Validate text vs file
   if (fileType === "text") {
     const text = formData.get("textContent");
-    if (!text || text.trim() === "") {
-      uploadStatus.style.color = "red";
-      uploadStatus.textContent = "⚠️ Please enter text content.";
+    if (!text?.trim()) {
+      uploadStatus.style.color   = "red";
+      uploadStatus.textContent   = "⚠️ Please enter text content.";
       uploadStatus.style.display = "block";
       return;
     }
   } else {
     const file = formData.get("file");
     if (!(file instanceof File) || file.size === 0) {
-      uploadStatus.style.color = "red";
-      uploadStatus.textContent = "⚠️ Please select a file.";
+      uploadStatus.style.color   = "red";
+      uploadStatus.textContent   = "⚠️ Please select a file.";
       uploadStatus.style.display = "block";
       return;
     }
   }
 
+  // Normalize directory
   let dir = (formData.get("directory") || "/").trim();
-  dir = dir.replace(/^\/|\/$/g, "");
+  dir     = dir.replace(/^\/|\/$/g, "");
 
   try {
-    let downloadURL = "";
-    let storagePath = "";
-
-    if (fileType === "text") {
-      const textContent = formData.get("textContent");
-      const safeTitle = formData.get("title").replace(/[^\w\-]/g, "_");
-      const fileName = `${safeTitle}_${Date.now()}.txt`;
-      const blob = new Blob([textContent], { type: "text/plain" });
-      storagePath = dir ? `${dir}/${fileName}` : fileName;
-      const fileRef = storageRef(storage, storagePath);
-      const snap = await uploadBytes(fileRef, blob);
-      downloadURL = await getDownloadURL(snap.ref);
-    } else {
-      const file = formData.get("file");
-      storagePath = dir ? `${dir}/${file.name}` : file.name;
-      const fileRef = storageRef(storage, storagePath);
-      const snap = await uploadBytes(fileRef, file);
-      downloadURL = await getDownloadURL(snap.ref);
-    }
-
-    if (dir && dir !== "") {
-      const segments = dir.split("/");
-      let current = "";
-      for (const seg of segments) {
-        current = current ? `${current}/${seg}` : seg;
-        const dirQuery = await getDocs(
-          query(collection(db, "directories"), where("path", "==", current))
-        );
-        if (dirQuery.empty) {
-          await addDoc(collection(db, "directories"), {
-            name: seg,
-            path: current,
-            description: "",
-            createdAt: new Date().toISOString()
-          });
-        }
-      }
-    }
-
+    // Build metadata payload
     const metadata = {
-
-      fileType: formData.get("fileType"),
-      title: formData.get("title"),
-      date: formData.get("date"),
+      fileType:  formData.get("fileType"),
+      title:     formData.get("title"),
+      date:      formData.get("date"),
       institution: formData.get("institution"),
-      author: formData.get("author"),
-      category: formData.get("category"),
-      keywords: formData.get("keywords")
-        ?.split(",")
-        .map(kw => kw.trim()) || [],
-      directory: formData.get("directory"),
-      storagePath,
-      downloadURL,
-      uploadedAt: new Date().toISOString(),
-      clicks:0
+      author:    formData.get("author"),
+      category:  formData.get("category"),
+      keywords:  formData.get("keywords")
+                    ?.split(",")
+                    .map(kw => kw.trim()) || [],
+      directory: dir,
+      // textContent only if text
+      textContent: formData.get("textContent") || ""
     };
 
-    if (fileType === "text") {
-      metadata.textContent = formData.get("textContent");
+    // Build request body
+    const payload = new FormData();
+    payload.append("metadata", JSON.stringify(metadata));
+    if (fileType !== "text") {
+      payload.append("file", formData.get("file")); // Multer will pick this up
     }
 
-    await addDoc(collection(db, "constitutionalDocuments"), metadata);
+    // 🔄 CHANGED: send to our Express API instead of Firebase client SDK
+    const response = await fetch("http://localhost:4000/api/files", {
+      method: "POST",
+      body: payload
+    });
 
-    uploadStatus.style.color = "green";
-    uploadStatus.textContent = "✅ Uploaded successfully! Redirecting…";
+    if (!response.ok) {
+      throw new Error((await response.json()).error || response.statusText);
+    }
+
+    const { downloadURL } = await response.json();
+
+    uploadStatus.style.color   = "green";
+    uploadStatus.textContent   = "✅ Uploaded successfully! Redirecting…";
     uploadStatus.style.display = "block";
+
     setTimeout(() => {
       window.location.href = "hierarcy.html";
     }, 1500);
 
   } catch (err) {
     console.error("Upload failed:", err);
-    uploadStatus.style.color = "red";
-    uploadStatus.textContent = `❌ Upload failed: ${err.message}. Please try again.`;
+    uploadStatus.style.color   = "red";
+    uploadStatus.textContent   = `❌ Upload failed: ${err.message}`;
     uploadStatus.style.display = "block";
   }
 });
