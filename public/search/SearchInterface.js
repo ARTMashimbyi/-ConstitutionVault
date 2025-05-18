@@ -15,22 +15,22 @@ export function initializeSearchInterface(containerId) {
     return;
   }
 
-  // 1) Create a wrapping <section> for ARIA & styling
+  // 1) Wrapping section
   const wrapper = document.createElement("section");
   wrapper.id = "search-interface";
   wrapper.setAttribute("aria-label", "ConstitutionVault Search Interface");
 
-  // 2) Render & mount the search bar
+  // 2) Search bar
   const searchBar = renderSearchBar(handleSearch);
 
-  // 3) Create & mount the results container
+  // 3) Results container
   const resultsSection = document.createElement("section");
   resultsSection.id = "search-results";
 
   wrapper.append(searchBar, resultsSection);
   container.append(wrapper);
 
-  // 4) Initial load of all documents
+  // 4) Load all documents
   let allDocs = [];
   (async () => {
     resultsSection.innerHTML = "<p>🔄 Loading…</p>";
@@ -46,7 +46,7 @@ export function initializeSearchInterface(containerId) {
   })();
 
   /**
-   * Filters the loaded documents by query and renders results.
+   * Filters documents by query, including full-text content, and renders results.
    *
    * @param {string} query
    */
@@ -55,27 +55,39 @@ export function initializeSearchInterface(containerId) {
     const hits  = [];
 
     for (const data of allDocs) {
-      // gather searchable text fields
-      const textFields = [
+      // combine all searchable fields
+      const fields = [
         data.title,
         data.description,
         data.author,
         data.category,
-        data.institution
+        data.institution,
+        ...(Array.isArray(data.keywords) ? data.keywords : []),
+        data.fullText    // include the extracted document text
       ]
         .filter(Boolean)
         .map(s => s.toLowerCase());
 
-      // keywords match
-      const keywordMatch = Array.isArray(data.keywords) &&
-        data.keywords.some(kw => kw.toLowerCase().includes(lower));
+      // check if any field contains the query
+      const matches = lower === "" 
+        ? true 
+        : fields.some(field => field.includes(lower));
 
-      if (
-        !lower ||
-        textFields.some(field => field.includes(lower)) ||
-        keywordMatch
-      ) {
-        hits.push(data);
+      if (matches) {
+        // extract a snippet around the first occurrence in fullText
+        let snippet = "";
+        if (lower && typeof data.fullText === "string") {
+          const idx = data.fullText.toLowerCase().indexOf(lower);
+          if (idx !== -1) {
+            const start = Math.max(0, idx - 30);
+            const end   = Math.min(data.fullText.length, idx + lower.length + 30);
+            snippet = data.fullText.slice(start, end).trim();
+            if (start > 0) snippet = "… " + snippet;
+            if (end < data.fullText.length) snippet += " …";
+          }
+        }
+
+        hits.push({ ...data, snippet });
       }
     }
 
@@ -91,7 +103,8 @@ export function initializeSearchInterface(containerId) {
       category:    item.category || "",
       keywords:    Array.isArray(item.keywords) ? item.keywords : [],
       url:         item.downloadURL || item.url   || "",
-      fileType:    item.fileType   || "document"
+      fileType:    item.fileType   || "document",
+      snippet:     item.snippet    || ""
     }));
 
     renderSearchResults(resultsSection, results);
