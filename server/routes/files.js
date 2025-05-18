@@ -12,14 +12,20 @@ const upload = multer({
 
 // ----------------------------------------
 // GET /api/files
+// Returns all documents sorted by upload date (newest first)
 // ----------------------------------------
 router.get("/", async (req, res) => {
   try {
-    const snapshot = await db.collection("constitutionalDocuments").get();
+    const snapshot = await db
+      .collection("constitutionalDocuments")
+      .orderBy("uploadedAt", "desc")
+      .get();
+
     const docs = snapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data()
     }));
+
     res.json(docs);
   } catch (err) {
     console.error("Error fetching files:", err);
@@ -42,10 +48,10 @@ router.post("/", upload.single("file"), async (req, res) => {
 
     // 2) If there's a file, upload it to Storage
     if (req.file) {
-      const filename    = `${Date.now()}_${req.file.originalname}`;
-      storagePath       = metadata.directory
-                         ? `${metadata.directory}/${filename}`
-                         : filename;
+      const filename  = `${Date.now()}_${req.file.originalname}`;
+      storagePath     = metadata.directory
+                        ? `${metadata.directory}/${filename}`
+                        : filename;
 
       const file = bucket.file(storagePath);
       await file.save(req.file.buffer, {
@@ -77,11 +83,11 @@ router.post("/", upload.single("file"), async (req, res) => {
 
 // ----------------------------------------
 // PATCH /api/files/:id
-// (Your existing update logic—leave unchanged)
+// Updates metadata fields on an existing document
 // ----------------------------------------
 router.patch("/:id", async (req, res) => {
   try {
-    const updates = req.body; // assume valid fields
+    const updates = req.body; // assume valid fields from client
     await db.collection("constitutionalDocuments")
             .doc(req.params.id)
             .update(updates);
@@ -94,22 +100,22 @@ router.patch("/:id", async (req, res) => {
 
 // ----------------------------------------
 // DELETE /api/files/:id
-// - Deletes both Firestore doc (and optionally the Storage file)
+// Deletes both the Firestore document and its Storage file
 // ----------------------------------------
 router.delete("/:id", async (req, res) => {
   const id = req.params.id;
   try {
-    // 1) Optionally fetch storagePath to delete from Storage
+    // 1) Fetch the doc to get its storagePath
     const docSnap = await db.collection("constitutionalDocuments").doc(id).get();
     if (!docSnap.exists) {
       return res.status(404).json({ error: "Document not found" });
     }
     const { storagePath } = docSnap.data();
 
-    // 2) Delete Firestore document
+    // 2) Delete the Firestore document
     await db.collection("constitutionalDocuments").doc(id).delete();
 
-    // 3) Delete from Storage if a path exists
+    // 3) Delete the file from Storage, if present
     if (storagePath) {
       try {
         await bucket.file(storagePath).delete();
