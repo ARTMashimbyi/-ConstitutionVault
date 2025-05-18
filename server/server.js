@@ -9,7 +9,14 @@ const directoriesRouter = require('./routes/directories');
 const app = express();
 
 // 1) Enable CORS for your front-end origin
-app.use(cors({ origin: 'http://127.0.0.1:5500' }));
+app.use(cors({
+  origin: [
+    'http://127.0.0.1:3002',
+    'http://localhost:3002',
+    'http://127.0.0.1:5500',
+    'http://localhost:5500'
+  ]
+}));
 
 // 2) Parse JSON request bodies
 app.use(express.json());

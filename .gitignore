@@ -1,8 +1,8 @@
-# Ignore all JSON keys inside the firebase-query-api/key directory
-firebase-query-api/key/*.json
+# Ignore service-account JSON keys
+key/*.json
 
-# But keep the .gitkeep file inside the key folder
-!firebase-query-api/key/.gitkeep
+# But keep the folder placeholder
+!key/.gitkeep
 
 # Ignore node_modules
 /node_modules/

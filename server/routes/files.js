@@ -131,33 +131,4 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-router.post("/query", async (req, res) => {
-  try {
-    const { author, category, keywords, institution } = req.body;
-    let query = db.collection("constitutionalDocuments");
-
-    // Apply filters only if they are non-empty
-    if (author) query = query.where("author", "==", author);
-    if (category) query = query.where("category", "==", category);
-    if (institution) query = query.where("institution", "==", institution);
-
-    const snapshot = await query.get();
-    let docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
-    // Keywords are stored as comma-separated strings — do substring match
-    if (keywords) {
-      const keywordsArray = keywords.toLowerCase().split(",").map(k => k.trim());
-      docs = docs.filter(doc => {
-        const docKeywords = (doc.keywords || "").toLowerCase();
-        return keywordsArray.every(k => docKeywords.includes(k));
-      });
-    }
-
-    res.json(docs);
-  } catch (err) {
-    console.error("Error filtering documents:", err);
-    res.status(500).json({ error: "Failed to query documents" });
-  }
-});
-
 module.exports = router;
