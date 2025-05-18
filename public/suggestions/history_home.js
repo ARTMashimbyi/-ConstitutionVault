@@ -112,6 +112,7 @@ else{
 
 userHistory(currentUserId);
 let html='';
+const historyList=document.getElementById('history');
 async function getTitle(data){ 
   if(data.length){
        const docID = data;
@@ -120,15 +121,18 @@ async function getTitle(data){
         if (docSnap1.exists()) {
           const docData = docSnap1.data();
           console.log(docData.title)
-          const li=`
-          <li>
-          <section >${docData.title}</section>
-          </li>
+          const docItem = document.createElement('li');
+          docItem.className = 'document-item';
+          docItem.innerHTML = `
+          <article class="doc-info">
+            <h3 class="doc-title">${docData.title}</h3>
+          </article>
           `;
-         html +=li;
+         
+         historyList.appendChild(docItem);
         }      
-      const historyList=document.getElementById('history');
-      historyList.innerHTML=html;
+      
+      
       }
   }
 
