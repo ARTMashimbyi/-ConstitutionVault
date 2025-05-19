@@ -1,6 +1,6 @@
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
-import { getFirestore, collection, query, orderBy, limit, getDocs, updateDoc, increment, doc, onSnapshot, arrayUnion, arrayRemove,getDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+import { getFirestore, collection, query, orderBy, limit, getDocs, updateDoc, increment,setDoc, doc, onSnapshot, arrayUnion, arrayRemove,getDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 const firebaseConfig = {
     apiKey: "AIzaSyAU_w_Oxi6noX_A1Ma4XZDfpIY-jkoPN-c",
     authDomain: "constitutionvault-1b5d1.firebaseapp.com",
@@ -233,7 +233,7 @@ async function incrementViewCount(docId) {
 async function ViewCount(docId) {
     console.log("ViewCount called");
     try {
-      console.log("in increment id:", currentUserId);
+      console.log("in id:", currentUserId);
       
       const docRef = doc(db, "constitutionalDocuments", docId);
       const userRef = doc(db, "user_history", currentUserId);
@@ -241,6 +241,11 @@ async function ViewCount(docId) {
       const userSnap = await getDoc(userRef);
       if (!userSnap.exists()) {
         console.error("Document does not exist.");
+        let user = currentUserId;
+        //await setDoc(doc(db, "user_history", user));
+        await setDoc(doc(db, "user_history", user), {
+          [`viewed`]: arrayUnion(docId)
+            });
         return;
       }
       

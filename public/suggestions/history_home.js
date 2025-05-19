@@ -1,6 +1,6 @@
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
-import { getFirestore, collection, query, orderBy, limit, getDocs, updateDoc, increment, doc, onSnapshot, arrayUnion, arrayRemove,getDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+import { getFirestore, collection, query, orderBy, limit, getDocs, updateDoc, increment, doc, onSnapshot, arrayUnion, arrayRemove,getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 const firebaseConfig = {
     apiKey: "AIzaSyAU_w_Oxi6noX_A1Ma4XZDfpIY-jkoPN-c",
     authDomain: "constitutionvault-1b5d1.firebaseapp.com",
@@ -32,7 +32,7 @@ async function initApp() {
       search();
       //await loadAllDocuments();
       await loadUserInteractions(currentUserId);
-      
+      await userHistory(currentUserId);
       //setupEventListeners();
       //renderAllSections(); //since in loadAllDocuments
     } catch (error) {
@@ -68,7 +68,7 @@ async function loadUserInteractions(userId) {
         //console.log("User interactions loaded:", userInteractions);
         updateStats(userInteractions);
     } else {
-        console.error("User document does not exist.");
+       // console.error("User document does not exist.");
     }
 }
 // Mukondi
@@ -110,7 +110,7 @@ else{
 }
 }
 
-userHistory(currentUserId);
+//userHistory(currentUserId);
 let html='';
 const historyList=document.getElementById('history');
 async function getTitle(data){ 
@@ -229,6 +229,7 @@ async function ViewCount(docId) {
       const userSnap = await getDoc(userRef);
       if (!userSnap.exists()) {
         console.error("Document does not exist.");
+        await setDoc(doc(db, "user_history", currentUserId));
         return;
       }
       
