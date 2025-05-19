@@ -42,18 +42,7 @@ async function initApp() {
       showLoading(false);
     }
 }
-// async function loadAllDocuments() {
-//     const collectionRef = collection(db, "constitutionalDocuments");
-//     onSnapshot(collectionRef, (snapshot) => {
-//         loadedDocuments = snapshot.docs.map(doc => ({
-//             id: doc.id,
-//             ...doc.data(),
-//             isNew: isDocumentNew(doc.data().uploadDate)
-//         }));
-//        // console.log(loadedDocuments[0]);
-//         renderAllSections();
-//     });
-// }
+
 
 async function loadUserInteractions(userId) {
     const userRef = doc(db, "user_history", userId);
@@ -86,19 +75,19 @@ async function userHistory(user){
         arr1.unshift(doc);
         console.log("history exists");
       });     
-  
-        arr1.forEach(doc=>{
+        var copiedarray = arr1.slice(0,5);
+        copiedarray.forEach(doc=>{
           getTitle(doc);
           console.log(doc);
        });
       }
    catch{ 
     console.log("catching");
-  const historyList = document.getElementById('history');
-  const li=`
-          No user history
-          `;
-          historyList.innerHTML=li;
+  // const historyList = document.getElementById('history');
+  // const li=`
+  //         No user history
+  //         `;
+  //         historyList.innerHTML=li;
 }
 }
 else{
@@ -111,7 +100,7 @@ else{
 }
 
 //userHistory(currentUserId);
-let html='';
+
 const historyList=document.getElementById('history');
 async function getTitle(data){ 
   if(data.length){
@@ -123,11 +112,9 @@ async function getTitle(data){
           console.log(docData.title)
           const docItem = document.createElement('li');
           docItem.className = 'document-item';
-          docItem.innerHTML = `
-          <article class="doc-info">
+          docItem.innerHTML = `<article class="doc-info">
             <h3 class="doc-title">${docData.title}</h3>
-          </article>
-          `;
+          </article> `;
          
          historyList.appendChild(docItem);
         }      
@@ -136,302 +123,9 @@ async function getTitle(data){
       }
   }
 
-// Render all documents in the main grid
-// function renderAllDocuments() {
-//   const container = document.getElementById('all-documents-grid');
-//   if (!container) return;
-
-//   container.innerHTML = '';
-
-//   if (loadedDocuments.length === 0) {
-//     container.innerHTML = `
-//       <article class="empty-state" style="grid-column: 1/-1">
-//         <i class="fas fa-folder-open"></i>
-//         <p>No documents found</p>
-//       </article>
-//     `;
-//     return;
-//   }
-
-//   loadedDocuments.forEach(doc => {
-//     container.appendChild(createDocCard(doc));
-//   });
-// }
 
 
-// function isDocumentNew(uploadDate) {
-//     if (!uploadDate) return false;
-//     const uploadTime = new Date(uploadDate).getTime();
-//     const weekAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
-//     return uploadTime > weekAgo;
-// }
 
-
-// Create semantic document card element
-function createDocCard(doc) {
-  const card = document.createElement('article');
-  card.className = 'doc-card';
-  
-  if (doc.isNew) {
-    const badge = document.createElement('mark');
-    badge.className = 'doc-badge';
-    badge.textContent = 'NEW';
-    card.appendChild(badge);
-  }
-  
-  card.innerHTML = `
-    <h3>${doc.title || 'Untitled Document'}</h3>
-    <menu class="doc-meta">
-      <li><i class="fas fa-file"></i> ${doc.fileType || 'Unknown'}</li>
-      <li><i class="fas fa-eye"></i> ${doc.clicks || 0}</li>
-      <li><i class="fas fa-tag"></i> ${doc.category || 'Uncategorized'}</li>
-    </menu>
-    ${doc.institution ? `<p>${doc.institution}</p>` : ''}
-    <menu class="doc-actions">
-      <li><button class="action-btn view-btn"><i class="fas fa-eye"></i> View</button></li>
-      <li>
-        <button class="action-btn fav-btn ${doc.isFavorite ? 'active' : ''}" 
-                aria-label="${doc.isFavorite ? 'Remove from favorites' : 'Add to favorites'}">
-          <i class="fas fa-star"></i>
-        </button>
-      </li>
-    </menu>
-  `;
-  
-  // Add event listeners
-  // const favBtn = card.querySelector('.fav-btn');
-  // favBtn.addEventListener('click', async (e) => {
-  //   e.stopPropagation();
-  //   await toggleFavorite(doc.id, !doc.isFavorite);
-  // });
-  
-  const viewBtn = card.querySelector('.view-btn');
-  viewBtn.addEventListener('click', async (e) => {
-    e.stopPropagation();
-    await ViewCount(doc.id);
-    console.log("viewcount awaited");
-    openDocument(doc);
-  });
-  
-  //card.addEventListener('click', () => openDocument(doc));
-  
-  return card;
-  }
-  
-
-async function ViewCount(docId) {
-    try {
-      console.log("in increment id:", currentUserId);
-      
-      const docRef = doc(db, "constitutionalDocuments", docId);
-      const userRef = doc(db, "user_history", currentUserId);
-
-      const userSnap = await getDoc(userRef);
-      if (!userSnap.exists()) {
-        console.error("Document does not exist.");
-        await setDoc(doc(db, "user_history", currentUserId));
-        return;
-      }
-      
-      await Promise.all([
-        updateDoc(docRef, {
-        [`viewed`]: arrayRemove(docId)
-      }),
-      updateDoc(userRef, {
-          
-          [`viewed`]: arrayUnion(docId)
-        }, { merge: true })
-      ]);
-      
-      await loadUserInteractions(currentUserId); // Reload user interactions
-      updateStats(); // Update stats after incrementing view count
-    } catch (error) {
-      console.error("Error incrementing view count:", error);
-    }
-}
-
-function openDocument(doc) {
-    console.log(`Opening document: ${doc.title}`);
-    window.open(doc.downloadURL || '#', '_blank');//update time here?
-    // Implement actual document opening logic here
-    console.log(doc.id);
-    console.log(currentUserId);
-}
-
-// Render documents to a specific section
-// function renderDocuments(sectionSelector, docs) {
-//   const container = document.querySelector(sectionSelector);
-//   if (!container) return;
-
-//   container.innerHTML = '';
-
-//   if (!docs || docs.length === 0) {
-//     container.innerHTML = `
-//       <article class="empty-state">
-//         <i class="fas fa-folder-open"></i>
-//         <p>No documents found</p>
-//       </article>
-//     `;
-//     return;
-//   }
-
-//   docs.forEach(doc => {
-//     container.appendChild(createDocCard(doc));
-//   });
-// }
-
-
-// Toggle favorite status in Firestore
-// async function toggleFavorite(docId, shouldFavorite) {
-//   try {
-//     const userRef = doc(db, "users", currentUserId);
-//     const userSnap = await getDoc(userRef);
-
-//     if(!userSnap.exists()) {
-//         console.error("User document does not exist.");
-//         return;
-//     }
-
-//     await updateDoc(userRef, {
-//       [`userInteractions.isFavorite`]: shouldFavorite ? arrayUnion(docId) : arrayRemove(docId)
-//     });  
-
-//     await loadUserInteractions(currentUserId);
-//     renderAllSections(); // Re-render sections after toggling favorite
-//     updateStats(); // Update stats after toggling favorite
-//   } catch (error) {
-//     console.error("Error updating favorite:", error);
-//   }
-// }
-
-// Render all document sections
-// async function renderAllSections() {
-//     await loadUserInteractions(currentUserId); // Reload user interactions
-//     // Render suggestions ad favorites(first 3 documents)
-//     loadedDocuments.forEach(doc => {
-//       doc.isFavorite = userInteractions.isFavorite?.includes(doc.id);
-//     });
-
-    // const mostClicked = Object.entries(userInteractions.clicks || {})
-    //     .sort(([, aClicks], [, bClicks]) => bClicks - aClicks)
-    //     .slice(0, 3)
-    //     .map(([docId]) => docId);
-   // console.log("mostClicked:", mostClicked);
-    //const suggested = loadedDocuments.filter(doc => mostClicked.includes(doc.id));
-    
-    
-    //renderDocuments('.suggestions', suggested);
-
-
-    // Render favorites
-    // const favorites = loadedDocuments.filter(doc => doc.isFavorite);
-    // renderDocuments('.favorites', favorites);
-  
-    // Render all documents
-    //renderAllDocuments();
-
-    //update stats
-   // updateStats();
-//}
-
-// Apply filters to documents
-// function applyFilters() {
-//   const categoryFilter = document.querySelector('.filter-controls select:nth-of-type(1)')?.value;
-//   const typeFilter = document.querySelector('.filter-controls select:nth-of-type(2)')?.value;
-//   const searchTerm = document.querySelector('.view-all-container .search-input')?.value.toLowerCase();
-
-  
-
-//   let filtered = [...loadedDocuments];
-
-//   // Apply category filter
-//   if (categoryFilter && categoryFilter !== 'All Categories') {
-//     filtered = filtered.filter(doc => doc.category === categoryFilter);
-//   }
-
-//   // Apply type filter
-//   if (typeFilter && typeFilter !== 'All Types') {
-//     filtered = filtered.filter(doc => doc.fileType === typeFilter);
-//   }
-
-//   // Apply search
-//   if (searchTerm) {
-//     filtered = filtered.filter(doc =>
-//       (doc.title?.toLowerCase().includes(searchTerm) ||
-//       doc.description?.toLowerCase().includes(searchTerm) ||
-//       doc.category?.toLowerCase().includes(searchTerm))
-//     );
-//   }
-
-//   // Re-render with filtered documents
-//   const container = document.getElementById('all-documents-grid');
-//   if (!container) return;
-
-//   container.innerHTML = '';
-
-//   if (filtered.length === 0) {
-//     container.innerHTML = `
-//       <article class="empty-state" style="grid-column: 1/-1">
-//         <i class="fas fa-search"></i>
-//         <p>No documents match your filters</p>
-//       </article>
-//     `;
-//     return;
-//   }
-
-//   filtered.forEach(doc => {
-//     container.appendChild(createDocCard(doc));
-//   });
-// }  
-  // Set up all event listeners
-  //function setupEventListeners() {
-    // Search functionality
-    // const searchInput = document.querySelector('.search-input');
-    // if (searchInput) {
-    //   searchInput.addEventListener('input', (e) => {
-    //     const searchTerm = e.target.value.toLowerCase();
-    //     if (searchTerm.length > 2) {
-    //       const filtered = loadedDocuments.filter(doc =>
-    //         doc.title?.toLowerCase().includes(searchTerm) ||
-    //         doc.description?.toLowerCase().includes(searchTerm) ||
-    //         doc.category?.toLowerCase().includes(searchTerm)
-    //       );
-    //       renderDocuments('.suggestions', filtered.slice(0, 3));
-    //     } else {
-    //       renderDocuments('.suggestions', loadedDocuments.slice(0, 3));
-    //     }
-    //   });
-    // }
-  
-    // Quick action buttons
-    // document.querySelectorAll('.quick-action').forEach(action => {
-    //   action.addEventListener('click', () => {
-    //     const actionText = action.querySelector('h4')?.textContent;
-    //     console.log(`${actionText} clicked`);
-    //   });
-    // });
-  
-    // Filter event listeners
-    // document.querySelectorAll('.filter-dropdown').forEach(dropdown => {
-    //   dropdown.addEventListener('change', applyFilters);
-    // });
-  
-    // const viewAllSearch = document.querySelector('.view-all-container .search-input');
-    // if (viewAllSearch) {
-    //   viewAllSearch.addEventListener('input', applyFilters);
-    // }
-  
-    // Pagination buttons (simplified example)
-  //   document.querySelectorAll('.page-btn').forEach(btn => {
-  //     if (!btn.querySelector('i')) { // Skip arrow buttons
-  //       btn.addEventListener('click', function() {
-  //         document.querySelectorAll('.page-btn').forEach(b => b.classList.remove('active'));
-  //         this.classList.add('active');
-  //         console.log(`Loading page ${this.textContent}`);
-  //       });
-  //     }
-  //   });
-  // }
   
   // UI Helper functions
   function showLoading(show) {
