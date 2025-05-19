@@ -1,11 +1,28 @@
 module.exports = {
-    testEnvironment: 'jsdom',
-    moduleNameMapper: {
-      '\\.(css|less)$': 'identity-obj-proxy',
-    },
-    setupFiles: ['<rootDir>/jest.polyfills.js'], // Add this for polyfills
-    setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
-    transform: {
-      '^.+\\.(js|jsx)$': 'babel-jest',
-    },
-  };
+  testEnvironment: 'jsdom',
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
+  moduleNameMapper: {
+    '\\.(css|less)$': 'identity-obj-proxy'
+  },
+
+  
+    collectCoverage: true,
+    coverageReporters: ['text', 'lcov', 'clover'],
+    coverageDirectory: 'coverage',
+    collectCoverageFrom: [
+      'src/**/*.{js,jsx}',
+      'public/**/*.{js,jsx}',
+      '!src/**/*.test.{js,jsx}',
+      '!src/setupTests.js',
+      '!src/serviceWorker.js'
+    ],
+    coverageThreshold: {
+      global: {
+        branches: 0,
+        functions: 0,
+        lines: 0,
+        statements: 0
+      }
+    }
+  
+};
