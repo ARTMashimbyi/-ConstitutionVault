@@ -627,3 +627,14 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
   
+
+  
+  module.exports = {
+    archiveData,
+    initializeUI,
+    navigateToPath,
+    findDirectoryByPath,
+    addDirectoryToHierarchy,
+    addDocumentToHierarchy,
+    loadDataFromFirestore
+  };
