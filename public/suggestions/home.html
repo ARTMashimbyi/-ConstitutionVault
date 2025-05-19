@@ -78,7 +78,7 @@
             <header class="section-header">
               <h2 class="section-title"><i class="fas fa-history"></i> Recently Viewed</h2>
               <menu class="section-actions">
-                <a href="../user_history/history.html">
+                <a href="history.html">
                 <button class="btn btn-outline" id="history_btn" >See All</button>
                 </a>
               </menu>
@@ -86,7 +86,9 @@
             <p class="section-description">Documents you've accessed recently</p>
             <!--history will be shown here-->
             <section>
-              <li id="history"></li>
+              <ul class="document-list" id="history">
+                    <li class="document-item"></li>
+                </ul>
             </section>
           </section>
 
@@ -120,5 +122,6 @@
     </footer>
 
     <script type="module" src="home.js"></script>
+    <script type="module" src="history_home.js"></script>
 </body>
 </html>
