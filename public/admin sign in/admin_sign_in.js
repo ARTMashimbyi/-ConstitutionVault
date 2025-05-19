@@ -19,7 +19,7 @@ const userModal = document.getElementById('modal-users');
 // Global variables
 let adminStatus = false;
 let redirectTimer;
-
+const provider = new GoogleAuthProvider();
 /**
  * Sign in with Google
  */

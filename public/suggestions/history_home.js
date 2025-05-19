@@ -73,13 +73,13 @@ async function userHistory(user){
         const history = userSnap.data().viewed;
       history.forEach(doc=>{
         arr1.unshift(doc);
-        console.log(doc);
+       console.log(doc);
       });     
         var copiedarray = arr1.slice(0,5);
         
         copiedarray.forEach(doc=>{
           getTitle(doc);
-          console.log(doc);
+          //console.log(doc);
        });
       }
    catch{ 
@@ -103,6 +103,7 @@ else{
 //userHistory(currentUserId);
 
 const historyList=document.getElementById('history');
+historyList.innerHTML = '';
 async function getTitle(data){ 
   if(data.length){
        const docID = data;
@@ -111,19 +112,36 @@ async function getTitle(data){
         if (docSnap1.exists()) {
           const docData = docSnap1.data();
           console.log(docData.title)
-          const docItem = document.createElement('li');
-          docItem.className = 'document-item';
-          docItem.innerHTML = `<article class="doc-info">
-            <h3 class="doc-title">${docData.title}</h3>
-          </article> `;
-         
+          const fileTypeIcons = {
+                    document: '📄',
+                    video: '🎬',
+                    image: '🖼️',
+                    audio: '🔊',
+                    text: '📝'
+                };
+                
+         const icon = fileTypeIcons[docData.fileType] || '📄';
+         const title = docData.title || 'Untitled Document';
+         const docItem = document.createElement('li');
+         docItem.className = 'document-item';
+         docItem.innerHTML = `
+                    <span class="doc-icon">${icon}</span>
+                    <article class="doc-info">
+                    <h3 class="doc-title">${title}</h3>
+                    <aside class="doc-meta">
+                      <span>${docData.fileType || 'Unknown type'}</span> 
+                      </aside>
+                    </article>
+                `;
+                
+                
          historyList.appendChild(docItem);
         }      
       
       
       }
   }
-
+                
 
 
 
