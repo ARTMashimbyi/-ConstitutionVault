@@ -1,0 +1,108 @@
+/* settings.css */
+
+/* 1. Define CSS variables for the default (light) theme */
+:root {
+  --bg:           #ffffff;
+  --fg:           #000000;
+  --card-bg:      #f9f9f9;
+  --highlight:    #007bff;
+  --border-color: #ccc;
+}
+
+/* 2. Dark mode overrides */
+body.dark-mode {
+  --bg:           #130f49;
+  --fg:           #f1f1f1;
+  --card-bg:      #1e1a65;
+  --highlight:    #66bfff;
+  --border-color: #555;
+}
+
+/* 3. Solarized mode (warm theme) */
+body.solar-mode {
+  --bg:           #fdf6e3;
+  --fg:           #586e75;
+  --card-bg:      #eee8d5;
+  --highlight:    #b58900;
+  --border-color: #93a1a1;
+}
+
+/* 4. High-contrast mode for accessibility */
+body.hc-mode {
+  --bg:           #000000;
+  --fg:           #ffffff;
+  --card-bg:      #000000;
+  --highlight:    #ffff00;
+  --border-color: #ffffff;
+}
+
+/* Base styling using variables */
+body {
+  font-family: sans-serif;
+  margin: 2rem;
+  background-color: var(--bg);
+  color: var(--fg);
+  transition: background-color 0.3s, color 0.3s;
+}
+
+main {
+  max-width: 600px;
+  margin: auto;
+  background-color: var(--card-bg);
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+h1 {
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+}
+
+label {
+  display: block;
+  margin-top: 1rem;
+  font-weight: bold;
+  color: var(--fg);
+}
+
+input[type="text"], textarea {
+  width: 100%;
+  padding: 0.5rem;
+  margin-top: 0.3rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: var(--bg);
+  color: var(--fg);
+}
+
+button {
+  margin-top: 1.5rem;
+  padding: 0.6rem 1.2rem;
+  background-color: var(--highlight);
+  border: none;
+  color: white;
+  font-size: 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* Simple toggle buttons for modes */
+.mode-switcher {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.mode-switcher button {
+  padding: 0.3rem 0.6rem;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  color: var(--fg);
+  border-radius: 4px;
+}
+
+.mode-switcher button:hover {
+  background: var(--highlight);
+  color: #fff;
+}

@@ -4,21 +4,23 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>ConstitutionVault | Search</title>
-    <!-- centralized CSS -->
+    <!-- centralized CSS (uses CSS variables for all modes) -->
     <link rel="stylesheet" href="../css/user-search.css" />
   </head>
 
   <body>
-    <header>
+    <header class="search-header">
+      <button
+        onclick="location.href='../user_settings/index.html'"
+        aria-label="Settings"
+        class="settings-btn"
+      >
+        ⚙️ Settings
+      </button>
       <h1>Search Constitutional Archive</h1>
-      <p class="visually-hidden">
-        Use the search box below to find documents by title, author, category,
-        institution, or keywords.
-      </p>
     </header>
 
     <main>
-      <!-- JS will render the search bar and each result’s card here -->
       <section id="search-container"></section>
     </main>
 
@@ -26,7 +28,16 @@
       <p>© 2025 ConstitutionVault</p>
     </footer>
 
-    <!-- initialize your search UI and templates -->
+    <!-- 1) Early theme toggle -->
+    <script>
+      (() => {
+        const s = JSON.parse(localStorage.getItem("userSettings") || "{}");
+        const mode = s.themeClass || "";
+        if (mode) document.body.classList.add(mode);
+      })();
+    </script>
+
+    <!-- 2) Entry-point -->
     <script type="module" src="user-search.js"></script>
   </body>
 </html>
