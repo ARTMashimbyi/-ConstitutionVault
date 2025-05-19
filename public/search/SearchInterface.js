@@ -1,12 +1,5 @@
 // public/search/SearchInterface.js
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
-import {
-  getFirestore,
-  collection,
-  getDocs
-} from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
-
 import { renderSearchBar }     from "./SearchBar.js";
 import { renderSearchResults } from "./SearchResults.js";
 
@@ -88,6 +81,71 @@ export function initializeSearchInterface(containerId) {
       console.error("Error fetching or filtering documents:", err);
       resultsSection.innerHTML = "<p>❌ Failed to load results.</p>";
     }
+  };
+
+  /**
+   * Filters documents by query, including full-text content, and renders results.
+   *
+   * @param {string} query
+   */
+  function handleSearch(query) {
+    const lower = query.trim().toLowerCase();
+    const hits  = [];
+
+    for (const data of allDocs) {
+      // combine all searchable fields
+      const fields = [
+        data.title,
+        data.description,
+        data.author,
+        data.category,
+        data.institution,
+        ...(Array.isArray(data.keywords) ? data.keywords : []),
+        data.fullText    // include the extracted document text
+      ]
+        .filter(Boolean)
+        .map(s => s.toLowerCase());
+
+      // check if any field contains the query
+      const matches = lower === "" 
+        ? true 
+        : fields.some(field => field.includes(lower));
+
+      if (matches) {
+        // extract a snippet around the first occurrence in fullText
+        let snippet = "";
+        if (lower && typeof data.fullText === "string") {
+          const idx = data.fullText.toLowerCase().indexOf(lower);
+          if (idx !== -1) {
+            const start = Math.max(0, idx - 30);
+            const end   = Math.min(data.fullText.length, idx + lower.length + 30);
+            snippet = data.fullText.slice(start, end).trim();
+            if (start > 0) snippet = "… " + snippet;
+            if (end < data.fullText.length) snippet += " …";
+          }
+        }
+
+        hits.push({ ...data, snippet });
+      }
+    }
+
+    // sort by title
+    hits.sort((a, b) => (a.title || "").localeCompare(b.title || ""));
+
+    // shape data for the renderer
+    const results = hits.map(item => ({
+      title:       item.title,
+      description: item.description || "",
+      author:      item.author || "",
+      institution: item.institution || "",
+      category:    item.category || "",
+      keywords:    Array.isArray(item.keywords) ? item.keywords : [],
+      url:         item.downloadURL || item.url   || "",
+      fileType:    item.fileType   || "document",
+      snippet:     item.snippet    || ""
+    }));
+
+    renderSearchResults(resultsSection, results);
   }
   
 }

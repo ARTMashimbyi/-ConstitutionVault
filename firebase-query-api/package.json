@@ -2,7 +2,11 @@
   "name": "firebase-query-api",
   "version": "1.0.0",
   "description": "",
+<<<<<<< HEAD
   "main": "index.js",
+=======
+  "main": "API.js",
+>>>>>>> 66da749a2dc8144e5d58549d2ec023517636de7c
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -10,7 +14,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+<<<<<<< HEAD
     "body-parser": "^2.2.0",
+=======
+>>>>>>> 66da749a2dc8144e5d58549d2ec023517636de7c
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",

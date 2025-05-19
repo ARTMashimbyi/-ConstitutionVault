@@ -1,10 +1,12 @@
-# Ignore any JSON service‑account key in keys/
-# (so your private key never gets committed)
-/keys/*.json
-constitutionvault-1b5d1-firebase-adminsdk-fbsvc-9d7ee4d20e*.json
+# Ignore service-account JSON keys
+key/*.json
+# Firebase service account keys
+*.json
+!firebase.json  # (if you have this config file and want to keep it tracked)
 
 
+# But keep the folder placeholder
+!key/.gitkeep
 
-
-# Ignore the entire node_modules folder
+# Ignore node_modules
 /node_modules/

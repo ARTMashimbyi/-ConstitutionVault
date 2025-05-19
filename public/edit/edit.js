@@ -1,134 +1,100 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
-import {
-  getFirestore,
-  doc,
-  getDoc,
-  updateDoc,
-  collection
-} from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+// public/admin/edit.js
 
-// Firebase configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyAU_w_Oxi6noX_A1Ma4XZDfpIY-jkoPN-c",
-  authDomain: "constitutionvault-1b5d1.firebaseapp.com",
-  projectId: "constitutionvault-1b5d1",
-  storageBucket: "constitutionvault-1b5d1.firebasestorage.app",
-  messagingSenderId: "616111688261",
-  appId: "1:616111688261:web:97cc0a35c8035c0814312c",
-  measurementId: "G-YJEYZ85T3S"
-};
+const API_BASE = "http://localhost:4000/api/files";
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+document.addEventListener("DOMContentLoaded", () => {
+  // grab the ID from ?id=…
+  const params = new URLSearchParams(window.location.search);
+  const docId  = params.get("id");
 
-// Wait for DOM to load
-window.addEventListener("DOMContentLoaded", () => {
-  console.log("📄 DOM Loaded for Document Editor");
+  // form fields
+  const editForm          = document.getElementById("editDocForm");
+  const titleInput        = document.getElementById("docTitle");
+  const institutionInput  = document.getElementById("docInstitution");
+  const authorInput       = document.getElementById("docAuthor");
+  const categoryInput     = document.getElementById("docCategory");
+  const keywordsInput     = document.getElementById("docKeywords");
+  const dateInput         = document.getElementById("docDate");
+  const statusMsg         = document.getElementById("message");
+  const cancelButton      = document.getElementById("cancelButton");
 
-  // Get document ID from URL
-  const urlParams = new URLSearchParams(window.location.search);
-  const docId = urlParams.get('id');
-  console.log("Document ID from URL:", docId);
-
-  // Get form and input fields
-  const editForm = document.getElementById('editDocForm');
-  const titleInput = document.getElementById('docTitle');
-  const institutionInput = document.getElementById('docInstitution');
-  const authorInput = document.getElementById('docAuthor');
-  const categoryInput = document.getElementById('docCategory');
-  const keywordsInput = document.getElementById('docKeywords');
-  const dateInput = document.getElementById('docDate');
-  const statusMsg = document.getElementById('message');
-  const cancelButton = document.getElementById('cancelButton');
-
-  // Load document data
-  async function loadDocument() {
-    try {
-      const docRef = doc(collection(db, "constitutionalDocuments"), docId);
-      const docSnap = await getDoc(docRef);
-      console.log("📸 Document Snapshot:", docSnap);
-      
-      if (docSnap.exists()) {
-        const docData = docSnap.data();
-        console.log("📝 Document Data:", docData);
-        
-        // Populate form fields with existing data
-        titleInput.value = docData.title || '';
-        institutionInput.value = docData.institution || '';
-        authorInput.value = docData.author || '';
-        categoryInput.value = docData.category || '';
-        
-        // Format keywords array back to comma-separated string
-        if (docData.keywords && Array.isArray(docData.keywords)) {
-          keywordsInput.value = docData.keywords.join(', ');
-        }
-        
-        // Format date for input field (YYYY-MM-DD)
-        if (docData.date) {
-          const dateObj = new Date(docData.date);
-          const formattedDate = dateObj.toISOString().split('T')[0];
-          dateInput.value = formattedDate;
-        }
-      } else {
-        statusMsg.textContent = "Document not found.";
-        statusMsg.style.color = "red";
-      }
-    } catch (err) {
-      console.error("Error loading document:", err);
-      statusMsg.textContent = "Failed to load document.";
-      statusMsg.style.color = "red";
-    }
-  }
-
-  // Load document if we have an ID
-  if (docId) {
-    loadDocument();
-  } else {
+  if (!docId) {
     statusMsg.textContent = "Invalid document ID.";
     statusMsg.style.color = "red";
+    return;
   }
 
-  // Handle form submission
-  editForm.addEventListener('submit', async (e) => {
+  // 1) load existing data via your API
+  fetch(API_BASE)
+    .then(res => {
+      if (!res.ok) throw new Error(res.statusText);
+      return res.json();
+    })
+    .then(files => {
+      const doc = files.find(f => f.id === docId);
+      if (!doc) throw new Error("Document not found");
+      // populate form
+      titleInput.value       = doc.title || "";
+      institutionInput.value = doc.institution || "";
+      authorInput.value      = doc.author || "";
+      categoryInput.value    = doc.category || "";
+      keywordsInput.value    = Array.isArray(doc.keywords)
+                                ? doc.keywords.join(", ")
+                                : "";
+      if (doc.date) {
+        dateInput.value = new Date(doc.date).toISOString().split("T")[0];
+      }
+    })
+    .catch(err => {
+      console.error("Error loading document:", err);
+      statusMsg.textContent = `Failed to load: ${err.message}`;
+      statusMsg.style.color = "red";
+    });
+
+  // 2) submit updates via PATCH to your API
+  editForm.addEventListener("submit", async e => {
     e.preventDefault();
-    
+    statusMsg.textContent = "";
+    const keywordsArray = keywordsInput.value
+      .split(",")
+      .map(k => k.trim())
+      .filter(k => k);
+
+    const payload = {
+      title:       titleInput.value,
+      institution: institutionInput.value,
+      author:      authorInput.value,
+      category:    categoryInput.value,
+      keywords:    keywordsArray,
+      date:        dateInput.value,
+      updatedAt:   new Date().toISOString()
+    };
+
     try {
-      const docRef = doc(collection(db, "constitutionalDocuments"), docId);
-      
-      // Process keywords from comma-separated string to array
-      const keywordsString = keywordsInput.value;
-      const keywordsArray = keywordsString
-        ? keywordsString.split(',').map(keyword => keyword.trim())
-        : [];
-        
-      await updateDoc(docRef, {
-        title: titleInput.value,
-        institution: institutionInput.value,
-        author: authorInput.value,
-        category: categoryInput.value,
-        keywords: keywordsArray,
-        date: dateInput.value,
-        updatedAt: new Date().toISOString() // Add update timestamp
+      const res = await fetch(`${API_BASE}/${encodeURIComponent(docId)}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
       });
-      
-      statusMsg.textContent = "✅ Document updated successfully!";
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({}));
+        throw new Error(errBody.error || res.statusText);
+      }
+      statusMsg.textContent = "✅ Document updated!";
       statusMsg.style.color = "green";
-      
-      // Redirect after short delay
+
       setTimeout(() => {
-        window.location.href = `../admin/hierarcy.html?id=${docId}`;
-      }, 1500);
+        window.location.href = `../admin/hierarcy.html`;
+      }, 1200);
     } catch (err) {
-      console.error("Error updating document:", err);
-      statusMsg.textContent = "❌ Failed to update document.";
+      console.error("Error updating:", err);
+      statusMsg.textContent = `❌ ${err.message}`;
       statusMsg.style.color = "red";
     }
   });
-  
-  // Handle cancel button
-  cancelButton.addEventListener('click', () => {
-    // Return to document page
-    window.location.href = `../admin/hierarcy.html?id=${docId}`;
+
+  // 3) cancel goes back
+  cancelButton.addEventListener("click", () => {
+    window.location.href = `../admin/hierarcy.html`;
   });
 });

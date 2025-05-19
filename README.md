@@ -3,7 +3,6 @@
 # Constitution Vault
 
 [![codecov](https://codecov.io/gh/ARTMashimbyi/-ConstitutionVault/branch/main/graph/badge.svg)](https://codecov.io/gh/ARTMashimbyi/-ConstitutionVault)
-
 Your project description goes here.
 
 # 📚 Constitution Vault - Frontend
