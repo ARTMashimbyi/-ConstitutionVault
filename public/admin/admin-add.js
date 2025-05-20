@@ -27,7 +27,7 @@ const fileTypeAccepts = {
 // 1) Auto-fill today’s date
 dateInput.value = new Date().toISOString().split("T")[0];
 
-// 2) On DOM ready: pick up ?directory=… and wire fileType changes
+// 2) On DOM ready: prefill directory from query and apply fileType logic
 document.addEventListener("DOMContentLoaded", () => {
   const dirParam = new URLSearchParams(window.location.search).get("directory");
   if (dirParam) directoryInput.value = dirParam;
@@ -36,36 +36,32 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // 3) Show/hide fields when fileType changes
 fileTypeSelect.addEventListener("change", handleFileTypeChange);
-function handleFileTypeChange() {
-  const t = fileTypeSelect.value;
 
-  // text vs file upload
-  if (t === "text") {
-    fileContainer.hidden = true;
-    textContainer.hidden = false;
-    fileInput.required   = false;
-    textContent.required = true;
+function handleFileTypeChange() {
+  const type = fileTypeSelect.value;
+
+  // Toggle between file input and text input
+  const isText = type === "text";
+  fileContainer.hidden    = isText;
+  textContainer.hidden    = !isText;
+  fileInput.required      = !isText;
+  textContent.required    = isText;
+
+  // Apply accept filter to file input if applicable
+  if (!isText && fileTypeAccepts[type]) {
+    fileInput.setAttribute("accept", fileTypeAccepts[type]);
   } else {
-    fileContainer.hidden = false;
-    textContainer.hidden = true;
-    fileInput.required   = true;
-    textContent.required = false;
-    // apply accept filter
-    if (fileTypeAccepts[t]) {
-      fileInput.setAttribute("accept", fileTypeAccepts[t]);
-    } else {
-      fileInput.removeAttribute("accept");
-    }
+    fileInput.removeAttribute("accept");
   }
 
-  // Only documents & text show author/category/keywords
-  const isDocLike = (t === "document" || t === "text");
-  authorContainer.hidden   = !isDocLike;
-  categoryContainer.hidden = !isDocLike;
-  keywordsContainer.hidden = !isDocLike;
+  // Show metadata only for text and document
+  const showMeta = type === "text" || type === "document";
+  authorContainer.hidden   = !showMeta;
+  categoryContainer.hidden = !showMeta;
+  keywordsContainer.hidden = !showMeta;
 }
 
-// 4) On submit → POST to your API
+// 4) On submit → send to backend
 uploadForm.addEventListener("submit", async e => {
   e.preventDefault();
   uploadStatus.style.display = "none";
@@ -73,42 +69,39 @@ uploadForm.addEventListener("submit", async e => {
   const formData = new FormData(uploadForm);
   const fileType = formData.get("fileType");
 
-  // Validate presence
+  // Basic validation
   if (fileType === "text") {
     if (!formData.get("textContent")?.trim()) {
       return showError("Please enter text content.");
     }
   } else {
-    const f = formData.get("file");
-    if (!(f instanceof File) || f.size === 0) {
+    const file = formData.get("file");
+    if (!(file instanceof File) || file.size === 0) {
       return showError("Please select a file to upload.");
     }
   }
 
-  // Normalize directory (no leading/trailing slash)
-  let dir = (formData.get("directory") || "/").trim().replace(/^\/|\/$/g, "");
+  // Normalize directory
+  const dir = (formData.get("directory") || "/").trim().replace(/^\/|\/$/g, "");
 
   // Build metadata object
   const metadata = {
-    fileType:   formData.get("fileType"),
-    title:      formData.get("title"),
-    date:       formData.get("date"),
+    fileType:    fileType,
+    title:       formData.get("title"),
+    date:        formData.get("date"),
     institution: formData.get("institution"),
-    author:     formData.get("author"),
-    category:   formData.get("category"),
-    keywords:   formData.get("keywords")
-                     ?.split(",")
-                     .map(kw => kw.trim())
-                     .filter(kw => kw) || [],
-    directory:  dir,
-    textContent:
-      fileType === "text"
-        ? formData.get("textContent")
-        : ""
+    author:      formData.get("author"),
+    category:    formData.get("category"),
+    keywords:    (formData.get("keywords") || "")
+                  .split(",")
+                  .map(k => k.trim())
+                  .filter(k => k),
+    directory:   dir,
+    textContent: fileType === "text" ? formData.get("textContent") : ""
   };
 
   try {
-    // Package into multipart/form-data
+    // Package and send form data
     const payload = new FormData();
     payload.append("metadata", JSON.stringify(metadata));
     if (fileType !== "text") {
@@ -121,21 +114,19 @@ uploadForm.addEventListener("submit", async e => {
     });
 
     if (!res.ok) {
-      const err = await res.json().catch(()=>null);
+      const err = await res.json().catch(() => null);
       throw new Error(err?.error || res.statusText);
     }
 
-    // On success, show message then redirect
     showSuccess("Uploaded! Redirecting…");
-    setTimeout(() => window.location.href = "hierarcy.html", 1200);
-
+    setTimeout(() => (window.location.href = "hierarcy.html"), 1200);
   } catch (err) {
     console.error("Upload failed:", err);
     showError(`Upload failed: ${err.message}`);
   }
 });
 
-// Helpers to show status
+// Status helpers
 function showError(msg) {
   uploadStatus.style.color   = "red";
   uploadStatus.textContent   = `⚠️ ${msg}`;

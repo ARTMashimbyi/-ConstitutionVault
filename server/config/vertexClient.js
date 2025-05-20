@@ -9,7 +9,7 @@ const { PredictionServiceClient } = require('@google-cloud/aiplatform').v1;
 const client = new PredictionServiceClient();
 
 /**
- * Get an embedding for the given text using Vertex AI’s text-embedding-005 model
+ * Get an embedding for the given text using Vertex AI’s textembedding-gecko@001 model
  * @param {string} text
  * @returns {Promise<number[]>} embedding vector
  */
@@ -17,9 +17,9 @@ async function getEmbedding(text) {
   // limit length so we don’t overflow the model
   const snippet = text.slice(0, 2000);
 
-  // your GCP project and region
+  // correct GCP model resource name
   const endpoint =
-    'projects/constitutionvault-1b5d1/locations/us-central1/publishers/google/models/text-embedding-005';
+    'projects/constitutionvault-1b5d1/locations/us-central1/publishers/google/models/textembedding-gecko@001';
 
   const [response] = await client.predict({
     endpoint,

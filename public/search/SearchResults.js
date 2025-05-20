@@ -6,7 +6,6 @@
  *   • title: string
  *   • url: string
  *   • fileType: "document"|"image"|"audio"|"video"
- *   • description?: string
  *   • author?: string
  *   • institution?: string
  *   • category?: string
@@ -36,9 +35,12 @@ export function renderSearchResults(container, results) {
     const article = document.createElement("article");
     article.className = "search-result";
 
-    // 3.1 Title
+    // 3.1 Title (as a link)
     const h3   = document.createElement("h3");
-    h3.textContent = item.title;
+    const link = document.createElement("a");
+    link.href        = item.url;
+    link.textContent = item.title;
+    h3.appendChild(link);
     article.appendChild(h3);
 
     // 3.2 Optional relevance score
@@ -68,15 +70,7 @@ export function renderSearchResults(container, results) {
       article.appendChild(meta);
     }
 
-    // 3.4 Description
-    if (item.description) {
-      const descP = document.createElement("p");
-      descP.className = "result-description";
-      descP.textContent = item.description;
-      article.appendChild(descP);
-    }
-
-    // 3.5 Snippet preview
+    // 3.4 Snippet preview
     if (item.snippet) {
       const snipP = document.createElement("p");
       snipP.className = "result-snippet";
@@ -84,7 +78,7 @@ export function renderSearchResults(container, results) {
       article.appendChild(snipP);
     }
 
-    // 3.6 Media/document preview
+    // 3.5 Media/document preview
     const fig = document.createElement("figure");
     let previewEl;
     switch (item.fileType) {
@@ -103,20 +97,18 @@ export function renderSearchResults(container, results) {
         previewEl.controls = true;
         previewEl.src      = item.url;
         break;
-      case "document":
-      default:
+      default: // "document"
         previewEl = document.createElement("embed");
         previewEl.src    = `${item.url}#page=1&view=FitH`;
         previewEl.type   = "application/pdf";
         previewEl.width  = "100%";
         previewEl.height = "400px";
-        break;
     }
     previewEl.loading = "lazy";
     fig.appendChild(previewEl);
     article.appendChild(fig);
 
-    // 3.7 Single action: View in Full (same tab)
+    // 3.6 Single action: View in Full (same tab)
     const footer = document.createElement("footer");
     footer.className = "result-actions";
 

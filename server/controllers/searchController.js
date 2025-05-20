@@ -39,39 +39,53 @@ async function semanticSearch(req, res) {
     .map(d => ({ id: d.id, ...d.data() }))
     .filter(d => !typeFilter || d.fileType === typeFilter);
 
+  // DEBUG: log date params and pre-filter count
+  console.log('🔍 dateFrom:', dateFrom, 'dateTo:', dateTo, 'total docs before filter:', docs.length);
+
   // 2) Date‐range filter
   if (dateFrom || dateTo) {
     docs = docs.filter(d => {
       if (!d.uploadedAt) return false;
       const u = new Date(d.uploadedAt);
-      if (dateFrom && u < new Date(dateFrom)) return false;
-      if (dateTo   && u > new Date(dateTo))   return false;
+      if (dateFrom) {
+        const from = new Date(dateFrom);
+        if (u < from) return false;
+      }
+      if (dateTo) {
+        const to = new Date(dateTo);
+        to.setHours(23, 59, 59, 999);
+        if (u > to) return false;
+      }
       return true;
     });
+    // DEBUG: log post-filter count
+    console.log('… docs after date filter:', docs.length);
   }
 
-  // 3) No query => just return first page (we'll let front‐end paginate)
+  // 3) No query => return first page
   if (!rawQ) {
-    return res.json({
-      results: docs.slice(0, 20).map(d => ({
-        title:       d.title,
-        author:      d.author,
-        institution: d.institution,
-        category:    d.category,
-        keywords:    Array.isArray(d.keywords) ? d.keywords : [],
-        date:        d.uploadedAt,
-        url:         d.downloadURL || d.url,
-        fileType:    d.fileType,
-        snippet:     d.title,
-        score:       null
-      }))
-    });
+    const results = docs.slice(0, 20).map(d => ({
+      title:       d.title,
+      author:      d.author,
+      institution: d.institution,
+      category:    d.category,
+      keywords:    Array.isArray(d.keywords) ? d.keywords : [],
+      date:        d.uploadedAt,
+      url:         d.downloadURL || d.url,
+      fileType:    d.fileType,
+      snippet:     d.title,
+      score:       null
+    }));
+    return res.json({ results });
   }
 
   // 4) Attempt semantic embedding
   let qEmbed = null;
-  try { qEmbed = await getEmbedding(rawQ); }
-  catch (e) { console.warn('Embedding error:', e.message); }
+  try {
+    qEmbed = await getEmbedding(rawQ);
+  } catch (e) {
+    console.warn('Embedding error:', e.message);
+  }
 
   // 5) Rank or substring‐filter
   let results;
@@ -80,24 +94,34 @@ async function semanticSearch(req, res) {
       .map(d => ({ ...d, score: cosine(d.embedding, qEmbed) }))
       .sort((a,b) => b.score - a.score);
   } else {
-    // fallback to simple text match
-    results = docs.filter(d => {
-      const fields = [
-        d.title, d.description, d.author, d.category,
-        d.institution, ...(Array.isArray(d.keywords)? d.keywords: []),
-        d.fullText
-      ].filter(Boolean).map(s => s.toLowerCase());
-      return fields.some(f => f.includes(rawQ));
-    }).map(d => ({ ...d, score: null }));
+    results = docs
+      .filter(d => {
+        const fields = [
+          d.title, d.description, d.author, d.category,
+          d.institution,
+          ...(Array.isArray(d.keywords) ? d.keywords : []),
+          d.fullText
+        ]
+        .filter(Boolean)
+        .map(s => s.toLowerCase());
+        return fields.some(f => f.includes(rawQ));
+      })
+      .map(d => ({ ...d, score: null }));
   }
 
-  // 6) Sort by user‐selected sort if provided
+  // 6) Apply user‐selected sort if provided
   if (sortFilter) {
     const [field, dir] = sortFilter.split('-');
     results.sort((a,b) => {
-      let va = field === 'year' ? new Date(a.uploadedAt).getFullYear() : (a[field]||'').toString().toLowerCase();
-      let vb = field === 'year' ? new Date(b.uploadedAt).getFullYear() : (b[field]||'').toString().toLowerCase();
-      return dir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+      let va = field === 'year'
+        ? new Date(a.uploadedAt).getFullYear()
+        : (a[field] || '').toString().toLowerCase();
+      let vb = field === 'year'
+        ? new Date(b.uploadedAt).getFullYear()
+        : (b[field] || '').toString().toLowerCase();
+      return dir === 'asc'
+        ? String(va).localeCompare(vb)
+        : String(vb).localeCompare(va);
     });
   }
 
@@ -109,7 +133,7 @@ async function semanticSearch(req, res) {
     });
   }
 
-  // 8) Shape top-20 response
+  // 8) Shape top‐20 response
   const top = results.slice(0, 20).map(d => ({
     title:       d.title,
     author:      d.author,

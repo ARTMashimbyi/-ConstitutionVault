@@ -117,6 +117,32 @@
       &copy; 2025 ConstitutionVault | All Rights Reserved
     </footer>
 
+    <!-- Script to toggle visibility of file input vs text area -->
+    <script>
+      const fileTypeSelect = document.getElementById("fileType");
+      const fileContainer = document.getElementById("fileContainer");
+      const textContainer = document.getElementById("textContainer");
+
+      function toggleUploadInputs() {
+        const selectedType = fileTypeSelect.value;
+
+        if (selectedType === "text") {
+          fileContainer.hidden = true;
+          textContainer.hidden = false;
+        } else {
+          fileContainer.hidden = false;
+          textContainer.hidden = true;
+        }
+      }
+
+      // Initialize on page load
+      toggleUploadInputs();
+
+      // Listen for changes
+      fileTypeSelect.addEventListener("change", toggleUploadInputs);
+    </script>
+
+    <!-- Your main module -->
     <script type="module" src="admin-add.js"></script>
   </body>
 </html>

@@ -91,6 +91,14 @@ legend {
   border-radius: 4px;
   font-size: 1rem;
 }
+
+/* For better textarea UX */
+.upload-form textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+/* Max size note */
 .max-size-note {
   margin: 0.25rem 0 1.5rem;
   color: #666;
@@ -134,4 +142,9 @@ footer {
   text-align: center;
   color: #fff;
   margin: 2rem 0 1rem;
+}
+
+/* 10. Hide hidden fields when toggled by JS */
+[hidden] {
+  display: none !important;
 }
