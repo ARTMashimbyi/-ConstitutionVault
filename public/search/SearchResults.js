@@ -11,7 +11,9 @@
  *   • institution?: string
  *   • category?: string
  *   • keywords?: string[]
- *   • snippet?: string    // snippet of matched text
+ *   • date?: string          // ISO upload date
+ *   • snippet?: string       // snippet of matched text
+ *   • score?: string         // optional relevance score
  *
  * @param {HTMLElement} container
  * @param {Array<Object>} results
@@ -24,7 +26,7 @@ export function renderSearchResults(container, results) {
   if (!Array.isArray(results) || results.length === 0) {
     const msg = document.createElement("p");
     msg.className   = "no-results";
-    msg.textContent = "No results found.";
+    msg.textContent = "No results to display.";
     container.appendChild(msg);
     return;
   }
@@ -35,11 +37,19 @@ export function renderSearchResults(container, results) {
     article.className = "search-result";
 
     // 3.1 Title
-    const h3 = document.createElement("h3");
+    const h3   = document.createElement("h3");
     h3.textContent = item.title;
     article.appendChild(h3);
 
-    // 3.2 Metadata
+    // 3.2 Optional relevance score
+    if (item.score) {
+      const scoreEl = document.createElement("small");
+      scoreEl.className = "result-score";
+      scoreEl.textContent = `Relevance: ${item.score}`;
+      article.appendChild(scoreEl);
+    }
+
+    // 3.3 Metadata (author, institution, category, keywords, date)
     const metaParts = [];
     if (item.author)      metaParts.push(`By ${item.author}`);
     if (item.institution) metaParts.push(item.institution);
@@ -47,20 +57,26 @@ export function renderSearchResults(container, results) {
     if (Array.isArray(item.keywords) && item.keywords.length) {
       metaParts.push(`Keywords: ${item.keywords.join(", ")}`);
     }
+    if (item.date) {
+      const d = new Date(item.date);
+      metaParts.push(`Date: ${d.toLocaleDateString()}`);
+    }
     if (metaParts.length) {
       const meta = document.createElement("small");
+      meta.className = "result-meta";
       meta.textContent = metaParts.join(" • ");
       article.appendChild(meta);
     }
 
-    // 3.3 Description
+    // 3.4 Description
     if (item.description) {
-      const p = document.createElement("p");
-      p.textContent = item.description;
-      article.appendChild(p);
+      const descP = document.createElement("p");
+      descP.className = "result-description";
+      descP.textContent = item.description;
+      article.appendChild(descP);
     }
 
-    // 3.4 Snippet preview (if provided)
+    // 3.5 Snippet preview
     if (item.snippet) {
       const snipP = document.createElement("p");
       snipP.className = "result-snippet";
@@ -68,10 +84,9 @@ export function renderSearchResults(container, results) {
       article.appendChild(snipP);
     }
 
-    // 3.5 Media/document preview
+    // 3.6 Media/document preview
     const fig = document.createElement("figure");
     let previewEl;
-
     switch (item.fileType) {
       case "image":
         previewEl = document.createElement("img");
@@ -101,13 +116,12 @@ export function renderSearchResults(container, results) {
     fig.appendChild(previewEl);
     article.appendChild(fig);
 
-    // 3.6 Single action: View in Full
+    // 3.7 Single action: View in Full (same tab)
     const footer = document.createElement("footer");
     footer.className = "result-actions";
 
     const viewLink = document.createElement("a");
     viewLink.href        = item.url;
-    viewLink.target      = "_self";
     viewLink.textContent = "View in Full";
     viewLink.className   = "btn btn-primary";
 

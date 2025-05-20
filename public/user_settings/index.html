@@ -11,7 +11,7 @@
     <main>
       <h1>Settings</h1>
 
-      <!-- Mode selector (no divs) -->
+      <!-- Mode selector -->
       <section class="mode-switcher">
         <button data-mode="" id="mode-default">Default</button>
         <button data-mode="dark-mode" id="mode-dark">Dark</button>
@@ -21,43 +21,137 @@
 
       <h2>Filter homepage:</h2>
       <form id="filterForm">
+        <!-- multi-value text filters -->
         <section>
-          <label for="author">Author</label>
+          <label for="author">
+            Author(s) <small>(comma-separated)</small>
+          </label>
           <input
             type="text"
             id="author"
             name="author"
-            placeholder="e.g. Jane Doe"
+            placeholder="e.g. Jane Doe, John Smith"
           />
         </section>
+
         <section>
-          <label for="category">Category</label>
+          <label for="category">
+            Category(ies) <small>(comma-separated)</small>
+          </label>
           <input
             type="text"
             id="category"
             name="category"
-            placeholder="e.g. Technology"
+            placeholder="e.g. Politics, Science"
           />
         </section>
+
         <section>
-          <label for="keywords">Keywords</label>
+          <label for="keywords">
+            Keywords <small>(comma-separated)</small>
+          </label>
           <input
             type="text"
             id="keywords"
             name="keywords"
-            placeholder="e.g. AI, Science"
+            placeholder="e.g. AI, Amendment"
           />
         </section>
+
         <section>
-          <label for="institution">Institution / Place</label>
+          <label for="institution">
+            Institution(s) <small>(comma-separated)</small>
+          </label>
           <input
             type="text"
             id="institution"
             name="institution"
-            placeholder="e.g. MIT, London"
+            placeholder="e.g. MIT, Oxford"
           />
         </section>
-        <button type="submit">Save Settings</button>
+
+        <!-- default file type -->
+        <section>
+          <label for="type">Default File Type</label>
+          <select id="type" name="type">
+            <option value="">All</option>
+            <option value="document">Document</option>
+            <option value="image">Image</option>
+            <option value="video">Video</option>
+            <option value="audio">Audio</option>
+            <option value="text">Text</option>
+          </select>
+        </section>
+
+        <!-- default sort order -->
+        <section>
+          <label for="sort">Default Sort Order</label>
+          <select id="sort" name="sort">
+            <option value="">Default</option>
+            <option value="title-asc">Title ↑</option>
+            <option value="title-desc">Title ↓</option>
+            <option value="year-asc">Date ↑</option>
+            <option value="year-desc">Date ↓</option>
+          </select>
+        </section>
+
+        <!-- results per row -->
+        <section>
+          <label for="columns">Results per Row</label>
+          <select id="columns" name="columns">
+            <option value="1">1</option>
+            <option value="2" selected>2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+          </select>
+        </section>
+
+        <!-- page size -->
+        <section>
+          <label for="pageSize">Results Per Page</label>
+          <select id="pageSize" name="pageSize">
+            <option value="10">10</option>
+            <option value="20" selected>20</option>
+            <option value="50">50</option>
+          </select>
+        </section>
+
+        <!-- date range or all time -->
+        <section class="date-range">
+          <div>
+            <label for="dateFrom">Date From</label>
+            <input type="date" id="dateFrom" name="dateFrom" />
+          </div>
+          <div>
+            <label for="dateTo">Date To</label>
+            <input type="date" id="dateTo" name="dateTo" />
+          </div>
+          <div>
+            <label>
+              <input type="checkbox" id="allTime" name="allTime" />
+              All Time
+            </label>
+            <small>When checked, ignores date range</small>
+          </div>
+        </section>
+
+        <!-- snippet length -->
+        <section>
+          <label for="snippetLength">Snippet Preview Length</label>
+          <select id="snippetLength" name="snippetLength">
+            <option value="50">50 chars</option>
+            <option value="100" selected>100 chars</option>
+            <option value="200">200 chars</option>
+            <option value="300">300 chars</option>
+            <option value="500">500 chars</option>
+          </select>
+        </section>
+
+        <!-- form actions -->
+        <section class="actions">
+          <button type="submit">Save Settings</button>
+          <button type="button" id="resetSettings">Reset to Defaults</button>
+        </section>
       </form>
     </main>
 
