@@ -75,7 +75,7 @@ async function userHistory(user){
         arr1.unshift(doc);
        console.log(doc);
       });     
-        var copiedarray = arr1.slice(0,5);
+        var copiedarray = arr1.slice(0,5).reverse();
         
         copiedarray.forEach(doc=>{
           getTitle(doc);

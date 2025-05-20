@@ -150,16 +150,60 @@ function isDocumentNew(uploadDate) {
 // Create semantic document card element
 function createDocCard(doc) {
   const card = document.createElement('article');
-  card.className = 'doc-card';
-  
+  card.className = 'document-card';
+
   if (doc.isNew) {
     const badge = document.createElement('mark');
     badge.className = 'doc-badge';
     badge.textContent = 'NEW';
     card.appendChild(badge);
   }
-  
-  card.innerHTML = `
+
+  // === Preview Section ===
+  const fig = document.createElement('figure');
+  let previewEl;
+
+  switch (doc.fileType) {
+    case "image":
+      previewEl = document.createElement("img");
+      previewEl.src = doc.downloadURL;
+      previewEl.alt = doc.title || 'Image preview';
+      break;
+    case "audio":
+      previewEl = document.createElement("audio");
+      previewEl.controls = true;
+      previewEl.src = doc.downloadURL;
+      break;
+    case "video":
+      previewEl = document.createElement("video");
+      previewEl.controls = true;
+      previewEl.src = doc.downloadURL;
+      break;
+    case "document":
+    default:
+      const isPDF = doc.downloadURL && doc.downloadURL.endsWith(".pdf");
+      if (isPDF) {
+        previewEl = document.createElement("embed");
+        previewEl.src = `${doc.downloadURL}#page=1&view=FitH`;
+        previewEl.type = "application/pdf";
+        previewEl.width = "100%";
+        previewEl.height = "400px";
+      } else {
+        previewEl = document.createElement("p");
+        previewEl.textContent = "Preview not available for this file type.";
+      }
+      break;
+  }
+
+  if (previewEl && (previewEl.tagName === 'IMG' || previewEl.tagName === 'IFRAME')) {
+    previewEl.loading = "lazy";
+  }
+
+  if (previewEl) fig.appendChild(previewEl);
+  card.appendChild(fig);
+
+  // === Meta + Actions ===
+  card.innerHTML += `
     <h3>${doc.title || 'Untitled Document'}</h3>
     <menu class="doc-meta">
       <li><i class="fas fa-file"></i> ${doc.fileType || 'Unknown'}</li>
@@ -168,41 +212,104 @@ function createDocCard(doc) {
     </menu>
     ${doc.institution ? `<p>${doc.institution}</p>` : ''}
     <menu class="doc-actions">
-      <li><button class="action-btn view-btn"><i class="fas fa-eye"></i> View</button></li>
+      <li><button class="action-btn view-btn"><i class="fas fa-eye"></i> View All</button></li>
       <li>
         <button class="action-btn fav-btn ${doc.isFavorite ? 'active' : ''}" 
                 aria-label="${doc.isFavorite ? 'Remove from favorites' : 'Add to favorites'}">
           <i class="fas fa-star"></i>
         </button>
       </li>
+      <li>
+        <button class="action-btn share-btn" aria-label="Share document"><i class="fas fa-share-alt"></i></button>
+      </li>
     </menu>
   `;
-  
-  // Add event listeners
+
+  // === Event Listeners ===
   const favBtn = card.querySelector('.fav-btn');
   favBtn.addEventListener('click', async (e) => {
     e.stopPropagation();
     await toggleFavorite(doc.id, !doc.isFavorite);
   });
-  
+
   const viewBtn = card.querySelector('.view-btn');
   viewBtn.addEventListener('click', async (e) => {
     e.stopPropagation();
     await incrementViewCount(doc.id);
-    
     await ViewCount(doc.id);
     openDocument(doc);
   });
-  
-  //card.addEventListener('click', () => openDocument(doc));
-  
+
+  const shareBtn = card.querySelector('.share-btn');
+  shareBtn.addEventListener('click', async (e) => {
+    e.preventDefault();
+
+    const shareData = {
+      title: doc.title || 'Untitled',
+      text: doc.description || 'Check this out!',
+      url: doc.downloadURL || '#'//protected url T_T*, TO DO: make it viewable
+    }
+
+    if(navigator.share) {
+      try {
+        await navigator.share(shareData);
+        await incrementShareCount(doc.id);//add to db id of shared doc
+        updateStats();//home stats rendering
+        console.log('Document shared successfully');
+      } catch (error) {
+        console.error('Error sharing document:', error);
+      }
+    } else{
+      try {
+        await navigator.clipboard.writeText(shareData.url);
+      } catch (error) {
+        console.error('Error sharing document:', error);
+      }
+    }
+  });
+
   return card;
+}
+
+async function incrementShareCount(docId) {
+    try {
+      const docRef = doc(db, "constitutionalDocuments", docId);
+      const userRef = doc(db, "users", currentUserId);
+
+      const userSnap = await getDoc(userRef);
+      if (!userSnap.exists()) {
+        await setDoc(userRef, {
+          userInteractions: {
+            shared: [docId]
+          }
+        }, { merge: true });
+      }
+
+      await Promise.all([
+        updateDoc(userRef, {
+          [`userInteractions.shared`]: arrayUnion(docId)
+        }, { merge: true })
+      ]);
+      
+      await loadUserInteractions(currentUserId); // Reload user interactions
+      updateStats(); // Update stats after incrementing share count
+    } catch (error) {
+      console.error("Error incrementing share count:", error);
+    }
+}
+
+export async function updateSharedStat(docId) {
+  const docRef = doc(db, "constitutionalDocuments", docId);
+  const docSnap = await getDoc(docRef);
+  if (docSnap.exists()) {
+    const data = docSnap.data();
+    const sharedCount = data.shares || 0;
+    document.getElementById("shared-count").textContent = sharedCount;
   }
+}
 
 
-  
-
-async function incrementViewCount(docId) {
+export async function incrementViewCount(docId) {
     try {
       console.log("in increment id:", currentUserId);
       
@@ -233,8 +340,9 @@ async function incrementViewCount(docId) {
     }
 }
 
+
 // Mukondi update history
-async function ViewCount(docId) {
+export async function ViewCount(docId) {
     console.log("ViewCount called");
     try {
       console.log("in id:", currentUserId);
@@ -266,25 +374,15 @@ async function ViewCount(docId) {
         }, { merge: true })
       ]);
       
-     // await loadUserInteractions(currentUserId); // Reload user interactions
-      //updateStats(); // Update stats after incrementing view count
     } catch (error) {
       console.error("Error incrementing view count:", error);
     }
 }
 
-// function openDocument(doc) {
-//     console.log(`Opening document: ${doc.title}`);
-//     window.open(doc.downloadURL || '#', '_blank');//update time here?
-//     // Implement actual document opening logic here
-// }
-
 function openDocument(doc) {
     currentDoc = doc.id;
     localStorage.setItem("currentDoc", currentDoc);
-    //console.log(`Opening document: ${doc.title}`);
-    window.open(doc.downloadURL || '#', '_blank');//update time here?
-    // Implement actual document opening logic here
+    window.location.href = doc.downloadURL || doc.downloadURL || "#";
 }
 
 // Render documents to a specific section
@@ -530,7 +628,7 @@ function popularSuggestions(){
   return loadedDocuments
     .filter(doc => doc.id) //filter out current doc
     .sort((a, b) => (b.clicks || 0)  - (a.clicks || 0))
-    .slice(0, 3);
+    .slice(0, 5);
 }
 
 async function preferences(){
@@ -586,7 +684,7 @@ function suggestionsByPreference(preference, allDocs, currentDocId) {
       return {doc, value}; 
     })
     .sort((a, b) => b.value - a.value)
-    .slice(0, 3)
+    .slice(0, 5)
     .map(item => item.doc);
 }
 // Initialize the app when DOM is loaded

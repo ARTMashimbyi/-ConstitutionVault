@@ -109,6 +109,7 @@ export function initializeSearchInterface(containerId) {
 
       // shape data for the renderer
       const results = hits.map(item => ({
+        id:         item.id,
         title:       item.title,
         description: item.description || "",
         author:      item.author || "",

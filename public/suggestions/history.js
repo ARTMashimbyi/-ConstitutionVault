@@ -23,8 +23,14 @@ loadAllDocuments(currentUserId);
 
 
 if(!currentUserId){
-    alert("Please login to view documents.");
-    window.location.href = "../user%20signup/index.html";
+    Swal.fire({
+        icon: 'info',
+        title: 'Login Required',
+        text: 'Please login to view documents.',
+        confirmButtonText: 'OK'
+        });
+
+    window.location.href = "../index.html";
 }
 
 async function initApp() {
@@ -132,18 +138,61 @@ function renderAllDocuments() {
 
 // Create semantic document card element
 function createDocCard(doc) {
-  
   const card = document.createElement('article');
-  card.className = 'doc-card';
-  
+  card.className = 'document-card';
+
   if (doc.isNew) {
     const badge = document.createElement('mark');
     badge.className = 'doc-badge';
     badge.textContent = 'NEW';
     card.appendChild(badge);
   }
-  
-  card.innerHTML = `
+
+  // === Preview Section ===
+  const fig = document.createElement('figure');
+  let previewEl;
+
+  switch (doc.fileType) {
+    case "image":
+      previewEl = document.createElement("img");
+      previewEl.src = doc.downloadURL;
+      previewEl.alt = doc.title || 'Image preview';
+      break;
+    case "audio":
+      previewEl = document.createElement("audio");
+      previewEl.controls = true;
+      previewEl.src = doc.downloadURL;
+      break;
+    case "video":
+      previewEl = document.createElement("video");
+      previewEl.controls = true;
+      previewEl.src = doc.downloadURL;
+      break;
+    case "document":
+    default:
+      const isPDF = doc.downloadURL && doc.downloadURL.endsWith(".pdf");
+      if (isPDF) {
+        previewEl = document.createElement("embed");
+        previewEl.src = `${doc.downloadURL}#page=1&view=FitH`;
+        previewEl.type = "application/pdf";
+        previewEl.width = "100%";
+        previewEl.height = "400px";
+      } else {
+        previewEl = document.createElement("p");
+        previewEl.textContent = "Preview not available for this file type.";
+      }
+      break;
+  }
+
+  if (previewEl && (previewEl.tagName === 'IMG' || previewEl.tagName === 'IFRAME')) {
+    previewEl.loading = "lazy";
+  }
+
+  if (previewEl) fig.appendChild(previewEl);
+  card.appendChild(fig);
+
+  // === Meta + Actions Section ===
+  const metaHtml = `
     <h3>${doc.title || 'Untitled Document'}</h3>
     <menu class="doc-meta">
       <li><i class="fas fa-file"></i> ${doc.fileType || 'Unknown'}</li>
@@ -152,23 +201,30 @@ function createDocCard(doc) {
     </menu>
     ${doc.institution ? `<p>${doc.institution}</p>` : ''}
     <menu class="doc-actions">
-      <li><button class="action-btn view-btn"><i class="fas fa-eye"></i> View</button></li>
+      <li><button class="action-btn view-btn"><i class="fas fa-eye"></i> View All</button></li>
       <li>
         <button class="action-btn fav-btn ${doc.isFavorite ? 'active' : ''}" 
                 aria-label="${doc.isFavorite ? 'Remove from favorites' : 'Add to favorites'}">
           <i class="fas fa-star"></i>
         </button>
       </li>
+      <li>
+        <button class="action-btn share-btn" aria-label="Share document"><i class="fas fa-share-alt"></i></button>
+      </li>
     </menu>
   `;
-  
+  // Insert metaHtml after preview figure
+  card.insertAdjacentHTML('beforeend', metaHtml);
+
   // Add event listeners
   const favBtn = card.querySelector('.fav-btn');
   favBtn.addEventListener('click', async (e) => {
     e.stopPropagation();
     await toggleFavorite(doc.id, !doc.isFavorite);
   });
+  
   console.log(doc.id);
+  
   const viewBtn = card.querySelector('.view-btn');
   viewBtn.addEventListener('click', async (e) => {
     e.stopPropagation();
@@ -178,11 +234,39 @@ function createDocCard(doc) {
     console.log(doc);
     console.log(typeof(doc));
   });
+
+  const shareBtn = card.querySelector('.share-btn');
+  shareBtn.addEventListener('click', async (e) => {
+    e.preventDefault();
+
+    const shareData = {
+      title: doc.title || 'Untitled',
+      text: doc.description || 'Check this out!',
+      url: doc.downloadURL || '#'//protected url T_T*, TO DO: make it viewable
+    }
+
+    if(navigator.share) {
+      try {
+        await navigator.share(shareData);
+        console.log('Document shared successfully');
+      } catch (error) {
+        console.error('Error sharing document:', error);
+      }
+    } else{
+      try {
+        await navigator.clipboard.writeText(shareData.url);
+      } catch (error) {
+        console.error('Error sharing document:', error);
+      }
+    }
+  });
+
+  // card.addEventListener('click', () => openDocument(doc));
   
-  //card.addEventListener('click', () => openDocument(doc));
   console.log("card loaded");
   return card;
-  }
+}
+
   
 
 async function incrementViewCount(docId) {
@@ -423,11 +507,6 @@ function applyFilters() {
     const totalFav = userInteractions.isFavorite?.length || 0;
     const totalShares = userInteractions.shared?.length || 0;
 
-    // console.log("viewed:", totalViews);
-    // console.log("favorites:", totalFav);
-    // console.log("userInteractions:", userInteractions);
-    
-    
 
     const stat = document.querySelectorAll('.stat-card');
 

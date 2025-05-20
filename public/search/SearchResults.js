@@ -15,6 +15,8 @@
  * @param {HTMLElement} container
  * @param {Array<Object>} results
  */
+import { incrementViewCount, ViewCount } from "../suggestions/home.js";
+
 export function renderSearchResults(container, results) {
   // 1) Clear any existing results
   container.innerHTML = "";
@@ -101,6 +103,22 @@ export function renderSearchResults(container, results) {
     viewLink.target      = "_self";
     viewLink.textContent = "View in Full";
     viewLink.className   = "btn btn-primary";
+
+    
+    //add view count
+    viewLink.addEventListener("click", async (e) => {
+      // Assuming you have a function to update the view count
+      // updateViewCount(item.id);
+      e.preventDefault();
+      const currentUserId = localStorage.getItem('currentUserId');
+  
+      await incrementViewCount(item.id);
+      await ViewCount(item.id);
+
+      window.location.href = item.url;
+
+      console.log(`View count updated for ${item.title}`);
+    });
 
     footer.appendChild(viewLink);
     article.appendChild(footer);
