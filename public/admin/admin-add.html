@@ -11,13 +11,24 @@
   </head>
   <body>
     <header class="admin-header">
-      <a href="hierarcy.html" class="back-arrow" aria-label="Back to hierarchy"
-        >←</a
+      <!-- Back arrow uses history.back() to return to previous page -->
+      <button
+        type="button"
+        class="back-arrow"
+        aria-label="Go Back"
+        onclick="history.back()"
+      >
+        ←
+      </button>
+      <!-- Home button always goes to the admin home page -->
+      <a href="home_page/admin_home.html" class="home-button" aria-label="Home"
+        >⌂</a
       >
       <h1>Admin Portal</h1>
     </header>
 
-    <main class="upload-page">
+    <!-- Center and enlarge the upload page container -->
+    <main class="upload-page" style="max-width: 800px; margin: 20px auto">
       <form id="uploadForm" class="upload-form" novalidate>
         <fieldset>
           <legend>Upload a File</legend>
@@ -34,7 +45,7 @@
             </select>
           </label>
 
-          <!-- File upload container (shown for non‐text types) -->
+          <!-- File upload container -->
           <label for="file" id="fileContainer">
             Upload File
             <input type="file" id="file" name="file" />
@@ -53,7 +64,7 @@
             <input type="text" id="title" name="title" required />
           </label>
 
-          <!-- Upload date (editable) -->
+          <!-- Upload date -->
           <label for="date">
             Upload Date
             <input type="date" id="date" name="date" required />
@@ -65,7 +76,7 @@
             <input type="text" id="institution" name="institution" />
           </label>
 
-          <!-- Author (only for certain types if you like) -->
+          <!-- Author -->
           <label for="author" id="authorContainer">
             Author
             <input type="text" id="author" name="author" />
@@ -83,7 +94,7 @@
             <input type="text" id="keywords" name="keywords" />
           </label>
 
-          <!-- Directory -->
+          <!-- Directory (readonly, set via JS) -->
           <label for="directory">
             Directory Location
             <input
