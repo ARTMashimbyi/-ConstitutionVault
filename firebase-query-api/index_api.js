@@ -85,6 +85,7 @@ router.post('/query', async (req, res) => {
   try {
     let firestoreQuery = db.collection('constitutionalDocuments');
 
+    // Apply exact filters on Firestore where possible
     if (parsed.author) {
       console.log("Filtering by author:", parsed.author);
       firestoreQuery = firestoreQuery.where('author', '==', parsed.author.trim());
@@ -110,22 +111,27 @@ router.post('/query', async (req, res) => {
     console.log("Documents found:", snapshot.size);
     let results = snapshot.docs.map(doc => doc.data());
 
-    // 🧠 Normalize function
-    const normalize = (str) =>
-      str?.toLowerCase().replace(/[^\w\s]/gi, '').trim();
+    // 🧠 Normalize helper function
+   const normalize = (str) =>
+  str?.toLowerCase().replace(/[^\w\s]/gi, '').trim();
 
-    if (parsed.title) {
-      const queryTitle = normalize(parsed.title);
-      console.log("Filtering results client-side by title:", queryTitle);
+const queryTitle = normalize(parsed.title || '');
+const queryAuthor = normalize(parsed.author || '');
 
-      results = results.filter(doc => {
-        const normalizedDocTitle = normalize(doc.title);
-        const matched = normalizedDocTitle.includes(queryTitle);
-        console.log(`Comparing: "${queryTitle}" with "${normalizedDocTitle}" → ${matched}`);
-        return matched;
-      });
-    }
+// Then filter results by matching parsed title or author
+results = results.filter(doc => {
+  const normalizedDocTitle = normalize(doc.title);
+  const normalizedDocAuthor = normalize(doc.author);
 
+  const matchedTitle = queryTitle && normalizedDocTitle.includes(queryTitle);
+  const matchedAuthor = queryAuthor && normalizedDocAuthor.includes(queryAuthor);
+
+  console.log(`Comparing parsed title "${queryTitle}" with title "${normalizedDocTitle}" → ${matchedTitle}`);
+  console.log(`Comparing parsed author "${queryAuthor}" with author "${normalizedDocAuthor}" → ${matchedAuthor}`);
+
+  // Match if either title or author matches
+  return matchedTitle || matchedAuthor;
+});
     console.log("Final results count:", results.length);
     res.json({ results });
 
@@ -134,7 +140,6 @@ router.post('/query', async (req, res) => {
     res.status(500).json({ error: err.message || 'Something went wrong' });
   }
 });
-
 
 
 

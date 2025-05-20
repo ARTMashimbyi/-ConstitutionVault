@@ -1,4 +1,5 @@
 // public/user-interface/user-search.js
+console.log("user-search.js loaded")
 
 import { initializeSearchInterface } from "../search/SearchInterface.js";
 
