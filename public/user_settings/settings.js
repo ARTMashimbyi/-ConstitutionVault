@@ -1,37 +1,34 @@
 // public/user_settings/settings.js
 
 window.addEventListener("DOMContentLoaded", () => {
-  const body      = document.body;
-  const modes     = document.querySelectorAll(".mode-switcher button");
-  const form      = document.getElementById("filterForm");
-  const resetBtn  = document.getElementById("resetSettings");
+  const body     = document.body;
+  const modes    = document.querySelectorAll(".mode-switcher button");
+  const form     = document.getElementById("filterForm");
+  const resetBtn = document.getElementById("resetSettings");
+  const backBtn  = document.getElementById("backButton");
 
-  // 1️⃣ Load saved settings (or defaults)
+  // Store last visited page (from referrer)
+  const ref = document.referrer;
+  let lastPage = "../user-interface/user-search.html";
+  if (ref.includes("home.html")) lastPage = "../suggestions/home.html";
+  else if (ref.includes("history.html")) lastPage = "../suggestions/history.html";
+  localStorage.setItem("lastVisitedPage", lastPage);
+
   const saved      = JSON.parse(localStorage.getItem("userSettings") || "{}");
   const themeClass = saved.themeClass || "";
 
-  // 2️⃣ Apply saved theme class
   if (themeClass) body.classList.add(themeClass);
 
-  // 3️⃣ Highlight active mode button
   modes.forEach(btn => {
     btn.classList.toggle("active", btn.dataset.mode === themeClass);
-  });
-
-  // 4️⃣ Wire up mode buttons
-  modes.forEach(btn => {
     btn.addEventListener("click", () => {
-      // remove all theme classes
       body.classList.remove("dark-mode", "solar-mode", "hc-mode");
-      // apply the clicked one
       const cls = btn.dataset.mode;
       if (cls) body.classList.add(cls);
-      // update active button styling
       modes.forEach(b => b.classList.toggle("active", b === btn));
     });
   });
 
-  // 5️⃣ Helper to populate input/select/checkbox
   function setInput(id, value) {
     const el = document.getElementById(id);
     if (!el) return;
@@ -42,7 +39,7 @@ window.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // 6️⃣ Populate all fields from saved settings
+  // Fill fields from saved settings
   setInput("author",        saved.author);
   setInput("category",      saved.category);
   setInput("keywords",      saved.keywords);
@@ -56,19 +53,16 @@ window.addEventListener("DOMContentLoaded", () => {
   setInput("allTime",       saved.allTime);
   setInput("snippetLength", saved.snippetLength);
 
-  // 7️⃣ On form submit, gather everything and save
+  // Save Settings
   form.addEventListener("submit", e => {
     e.preventDefault();
 
-    // which theme is active?
     const activeBtn     = Array.from(modes).find(b => b.classList.contains("active"));
-    const newThemeClass = activeBtn?.dataset.mode || "";
-
-    // if "All Time" is checked, blank out dates
+    const themeClass    = activeBtn?.dataset.mode || "";
     const allTimeChecked = form.elements.allTime.checked;
 
     const newSettings = {
-      themeClass:    newThemeClass,
+      themeClass:    themeClass,
       author:        form.elements.author.value.trim(),
       category:      form.elements.category.value.trim(),
       keywords:      form.elements.keywords.value.trim(),
@@ -84,10 +78,17 @@ window.addEventListener("DOMContentLoaded", () => {
     };
 
     localStorage.setItem("userSettings", JSON.stringify(newSettings));
-    window.location.href = "../user-interface/user-search.html";
+    const back = localStorage.getItem("lastVisitedPage") || "../user-interface/user-search.html";
+    window.location.href = back;
   });
 
-  // 8️⃣ Reset button clears all settings and reloads defaults
+  // Back button
+  backBtn?.addEventListener("click", () => {
+    const back = localStorage.getItem("lastVisitedPage") || "../user-interface/user-search.html";
+    window.location.href = back;
+  });
+
+  // Reset button
   resetBtn.addEventListener("click", () => {
     localStorage.removeItem("userSettings");
     window.location.reload();

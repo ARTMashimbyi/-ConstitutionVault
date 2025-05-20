@@ -1,11 +1,16 @@
 // server/config/vertexClient.js
 
-// ensure GOOGLE_APPLICATION_CREDENTIALS is set via your .env and dotenv in server.js
-require('dotenv').config();
+// Load environment variables
+require("dotenv").config();
+const path = require("path");
 
-const { PredictionServiceClient } = require('@google-cloud/aiplatform').v1;
+// ✅ Resolve path to Vertex AI key from project root
+const credentialsPath = path.resolve(__dirname, "..", "..", process.env.GOOGLE_APPLICATION_CREDENTIALS_VERTEX);
+process.env.GOOGLE_APPLICATION_CREDENTIALS = credentialsPath;
 
-// instantiate once
+const { PredictionServiceClient } = require("@google-cloud/aiplatform").v1;
+
+// Instantiate Vertex AI Prediction client
 const client = new PredictionServiceClient();
 
 /**
@@ -14,12 +19,12 @@ const client = new PredictionServiceClient();
  * @returns {Promise<number[]>} embedding vector
  */
 async function getEmbedding(text) {
-  // limit length so we don’t overflow the model
+  // Limit input size to avoid exceeding model limits
   const snippet = text.slice(0, 2000);
 
-  // correct GCP model resource name
+  // Vertex AI model endpoint
   const endpoint =
-    'projects/constitutionvault-1b5d1/locations/us-central1/publishers/google/models/textembedding-gecko@001';
+    "projects/constitutionvault-1b5d1/locations/us-central1/publishers/google/models/textembedding-gecko@001";
 
   const [response] = await client.predict({
     endpoint,

@@ -512,7 +512,7 @@ function applyFilters() {
 async function search() {
     const searchBtn = document.querySelector('.search-btn');
         searchBtn.addEventListener('click', () => {
-            window.location.href = "../user-interface/user-filtered.html";
+            window.location.href = "../user-interface/user-search.html";
     });
 }
 

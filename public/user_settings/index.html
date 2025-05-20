@@ -11,7 +11,10 @@
     <main>
       <h1>Settings</h1>
 
-      <!-- Mode selector -->
+      <!-- Back button -->
+      <button id="backButton" class="back-button">← Back</button>
+
+      <!-- Theme switcher -->
       <section class="mode-switcher">
         <button data-mode="" id="mode-default">Default</button>
         <button data-mode="dark-mode" id="mode-dark">Dark</button>
@@ -21,11 +24,8 @@
 
       <h2>Filter homepage:</h2>
       <form id="filterForm">
-        <!-- multi-value text filters -->
         <section>
-          <label for="author">
-            Author(s) <small>(comma-separated)</small>
-          </label>
+          <label for="author">Author(s)</label>
           <input
             type="text"
             id="author"
@@ -35,42 +35,35 @@
         </section>
 
         <section>
-          <label for="category">
-            Category(ies) <small>(comma-separated)</small>
-          </label>
+          <label for="category">Category(ies)</label>
           <input
             type="text"
             id="category"
             name="category"
-            placeholder="e.g. Politics, Science"
+            placeholder="e.g. Law, History"
           />
         </section>
 
         <section>
-          <label for="keywords">
-            Keywords <small>(comma-separated)</small>
-          </label>
+          <label for="keywords">Keywords</label>
           <input
             type="text"
             id="keywords"
             name="keywords"
-            placeholder="e.g. AI, Amendment"
+            placeholder="e.g. Freedom, Rights"
           />
         </section>
 
         <section>
-          <label for="institution">
-            Institution(s) <small>(comma-separated)</small>
-          </label>
+          <label for="institution">Institution(s)</label>
           <input
             type="text"
             id="institution"
             name="institution"
-            placeholder="e.g. MIT, Oxford"
+            placeholder="e.g. Wits, UCT"
           />
         </section>
 
-        <!-- default file type -->
         <section>
           <label for="type">Default File Type</label>
           <select id="type" name="type">
@@ -83,7 +76,6 @@
           </select>
         </section>
 
-        <!-- default sort order -->
         <section>
           <label for="sort">Default Sort Order</label>
           <select id="sort" name="sort">
@@ -95,7 +87,6 @@
           </select>
         </section>
 
-        <!-- results per row -->
         <section>
           <label for="columns">Results per Row</label>
           <select id="columns" name="columns">
@@ -106,7 +97,6 @@
           </select>
         </section>
 
-        <!-- page size -->
         <section>
           <label for="pageSize">Results Per Page</label>
           <select id="pageSize" name="pageSize">
@@ -116,7 +106,6 @@
           </select>
         </section>
 
-        <!-- date range or all time -->
         <section class="date-range">
           <div>
             <label for="dateFrom">Date From</label>
@@ -135,7 +124,6 @@
           </div>
         </section>
 
-        <!-- snippet length -->
         <section>
           <label for="snippetLength">Snippet Preview Length</label>
           <select id="snippetLength" name="snippetLength">
@@ -147,7 +135,6 @@
           </select>
         </section>
 
-        <!-- form actions -->
         <section class="actions">
           <button type="submit">Save Settings</button>
           <button type="button" id="resetSettings">Reset to Defaults</button>
