@@ -1,8 +1,12 @@
-# Ignore service-account JSON keys
+# service‐account JSON keys (if you ever drop an unencrypted JSON in key/)
 key/*.json
-
-# But keep the folder placeholder
 !key/.gitkeep
 
-# Ignore node_modules
+# encrypted vault of creds
+.vault/
+
+# your local env file
+.env
+
+# Node modules
 /node_modules/
