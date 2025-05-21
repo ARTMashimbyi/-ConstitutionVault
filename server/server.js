@@ -6,39 +6,39 @@ require('dotenv').config({
   path: path.resolve(__dirname, '../.env')
 });
 
-const express           = require('express');
-const cors              = require('cors');
-const pathModule        = require('path');    // renamed so “path” isn’t shadowed
+const express     = require('express');
+const cors        = require('cors');
+const pathModule  = require('path');
 
-// 1) New: import the search router
+// 1) Routers
 const searchRouter      = require('./routes/search');
-
 const filesRouter       = require('./routes/files');
 const directoriesRouter = require('./routes/directories');
 
 const app = express();
 
-// 2) Enable CORS for your front-end origin
-app.use(
-  cors({
-    origin: [
-      'http://127.0.0.1:5500',
-      'http://localhost:5500'
-    ]
-  })
-);
+// 2) Enable CORS for front-end dev origins
+app.use(cors({
+  origin: [
+    'http://127.0.0.1:3002',
+    'http://localhost:3002',
+    'http://127.0.0.1:5500',
+    'http://localhost:5500'
+  ]
+}));
 
-// 3) Parse JSON request bodies
+// 3) Parse JSON
 app.use(express.json());
 
-// 4) Mount your routers
+// 4) Mount routers
 app.use('/api/search',      searchRouter);
 app.use('/api/files',       filesRouter);
 app.use('/api/directories', directoriesRouter);
 
-// 5) (Optional) Serve static front-end from /public
+// 5) Optional: Serve frontend
 // app.use('/', express.static(pathModule.join(__dirname, '..', 'public')));
 
+// 6) Start the server
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
   console.log(`🗄️  API listening on http://localhost:${PORT}`);

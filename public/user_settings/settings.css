@@ -1,173 +1,459 @@
-/* settings.css */
-
-/* 1. Theme variables */
 :root {
-  --bg:           #ffffff;
-  --fg:           #000000;
-  --card-bg:      #f9f9f9;
-  --highlight:    #007bff;
-  --border-color: #ccc;
-  --input-bg:     #ffffff;
-  --input-fg:     #000000;
+  --primary-color: #4a6fa5;
+  --primary-hover: #3a5a8c;
+  --text-color: #333;
+  --bg-color: #f5f5f5;
+  --card-bg: #ffffff;
+  --border-color: #ddd;
+  --success-color: #4caf50;
+  --error-color: #f44336;
+  --hover-bg: #f0f0f0;
+  --shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  --radius: 8px;
+  --transition: all 0.3s ease;
 }
 
-/* 2. Dark mode overrides */
-body.dark-mode {
-  --bg:           #130f49;
-  --fg:           #f1f1f1;
-  --card-bg:      #1e1a65;
-  --highlight:    #66bfff;
-  --border-color: #555;
-  --input-bg:     #1e1a65;
-  --input-fg:     #f1f1f1;
+/* Dark mode */
+.dark-mode {
+  --primary-color: #6d9eeb;
+  --primary-hover: #8ab4f8;
+  --text-color: #eaeaea;
+  --bg-color: #121212;
+  --card-bg: #1e1e1e;
+  --border-color: #333;
+  --hover-bg: #2a2a2a;
+  --shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
 }
 
-/* 3. Solarized mode */
-body.solar-mode {
-  --bg:           #fdf6e3;
-  --fg:           #586e75;
-  --card-bg:      #eee8d5;
-  --highlight:    #b58900;
+/* Solarized mode */
+.solar-mode {
+  --primary-color: #268bd2;
+  --primary-hover: #2aa198;
+  --text-color: #586e75;
+  --bg-color: #fdf6e3;
+  --card-bg: #eee8d5;
   --border-color: #93a1a1;
-  --input-bg:     #eee8d5;
-  --input-fg:     #586e75;
+  --hover-bg: #e0dbc6;
+  --shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
-/* 4. High-contrast mode */
-body.hc-mode {
-  --bg:           #000000;
-  --fg:           #ffffff;
-  --card-bg:      #000000;
-  --highlight:    #ffff00;
+/* High-contrast mode */
+.hc-mode {
+  --primary-color: #ffff00;
+  --primary-hover: #ffffff;
+  --text-color: #ffffff;
+  --bg-color: #000000;
+  --card-bg: #121212;
   --border-color: #ffffff;
-  --input-bg:     #000000;
-  --input-fg:     #ffffff;
+  --hover-bg: #333333;
+  --shadow: 0 2px 5px rgba(255, 255, 255, 0.2);
 }
 
-/* Base page styling */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
 body {
-  font-family: sans-serif;
-  margin: 2rem;
-  background: var(--bg);
-  color: var(--fg);
-  transition: background 0.3s, color 0.3s;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+    Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  line-height: 1.6;
+  color: var(--text-color);
+  background-color: var(--bg-color);
+  transition: var(--transition);
+  padding: 20px;
 }
 
 main {
-  max-width: 600px;
-  margin: auto;
-  background: var(--card-bg);
-  padding: 1.5rem;
-  border-radius: 8px;
-  border: 1px solid var(--border-color);
+  max-width: 800px;
+  margin: 0 auto;
 }
 
-/* Headings */
 h1 {
-  font-size: 1.8rem;
-  margin-bottom: 1rem;
-}
-h2 {
-  margin-top: 1.5rem;
-  font-size: 1.3rem;
-  border-bottom: 1px solid var(--border-color);
-  padding-bottom: 0.3rem;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  color: var(--primary-color);
 }
 
-/* Mode switcher */
+h2 {
+  margin-bottom: 1rem;
+  font-size: 1.3rem;
+}
+
+h3 {
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+.back-button {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background: none;
+  border: none;
+  color: var(--primary-color);
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 5px 10px;
+  border-radius: var(--radius);
+  transition: var(--transition);
+}
+
+.back-button:hover {
+  background-color: var(--hover-bg);
+}
+
+.setting-card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow);
+  transition: var(--transition);
+}
+
+.helper-text {
+  font-size: 0.9rem;
+  color: var(--text-color);
+  opacity: 0.7;
+  margin-bottom: 15px;
+}
+
+/* Theme mode switcher */
 .mode-switcher {
   display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1.5rem;
-}
-.mode-switcher button {
-  padding: 0.4rem 0.8rem;
-  background: var(--card-bg);
-  border: 1px solid var(--border-color);
-  color: var(--fg);
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-.mode-switcher button.active,
-.mode-switcher button:hover {
-  background: var(--highlight);
-  color: #fff;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 15px;
 }
 
-/* Form layout */
-form#filterForm {
+.mode-switcher button {
+  padding: 8px 15px;
+  border: 1px solid var(--border-color);
+  background: var(--card-bg);
+  color: var(--text-color);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.mode-switcher button:hover {
+  background: var(--hover-bg);
+}
+
+.mode-switcher button.active {
+  background: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+/* Filter section styling */
+.filter-section {
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 20px;
+}
+
+.filter-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.filter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.toggle-all {
+  background: none;
+  border: none;
+  color: var(--primary-color);
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.toggle-all:hover {
+  text-decoration: underline;
+}
+
+/* Dropdown styling */
+.dropdown-container {
+  position: relative;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.search-box {
+  padding: 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.filter-search {
+  padding: 10px;
+  width: 100%;
+  border: none;
+  background-color: var(--card-bg);
+  color: var(--text-color);
+}
+
+.filter-search:focus {
+  outline: none;
+}
+
+.dropdown-options {
+  max-height: 200px;
+  overflow-y: auto;
+  background-color: var(--card-bg);
+}
+
+.option-item {
+  padding: 8px 10px;
+  display: flex;
+  align-items: center;
+  transition: var(--transition);
+}
+
+.option-item:hover {
+  background-color: var(--hover-bg);
+}
+
+.loading-indicator {
+  padding: 15px;
+  text-align: center;
+  color: var(--text-color);
+  opacity: 0.7;
+}
+
+/* Checkbox styling */
+.checkbox-container {
+  display: flex;
+  align-items: center;
+  position: relative;
+  padding-left: 30px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.checkbox-container input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+.checkmark {
+  position: absolute;
+  left: 0;
+  height: 20px;
+  width: 20px;
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+}
+
+.checkbox-container:hover input ~ .checkmark {
+  background-color: var(--hover-bg);
+}
+
+.checkbox-container input:checked ~ .checkmark {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.checkmark:after {
+  content: "";
+  position: absolute;
+  display: none;
+}
+
+.checkbox-container input:checked ~ .checkmark:after {
+  display: block;
+  left: 7px;
+  top: 3px;
+  width: 5px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+/* File type section */
+.file-type-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+}
+
+/* Display options */
+.display-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 15px;
+}
+
+.display-option {
+  margin-bottom: 10px;
+}
+
+.display-option label {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 0.9rem;
+}
+
+.display-option select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  background-color: var(--card-bg);
+  color: var(--text-color);
+}
+
+/* Date range section */
+.date-range-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 15px;
+}
+
+.date-input {
+  margin-bottom: 10px;
+}
+
+.date-input label {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 0.9rem;
+}
+
+.date-input input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  background-color: var(--card-bg);
+  color: var(--text-color);
+}
+
+.date-toggle {
   display: flex;
   flex-direction: column;
-}
-form#filterForm section {
-  margin-top: 1rem;
-}
-form#filterForm label {
-  display: block;
-  font-weight: bold;
-  margin-bottom: 0.3rem;
-  color: var(--fg);
-}
-form#filterForm label small {
-  font-weight: normal;
-  font-size: 0.85rem;
-  color: var(--fg);
+  justify-content: flex-end;
 }
 
-/* Text inputs & textareas */
-input[type="text"],
-input[type="date"],
-select,
-textarea {
-  width: 100%;
-  padding: 0.5rem;
-  font-size: 1rem;
-  color: var(--input-fg);
-  background: var(--input-bg);
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
-  transition: border-color 0.2s;
-}
-input[type="text"]:focus,
-input[type="date"]:focus,
-select:focus,
-textarea:focus {
-  outline: none;
-  border-color: var(--highlight);
+.date-toggle small {
+  font-size: 0.8rem;
+  color: var(--text-color);
+  opacity: 0.7;
+  margin-top: 5px;
 }
 
-/* Date-range group */
-.date-range {
+/* Form actions */
+.form-actions {
   display: flex;
-  gap: 1rem;
-}
-.date-range > div {
-  flex: 1;
-}
-
-/* Checkbox toggle */
-input[type="checkbox"] {
-  margin-right: 0.5rem;
-  transform: scale(1.1);
-  vertical-align: middle;
-}
-form#filterForm section:last-of-type {
-  margin-bottom: 1.5rem;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 30px;
 }
 
-/* Submit button */
-button[type="submit"] {
-  margin-top: 1.5rem;
-  padding: 0.7rem 1.2rem;
-  background: var(--highlight);
+.primary-button,
+.secondary-button {
+  padding: 10px 20px;
+  border-radius: var(--radius);
   border: none;
-  color: #fff;
-  font-size: 1rem;
-  border-radius: 4px;
   cursor: pointer;
-  transition: opacity 0.2s;
+  font-weight: 500;
+  transition: var(--transition);
 }
-button[type="submit"]:hover {
-  opacity: 0.9;
+
+.primary-button {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.primary-button:hover {
+  background-color: var(--primary-hover);
+}
+
+.secondary-button {
+  background-color: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-color);
+}
+
+.secondary-button:hover {
+  background-color: var(--hover-bg);
+}
+
+/* Scrollbar styling */
+.dropdown-options::-webkit-scrollbar {
+  width: 8px;
+}
+
+.dropdown-options::-webkit-scrollbar-track {
+  background: var(--card-bg);
+}
+
+.dropdown-options::-webkit-scrollbar-thumb {
+  background-color: var(--border-color);
+  border-radius: 10px;
+}
+
+.dropdown-options::-webkit-scrollbar-thumb:hover {
+  background-color: var(--primary-color);
+}
+
+/* Notification styling */
+.notification {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  padding: 15px 20px;
+  border-radius: 4px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+  z-index: 1000;
+  transition: all 0.3s ease;
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.notification.success {
+  background-color: var(--success-color);
+}
+
+.notification.error {
+  background-color: var(--error-color);
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .file-type-options {
+    grid-template-columns: 1fr 1fr;
+  }
+  
+  .display-options,
+  .date-range-options {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+  }
+  
+  .mode-switcher {
+    flex-wrap: wrap;
+  }
+  
+  .back-button {
+    position: static;
+    margin-bottom: 15px;
+  }
 }

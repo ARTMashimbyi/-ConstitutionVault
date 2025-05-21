@@ -9,139 +9,220 @@
 
   <body>
     <main>
-      <h1>Settings</h1>
+      <header>
+        <h1>Settings</h1>
+        <!-- Back button -->
+        <nav>
+          <button id="backButton" class="back-button">← Back</button>
+        </nav>
+      </header>
 
-      <!-- Back button -->
-      <button id="backButton" class="back-button">← Back</button>
-
-      <!-- Theme switcher -->
-      <section class="mode-switcher">
-        <button data-mode="" id="mode-default">Default</button>
-        <button data-mode="dark-mode" id="mode-dark">Dark</button>
-        <button data-mode="solar-mode" id="mode-solar">Solarized</button>
-        <button data-mode="hc-mode" id="mode-hc">High-Contrast</button>
+      <!-- Mode selector -->
+      <section class="setting-card theme-section">
+        <h2>Theme</h2>
+        <nav class="mode-switcher">
+          <button data-mode="" id="mode-default">Default</button>
+          <button data-mode="dark-mode" id="mode-dark">Dark</button>
+          <button data-mode="solar-mode" id="mode-solar">Solarized</button>
+          <button data-mode="hc-mode" id="mode-hc">High-Contrast</button>
+        </nav>
       </section>
 
-      <h2>Filter homepage:</h2>
       <form id="filterForm">
-        <section>
-          <label for="author">Author(s)</label>
-          <input
-            type="text"
-            id="author"
-            name="author"
-            placeholder="e.g. Jane Doe, John Smith"
-          />
+        <section class="setting-card">
+          <h2>Filter Content</h2>
+          <p class="helper-text">Select what you want to see in search results, suggestions, and listings.</p>
+          
+          <!-- Author filter -->
+          <article class="filter-section">
+            <header class="filter-header">
+              <h3>Author</h3>
+              <button type="button" class="toggle-all" data-target="authorOptions">Select All</button>
+            </header>
+            <fieldset class="dropdown-container">
+              <legend class="visually-hidden">Author Options</legend>
+              <section class="search-box">
+                <input type="text" class="filter-search" placeholder="Search authors..." data-target="authorOptions">
+              </section>
+              <section class="dropdown-options" id="authorOptions">
+                <p class="loading-indicator">Loading authors...</p>
+              </section>
+            </fieldset>
+          </article>
+
+          <!-- Category filter -->
+          <article class="filter-section">
+            <header class="filter-header">
+              <h3>Category</h3>
+              <button type="button" class="toggle-all" data-target="categoryOptions">Select All</button>
+            </header>
+            <fieldset class="dropdown-container">
+              <legend class="visually-hidden">Category Options</legend>
+              <section class="search-box">
+                <input type="text" class="filter-search" placeholder="Search categories..." data-target="categoryOptions">
+              </section>
+              <section class="dropdown-options" id="categoryOptions">
+                <p class="loading-indicator">Loading categories...</p>
+              </section>
+            </fieldset>
+          </article>
+
+          <!-- Keywords filter -->
+          <article class="filter-section">
+            <header class="filter-header">
+              <h3>Keywords</h3>
+              <button type="button" class="toggle-all" data-target="keywordOptions">Select All</button>
+            </header>
+            <fieldset class="dropdown-container">
+              <legend class="visually-hidden">Keyword Options</legend>
+              <section class="search-box">
+                <input type="text" class="filter-search" placeholder="Search keywords..." data-target="keywordOptions">
+              </section>
+              <section class="dropdown-options" id="keywordOptions">
+                <p class="loading-indicator">Loading keywords...</p>
+              </section>
+            </fieldset>
+          </article>
+
+          <!-- Institution filter -->
+          <article class="filter-section">
+            <header class="filter-header">
+              <h3>Institution / Place</h3>
+              <button type="button" class="toggle-all" data-target="institutionOptions">Select All</button>
+            </header>
+            <fieldset class="dropdown-container">
+              <legend class="visually-hidden">Institution Options</legend>
+              <section class="search-box">
+                <input type="text" class="filter-search" placeholder="Search institutions..." data-target="institutionOptions">
+              </section>
+              <section class="dropdown-options" id="institutionOptions">
+                <p class="loading-indicator">Loading institutions...</p>
+              </section>
+            </fieldset>
+          </article>
         </section>
 
-        <section>
-          <label for="category">Category(ies)</label>
-          <input
-            type="text"
-            id="category"
-            name="category"
-            placeholder="e.g. Law, History"
-          />
-        </section>
-
-        <section>
-          <label for="keywords">Keywords</label>
-          <input
-            type="text"
-            id="keywords"
-            name="keywords"
-            placeholder="e.g. Freedom, Rights"
-          />
-        </section>
-
-        <section>
-          <label for="institution">Institution(s)</label>
-          <input
-            type="text"
-            id="institution"
-            name="institution"
-            placeholder="e.g. Wits, UCT"
-          />
-        </section>
-
-        <section>
-          <label for="type">Default File Type</label>
-          <select id="type" name="type">
-            <option value="">All</option>
-            <option value="document">Document</option>
-            <option value="image">Image</option>
-            <option value="video">Video</option>
-            <option value="audio">Audio</option>
-            <option value="text">Text</option>
-          </select>
-        </section>
-
-        <section>
-          <label for="sort">Default Sort Order</label>
-          <select id="sort" name="sort">
-            <option value="">Default</option>
-            <option value="title-asc">Title ↑</option>
-            <option value="title-desc">Title ↓</option>
-            <option value="year-asc">Date ↑</option>
-            <option value="year-desc">Date ↓</option>
-          </select>
-        </section>
-
-        <section>
-          <label for="columns">Results per Row</label>
-          <select id="columns" name="columns">
-            <option value="1">1</option>
-            <option value="2" selected>2</option>
-            <option value="3">3</option>
-            <option value="4">4</option>
-          </select>
-        </section>
-
-        <section>
-          <label for="pageSize">Results Per Page</label>
-          <select id="pageSize" name="pageSize">
-            <option value="10">10</option>
-            <option value="20" selected>20</option>
-            <option value="50">50</option>
-          </select>
-        </section>
-
-        <section class="date-range">
-          <div>
-            <label for="dateFrom">Date From</label>
-            <input type="date" id="dateFrom" name="dateFrom" />
-          </div>
-          <div>
-            <label for="dateTo">Date To</label>
-            <input type="date" id="dateTo" name="dateTo" />
-          </div>
-          <div>
-            <label>
-              <input type="checkbox" id="allTime" name="allTime" />
-              All Time
+        <section class="setting-card file-type-section">
+          <h2>File Types</h2>
+          <fieldset class="file-type-options">
+            <legend class="visually-hidden">File Type Options</legend>
+            <label class="checkbox-container">
+              <input type="checkbox" name="fileTypes" value="document" checked>
+              <span class="checkmark"></span>
+              <span class="label-text">Documents</span>
             </label>
-            <small>When checked, ignores date range</small>
-          </div>
+            <label class="checkbox-container">
+              <input type="checkbox" name="fileTypes" value="video" checked>
+              <span class="checkmark"></span>
+              <span class="label-text">Videos</span>
+            </label>
+            <label class="checkbox-container">
+              <input type="checkbox" name="fileTypes" value="image" checked>
+              <span class="checkmark"></span>
+              <span class="label-text">Images</span>
+            </label>
+            <label class="checkbox-container">
+              <input type="checkbox" name="fileTypes" value="audio" checked>
+              <span class="checkmark"></span>
+              <span class="label-text">Audio</span>
+            </label>
+            <label class="checkbox-container">
+              <input type="checkbox" name="fileTypes" value="text" checked>
+              <span class="checkmark"></span>
+              <span class="label-text">Text</span>
+            </label>
+          </fieldset>
         </section>
 
-        <section>
-          <label for="snippetLength">Snippet Preview Length</label>
-          <select id="snippetLength" name="snippetLength">
-            <option value="50">50 chars</option>
-            <option value="100" selected>100 chars</option>
-            <option value="200">200 chars</option>
-            <option value="300">300 chars</option>
-            <option value="500">500 chars</option>
-          </select>
+        <section class="setting-card">
+          <h2>Display Settings</h2>
+          <fieldset class="display-options">
+            <legend class="visually-hidden">Display Options</legend>
+            <figure class="display-option">
+              <figcaption>
+                <label for="sort">Default Sort Order</label>
+              </figcaption>
+              <select id="sort" name="sort">
+                <option value="">Default</option>
+                <option value="title-asc">Title ↑</option>
+                <option value="title-desc">Title ↓</option>
+                <option value="year-asc">Date ↑</option>
+                <option value="year-desc">Date ↓</option>
+              </select>
+            </figure>
+            
+            <figure class="display-option">
+              <figcaption>
+                <label for="columns">Results per Row</label>
+              </figcaption>
+              <select id="columns" name="columns">
+                <option value="1">1</option>
+                <option value="2" selected>2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+              </select>
+            </figure>
+            
+            <figure class="display-option">
+              <figcaption>
+                <label for="pageSize">Results Per Page</label>
+              </figcaption>
+              <select id="pageSize" name="pageSize">
+                <option value="10">10</option>
+                <option value="20" selected>20</option>
+                <option value="50">50</option>
+              </select>
+            </figure>
+            
+            <figure class="display-option">
+              <figcaption>
+                <label for="snippetLength">Snippet Preview Length</label>
+              </figcaption>
+              <select id="snippetLength" name="snippetLength">
+                <option value="50">50 chars</option>
+                <option value="100" selected>100 chars</option>
+                <option value="200">200 chars</option>
+                <option value="300">300 chars</option>
+                <option value="500">500 chars</option>
+              </select>
+            </figure>
+          </fieldset>
         </section>
 
-        <section class="actions">
-          <button type="submit">Save Settings</button>
-          <button type="button" id="resetSettings">Reset to Defaults</button>
+        <section class="setting-card date-range-section">
+          <h2>Date Range</h2>
+          <fieldset class="date-range-options">
+            <legend class="visually-hidden">Date Range Options</legend>
+            <figure class="date-input">
+              <figcaption>
+                <label for="dateFrom">From</label>
+              </figcaption>
+              <input type="date" id="dateFrom" name="dateFrom">
+            </figure>
+            <figure class="date-input">
+              <figcaption>
+                <label for="dateTo">To</label>
+              </figcaption>
+              <input type="date" id="dateTo" name="dateTo">
+            </figure>
+            <aside class="date-toggle">
+              <label class="checkbox-container">
+                <input type="checkbox" id="allTime" name="allTime">
+                <span class="checkmark"></span>
+                <span class="label-text">All Time</span>
+              </label>
+              <small>When checked, ignores date range</small>
+            </aside>
+          </fieldset>
         </section>
+
+        <footer class="form-actions">
+          <button type="submit" class="primary-button">Save Settings</button>
+          <button type="button" id="resetButton" class="secondary-button">Reset Defaults</button>
+        </footer>
       </form>
     </main>
 
-    <script src="settings.js"></script>
+    <script type="module" src="settings.js"></script>
   </body>
 </html>
