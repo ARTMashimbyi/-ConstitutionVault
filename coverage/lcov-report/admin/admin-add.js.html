@@ -23,16 +23,16 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">91.02% </span>
+                <span class="strong">91.89% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>71/78</span>
+                <span class='fraction'>68/74</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">75% </span>
+                <span class="strong">81.25% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>24/32</span>
+                <span class='fraction'>26/32</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">93.33% </span>
+                <span class="strong">94.36% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>70/75</span>
+                <span class='fraction'>67/71</span>
             </div>
         
             
@@ -218,16 +218,7 @@
 <a name='L153'></a><a href='#L153'>153</a>
 <a name='L154'></a><a href='#L154'>154</a>
 <a name='L155'></a><a href='#L155'>155</a>
-<a name='L156'></a><a href='#L156'>156</a>
-<a name='L157'></a><a href='#L157'>157</a>
-<a name='L158'></a><a href='#L158'>158</a>
-<a name='L159'></a><a href='#L159'>159</a>
-<a name='L160'></a><a href='#L160'>160</a>
-<a name='L161'></a><a href='#L161'>161</a>
-<a name='L162'></a><a href='#L162'>162</a>
-<a name='L163'></a><a href='#L163'>163</a>
-<a name='L164'></a><a href='#L164'>164</a>
-<a name='L165'></a><a href='#L165'>165</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L156'></a><a href='#L156'>156</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">12x</span>
@@ -265,26 +256,22 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">12x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">6x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">5x</span>
-<span class="cline-any cline-yes">5x</span>
-<span class="cline-any cline-yes">5x</span>
-<span class="cline-any cline-yes">5x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-yes">5x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -329,9 +316,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">5x</span>
 <span class="cline-any cline-yes">5x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -354,10 +338,8 @@
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
@@ -420,7 +402,7 @@ const fileTypeAccepts = {
 // 1) Auto-fill today’s date
 dateInput.value = new Date().toISOString().split("T")[0];
 &nbsp;
-// 2) On DOM ready: pick up ?directory=… and wire fileType changes
+// 2) On DOM ready: prefill directory from query and apply fileType logic
 document.addEventListener("DOMContentLoaded", () =&gt; {
   const dirParam = new URLSearchParams(window.location.search).get("directory");
   <span class="missing-if-branch" title="else path not taken" >E</span>if (dirParam) directoryInput.value = dirParam;
@@ -429,36 +411,32 @@ document.addEventListener("DOMContentLoaded", () =&gt; {
 &nbsp;
 // 3) Show/hide fields when fileType changes
 fileTypeSelect.addEventListener("change", handleFileTypeChange);
-function handleFileTypeChange() {
-  const t = fileTypeSelect.value;
 &nbsp;
-  // text vs file upload
-  if (t === "text") {
-    fileContainer.hidden = true;
-    textContainer.hidden = false;
-    fileInput.required   = false;
-    textContent.required = true;
+function handleFileTypeChange() {
+  const type = fileTypeSelect.value;
+&nbsp;
+  // Toggle between file input and text input
+  const isText = type === "text";
+  fileContainer.hidden    = isText;
+  textContainer.hidden    = !isText;
+  fileInput.required      = !isText;
+  textContent.required    = isText;
+&nbsp;
+  // Apply accept filter to file input if applicable
+  if (!isText &amp;&amp; fileTypeAccepts[type]) {
+    fileInput.setAttribute("accept", fileTypeAccepts[type]);
   } else {
-    fileContainer.hidden = false;
-    textContainer.hidden = true;
-    fileInput.required   = true;
-    textContent.required = false;
-    // apply accept filter
-    if (fileTypeAccepts[t]) {
-      fileInput.setAttribute("accept", fileTypeAccepts[t]);
-    } else <span class="missing-if-branch" title="else path not taken" >E</span>{
-<span class="cstat-no" title="statement not covered" >      fileInput.removeAttribute("accept");</span>
-    }
+    fileInput.removeAttribute("accept");
   }
 &nbsp;
-  // Only documents &amp; text show author/category/keywords
-  const isDocLike = (t === "document" || t === "text");
-  authorContainer.hidden   = !isDocLike;
-  categoryContainer.hidden = !isDocLike;
-  keywordsContainer.hidden = !isDocLike;
+  // Show metadata only for text and document
+  const showMeta = type === "text" || type === "document";
+  authorContainer.hidden   = !showMeta;
+  categoryContainer.hidden = !showMeta;
+  keywordsContainer.hidden = !showMeta;
 }
 &nbsp;
-// 4) On submit → POST to your API
+// 4) On submit → send to backend
 uploadForm.addEventListener("submit", async e =&gt; {
   e.preventDefault();
   uploadStatus.style.display = "none";
@@ -466,42 +444,39 @@ uploadForm.addEventListener("submit", async e =&gt; {
   const formData = new FormData(uploadForm);
   const fileType = formData.get("fileType");
 &nbsp;
-  // Validate presence
+  // Basic validation
   if (fileType === "text") {
     if (!formData.get("textContent")?.trim()) {
       return showError("Please enter text content.");
     }
   } else {
-    const f = formData.get("file");
-    <span class="missing-if-branch" title="else path not taken" >E</span>if (!(f instanceof File) || f.size === 0) {
+    const file = formData.get("file");
+    <span class="missing-if-branch" title="else path not taken" >E</span>if (!(file instanceof File) || file.size === 0) {
       return showError("Please select a file to upload.");
     }
   }
 &nbsp;
-  // Normalize directory (no leading/trailing slash)
-  let dir = (formData.get("directory") || "/").trim().replace(/^\/|\/$/g, "");
+  // Normalize directory
+  const dir = (formData.get("directory") || "/").trim().replace(/^\/|\/$/g, "");
 &nbsp;
   // Build metadata object
   const metadata = {
-    fileType:   formData.get("fileType"),
-    title:      formData.get("title"),
-    date:       formData.get("date"),
+    fileType:    fileType,
+    title:       formData.get("title"),
+    date:        formData.get("date"),
     institution: formData.get("institution"),
-    author:     formData.get("author"),
-    category:   formData.get("category"),
-    keywords:   formData.get("keywords")
-                     ?.split(",")
-                     .map(kw =&gt; kw.trim())
-                     .filter(kw =&gt; kw) || <span class="branch-1 cbranch-no" title="branch not covered" >[],</span>
-    directory:  dir,
-    textContent:
-      fileType === "text"
-        ? formData.get("textContent")
-        : <span class="branch-1 cbranch-no" title="branch not covered" >""</span>
+    author:      formData.get("author"),
+    category:    formData.get("category"),
+    keywords:    (formData.get("keywords") || "")
+                  .split(",")
+                  .map(k =&gt; k.trim())
+                  .filter(k =&gt; k),
+    directory:   dir,
+    textContent: fileType === "text" ? formData.get("textContent") : <span class="branch-1 cbranch-no" title="branch not covered" >""</span>
   };
 &nbsp;
   try {
-    // Package into multipart/form-data
+    // Package and send form data
     const payload = new FormData();
     payload.append("metadata", JSON.stringify(metadata));
     <span class="missing-if-branch" title="if path not taken" >I</span>if (fileType !== "text") {
@@ -514,21 +489,19 @@ uploadForm.addEventListener("submit", async e =&gt; {
     });
 &nbsp;
     if (!res.ok) {
-      const err = await res.json().catch(<span class="fstat-no" title="function not covered" >()</span>=&gt;<span class="cstat-no" title="statement not covered" >null)</span>;
+      const err = await res.json().catch(<span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >null)</span>;
       throw new Error(err?.error || <span class="branch-1 cbranch-no" title="branch not covered" >res.statusText)</span>;
     }
 &nbsp;
-    // On success, show message then redirect
     showSuccess("Uploaded! Redirecting…");
-    setTimeout(<span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >window.location.href = "hierarcy.html",</span> 1200);
-&nbsp;
+    setTimeout(<span class="fstat-no" title="function not covered" >()</span> =&gt; (<span class="cstat-no" title="statement not covered" >window.location.href = "hierarcy.html")</span>, 1200);
   } catch (err) {
     console.error("Upload failed:", err);
     showError(`Upload failed: ${err.message}`);
   }
 });
 &nbsp;
-// Helpers to show status
+// Status helpers
 function showError(msg) {
   uploadStatus.style.color   = "red";
   uploadStatus.textContent   = `⚠️ ${msg}`;
@@ -562,7 +535,7 @@ if (typeof module !== 'undefined' &amp;&amp; module.exports) {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-05-20T18:10:50.710Z
+                at 2025-05-21T19:27:42.162Z
             </div>
         <script src="../prettify.js"></script>
         <script>
