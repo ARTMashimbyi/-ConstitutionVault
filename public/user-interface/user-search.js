@@ -3,6 +3,6 @@
 import { initializeSearchInterface } from "../search/SearchInterface.js";
 
 document.addEventListener("DOMContentLoaded", () => {
-  // This will mount your search bar + results into the <section id="search-container">
+  // The SearchInterface will itself read userSettings from localStorage
   initializeSearchInterface("search-container");
 });

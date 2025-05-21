@@ -2,111 +2,189 @@
 
 import { renderSearchBar }     from "./SearchBar.js";
 import { renderSearchResults } from "./SearchResults.js";
+import { renderFilters }       from "./Filters.js";
+import { renderSortOptions }   from "./SortOptions.js";
 
-/**
- * Mounts the search UI into the given container and performs live filtering.
- *
- * @param {string} containerId – ID of the element to render into
- */
+const API_BASE = "http://localhost:4000";
+
 export function initializeSearchInterface(containerId) {
-  const container = document.getElementById(containerId);
-  if (!container) {
-    console.error(`Search container "${containerId}" not found.`);
-    return;
-  }
+  const saved = JSON.parse(localStorage.getItem("userSettings") || "{}");
+  if (saved.themeClass === "dark-mode") document.body.classList.add("dark-mode");
 
-  // 1) Wrapping section
+  // parse CSV lists from settings
+  const parseList = s =>
+    typeof s === "string" && s.trim()
+      ? s.split(",").map(x=>x.trim().toLowerCase()).filter(Boolean)
+      : [];
+  const wantedAuthors      = parseList(saved.author);
+  const wantedCategories   = parseList(saved.category);
+  const wantedInstitutions = parseList(saved.institution);
+  const wantedKeywords     = parseList(saved.keywords);
+
+  // state
+  let currentQuery = "";
+  let currentType  = saved.type     || "";
+  let currentSort  = saved.sort     || "";
+  let dateFrom     = saved.allTime  ? "" : (saved.dateFrom || "");
+  let dateTo       = saved.allTime  ? "" : (saved.dateTo   || "");
+  const snippetLen = parseInt(saved.snippetLength,10) || 100;
+  const gridCols   = parseInt(saved.columns,      10) || 2;
+
+  // filler words
+  const stopWords = new Set([
+    "can","i","please","have","get","me","the","a","to","for","of","in",
+    "do","you","uhm","um","uh"
+  ]);
+
+  // map spoken keywords → fileType
+  const typeMap = {
+    video:"video", videos:"video", clip:"video",
+    image:"image", images:"image", picture:"image",
+    audio:"audio", audios:"audio", sound:"audio",
+    text:"text", texts:"text", note:"text", notes:"text",
+    presentation:"document", ppt:"document", slides:"document",
+    document:"document", documents:"document",
+    file:"document", files:"document"
+  };
+
+  // build UI
+  const container = document.getElementById(containerId);
+  if (!container) return console.error(`Missing #${containerId}`);
+
   const wrapper = document.createElement("section");
   wrapper.id = "search-interface";
-  wrapper.setAttribute("aria-label", "ConstitutionVault Search Interface");
+  wrapper.setAttribute("aria-label","Search Interface");
 
-  // 2) Search bar
-  const searchBar = renderSearchBar(handleSearch);
+  // Search bar
+  const searchBar = renderSearchBar(q => {
+    currentQuery = q;
+    refresh();
+  });
 
-  // 3) Results container
+  // Type dropdown
+  const filtersUI = renderFilters(f => {
+    currentType = f.type;
+    refresh();
+  });
+  filtersUI.querySelector("#filter-type").value = currentType;
+
+  // Sort dropdown
+  const sortUI = renderSortOptions(s => {
+    currentSort = s;
+    refresh();
+  });
+  sortUI.querySelector("select").value = currentSort;
+
+  // Results grid
   const resultsSection = document.createElement("section");
   resultsSection.id = "search-results";
+  resultsSection.style.display             = "grid";
+  resultsSection.style.gridTemplateColumns = `repeat(${gridCols},1fr)`;
+  resultsSection.style.gap                 = "1.5rem";
 
-  wrapper.append(searchBar, resultsSection);
-  container.append(wrapper);
+  wrapper.append(searchBar, filtersUI, sortUI, resultsSection);
+  container.appendChild(wrapper);
 
-  // 4) Load all documents
-  let allDocs = [];
-  (async () => {
-    resultsSection.innerHTML = "<p>🔄 Loading…</p>";
-    try {
-      const res = await fetch("http://localhost:4000/api/files");
-      if (!res.ok) throw new Error("Failed to load documents");
-      allDocs = await res.json();
-      handleSearch("");
-    } catch (err) {
-      console.error("Error loading documents:", err);
-      resultsSection.innerHTML = "<p>❌ Failed to load results.</p>";
-    }
-  })();
+  // initial load
+  refresh();
 
-  /**
-   * Filters documents by query, including full-text content, and renders results.
-   *
-   * @param {string} query
-   */
-  function handleSearch(query) {
-    const lower = query.trim().toLowerCase();
-    const hits  = [];
+  async function refresh() {
+    // normalize & strip filler words
+    let raw = (currentQuery||"").trim().toLowerCase()
+      .split(/\s+/).filter(w=>!stopWords.has(w)).join(" ");
 
-    for (const data of allDocs) {
-      // combine all searchable fields
-      const fields = [
-        data.title,
-        data.description,
-        data.author,
-        data.category,
-        data.institution,
-        ...(Array.isArray(data.keywords) ? data.keywords : []),
-        data.fullText    // include the extracted document text
-      ]
-        .filter(Boolean)
-        .map(s => s.toLowerCase());
-
-      // check if any field contains the query
-      const matches = lower === "" 
-        ? true 
-        : fields.some(field => field.includes(lower));
-
-      if (matches) {
-        // extract a snippet around the first occurrence in fullText
-        let snippet = "";
-        if (lower && typeof data.fullText === "string") {
-          const idx = data.fullText.toLowerCase().indexOf(lower);
-          if (idx !== -1) {
-            const start = Math.max(0, idx - 30);
-            const end   = Math.min(data.fullText.length, idx + lower.length + 30);
-            snippet = data.fullText.slice(start, end).trim();
-            if (start > 0) snippet = "… " + snippet;
-            if (end < data.fullText.length) snippet += " …";
-          }
-        }
-
-        hits.push({ ...data, snippet });
+    // detect & strip ONE type keyword (without erasing entire query)
+    for (let kw in typeMap) {
+      const rx = new RegExp(`\\b${kw}\\b`,"i");
+      if (rx.test(raw)) {
+        currentType = typeMap[kw];
+        filtersUI.querySelector("#filter-type").value = currentType;
+        raw = raw.replace(rx,"").trim();
+        break;
       }
     }
 
-    // sort by title
-    hits.sort((a, b) => (a.title || "").localeCompare(b.title || ""));
+    // if nothing typed AND no other filters, do full “load all”
+    const noText = !raw;
+    const anyFilter = !!(currentType || currentSort || dateFrom || dateTo);
+    if (noText && !anyFilter) {
+      return fetchAllDocuments();
+    }
 
-    // shape data for the renderer
-    const results = hits.map(item => ({
-      title:       item.title,
-      description: item.description || "",
-      author:      item.author || "",
-      institution: item.institution || "",
-      category:    item.category || "",
-      keywords:    Array.isArray(item.keywords) ? item.keywords : [],
-      url:         item.downloadURL || item.url   || "",
-      fileType:    item.fileType   || "document",
-      snippet:     item.snippet    || ""
-    }));
+    // build URL with whatever is set
+    const parts = [
+      `query=${encodeURIComponent(raw)}`,
+      currentType  ? `type=${encodeURIComponent(currentType)}` : null,
+      currentSort  ? `sort=${encodeURIComponent(currentSort)}` : null,
+      dateFrom     ? `dateFrom=${encodeURIComponent(dateFrom)}` : null,
+      dateTo       ? `dateTo=${encodeURIComponent(dateTo)}`   : null
+    ].filter(Boolean).join("&");
 
-    renderSearchResults(resultsSection, results);
+    const url = `${API_BASE}/api/search?${parts}`;
+    resultsSection.innerHTML = raw
+      ? "<p>🔄 Searching…</p>"
+      : "<p>🔄 Applying filters…</p>";
+
+    try {
+      const res = await fetch(url);
+      const { results = [], message, error } = await res.json();
+
+      if (error) {
+        return resultsSection.innerHTML = `<p>❌ ${error}</p>`;
+      }
+
+      // client‐side author/category/keyword filters
+      const filtered = results.filter(item=>{
+        if (wantedAuthors.length &&
+            !(item.author && wantedAuthors.includes(item.author.toLowerCase())))
+          return false;
+        if (wantedCategories.length &&
+            !(item.category && wantedCategories.includes(item.category.toLowerCase())))
+          return false;
+        if (wantedInstitutions.length &&
+            !(item.institution && wantedInstitutions.includes(item.institution.toLowerCase())))
+          return false;
+        if (wantedKeywords.length) {
+          const kws = (item.keywords||[]).map(k=>k.toLowerCase());
+          if (!wantedKeywords.some(w=>kws.includes(w))) return false;
+        }
+        return true;
+      });
+
+      if (!filtered.length) {
+        return resultsSection.innerHTML =
+          `<p class="no-results">😔 No matches for “${raw}”</p>`;
+      }
+
+      // truncate snippet
+      filtered.forEach(it=>{
+        if (it.snippet && it.snippet.length > snippetLen) {
+          it.snippet = it.snippet.slice(0, snippetLen)+"…";
+        }
+      });
+
+      renderSearchResults(resultsSection, filtered);
+
+    } catch(err) {
+      console.error(err);
+      resultsSection.innerHTML = "<p>❌ Something went wrong.</p>";
+    }
+  }
+
+  // load everything at once
+  async function fetchAllDocuments() {
+    resultsSection.innerHTML = "<p>🔄 Loading all documents…</p>";
+    try {
+      const res = await fetch(`${API_BASE}/api/search?query=`);
+      const { results = [], error } = await res.json();
+      if (error) {
+        resultsSection.innerHTML = `<p>❌ ${error}</p>`;
+        return;
+      }
+      renderSearchResults(resultsSection, results);
+    } catch(err) {
+      console.error(err);
+      resultsSection.innerHTML = "<p>❌ Failed to load documents.</p>";
+    }
   }
 }

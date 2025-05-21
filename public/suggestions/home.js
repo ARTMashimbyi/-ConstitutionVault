@@ -1,6 +1,6 @@
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
-import { getFirestore, collection, query, orderBy, limit, getDocs, updateDoc, increment, doc, onSnapshot, arrayUnion, arrayRemove,getDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+import { getFirestore, collection, query, orderBy, limit, getDocs, updateDoc, increment,setDoc, doc, onSnapshot, arrayUnion, arrayRemove,getDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 const firebaseConfig = {
     apiKey: "AIzaSyAU_w_Oxi6noX_A1Ma4XZDfpIY-jkoPN-c",
     authDomain: "constitutionvault-1b5d1.firebaseapp.com",
@@ -16,6 +16,7 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 let loadedDocuments = [];
 let userInteractions = {};
+let currentDoc = null;
 
 const currentUserId = localStorage.getItem("currentUserId") || null;//retrieve uid from local storage(sign in)
 console.log("Current User ID:", currentUserId);
@@ -30,7 +31,6 @@ async function initApp() {
     try {
       showLoading(true);
       search();
-      refresh();
       await loadAllDocuments();
       await loadUserInteractions(currentUserId);
       setupEventListeners();
@@ -71,49 +71,49 @@ async function loadUserInteractions(userId) {
     }
 }
 //Mukondi
-async function userHistory(user){
-  const arr1 =[];
-  const userRef = doc(db, "users", user);
-    const userSnap = await getDoc(userRef);
-    if (userSnap.exists()) {
-      try{const history = userSnap.data().userInteractions.viewed;
-      history.forEach(doc=>{
-        getTitle(doc);
-      });     
-}
-   catch{ 
+// async function userHistory(user){
+//   const arr1 =[];
+//   const userRef = doc(db, "users", user);
+//     const userSnap = await getDoc(userRef);
+//     if (userSnap.exists()) {
+//       try{const history = userSnap.data().userInteractions.viewed;
+//       history.forEach(doc=>{
+//         getTitle(doc);
+//       });     
+// }
+//    catch{ 
 
-  const historyList = document.getElementById('history');
-  const li=`
-          No user history
-          `;
-          historyList.innerHTML=li;
-}
-}
-}
-userHistory(currentUserId);
-let html='';
-async function getTitle(data){ 
-  if(data.length){
-       const docID = data;
-        const docRef = doc(collection(db, 'constitutionalDocuments'), docID );
-        const docSnap1 = await getDoc(docRef);
-        if (docSnap1.exists()) {
-          const docData = docSnap1.data();
-          console.log(docData.title)
-          const li=`
-          <li>
-            <section >${docData.title}</section>
-          </li>
-          `;
-         html +=li;
-        }      
-      const historyList=document.getElementById('history');
-      historyList.innerHTML=html;
-      }
+//   const historyList = document.getElementById('history');
+//   const li=`
+//           No user history
+//           `;
+//           historyList.innerHTML=li;
+// }
+// }
+// }
+// userHistory(currentUserId);
+// let html='';
+// async function getTitle(data){ 
+//   if(data.length){
+//        const docID = data;
+//         const docRef = doc(collection(db, 'constitutionalDocuments'), docID );
+//         const docSnap1 = await getDoc(docRef);
+//         if (docSnap1.exists()) {
+//           const docData = docSnap1.data();
+//           console.log(docData.title)
+//           const li=`
+//           <li>
+//             <section >${docData.title}</section>
+//           </li>
+//           `;
+//          html +=li;
+//         }      
+//       const historyList=document.getElementById('history');
+//       historyList.innerHTML=html;
+//       }
       
      
-  }
+//   }
 
 
 // Render all documents in the main grid
@@ -189,6 +189,8 @@ function createDocCard(doc) {
   viewBtn.addEventListener('click', async (e) => {
     e.stopPropagation();
     await incrementViewCount(doc.id);
+    
+    await ViewCount(doc.id);
     openDocument(doc);
   });
   
@@ -196,6 +198,8 @@ function createDocCard(doc) {
   
   return card;
   }
+
+
   
 
 async function incrementViewCount(docId) {
@@ -229,8 +233,56 @@ async function incrementViewCount(docId) {
     }
 }
 
+// Mukondi update history
+async function ViewCount(docId) {
+    console.log("ViewCount called");
+    try {
+      console.log("in id:", currentUserId);
+      
+      const docRef = doc(db, "constitutionalDocuments", docId);
+      const userRef = doc(db, "user_history", currentUserId);
+      console.log(userRef);
+      const userSnap = await getDoc(userRef);
+      if (!userSnap.exists()) {
+        console.error("Document does not exist.");
+        let user = currentUserId;
+        //await setDoc(doc(db, "user_history", user));
+        await setDoc(doc(db, "user_history", user), {
+          [`viewed`]: arrayUnion(docId)}, { merge: true }
+            );
+        return;
+      }
+      
+
+      await Promise.all([
+        
+        await updateDoc(userRef, {
+        [`viewed`]: arrayRemove(docId)}),
+      
+         
+      updateDoc(userRef, {
+          
+          [`viewed`]: arrayUnion(docId)
+        }, { merge: true })
+      ]);
+      
+     // await loadUserInteractions(currentUserId); // Reload user interactions
+      //updateStats(); // Update stats after incrementing view count
+    } catch (error) {
+      console.error("Error incrementing view count:", error);
+    }
+}
+
+// function openDocument(doc) {
+//     console.log(`Opening document: ${doc.title}`);
+//     window.open(doc.downloadURL || '#', '_blank');//update time here?
+//     // Implement actual document opening logic here
+// }
+
 function openDocument(doc) {
-    console.log(`Opening document: ${doc.title}`);
+    currentDoc = doc.id;
+    localStorage.setItem("currentDoc", currentDoc);
+    //console.log(`Opening document: ${doc.title}`);
     window.open(doc.downloadURL || '#', '_blank');//update time here?
     // Implement actual document opening logic here
 }
@@ -283,22 +335,25 @@ async function toggleFavorite(docId, shouldFavorite) {
 
 // Render all document sections
 async function renderAllSections() {
+    let suggested;
     await loadUserInteractions(currentUserId); // Reload user interactions
     // Render suggestions ad favorites(first 3 documents)
     loadedDocuments.forEach(doc => {
       doc.isFavorite = userInteractions.isFavorite?.includes(doc.id);
     });
-
-    const mostClicked = Object.entries(userInteractions.clicks || {})
-        .sort(([, aClicks], [, bClicks]) => bClicks - aClicks)
-        .slice(0, 3)
-        .map(([docId]) => docId);
-    console.log("mostClicked:", mostClicked);
-    const suggested = loadedDocuments.filter(doc => mostClicked.includes(doc.id));
     
-    
-    renderDocuments('.suggestions', suggested);
+    const preference = await preferences(); // get preference object
+    const isEmpty = Object.values(preference).every(
+        prefCategory => Object.keys(prefCategory).length === 0
+    );
 
+    if(!isEmpty){
+        suggested = suggestionsByPreference(preference, loadedDocuments, currentDocId);
+    } else{
+        suggested = popularSuggestions();
+    }
+    
+    renderDocuments('.suggestions', suggested);//updates real time, issue or nah, idk
 
     // Render favorites
     const favorites = loadedDocuments.filter(doc => doc.isFavorite);
@@ -428,12 +483,6 @@ function applyFilters() {
     const totalFav = userInteractions.isFavorite?.length || 0;
     const totalShares = userInteractions.shared?.length || 0;
 
-    // console.log("viewed:", totalViews);
-    // console.log("favorites:", totalFav);
-    // console.log("userInteractions:", userInteractions);
-    
-    
-
     const stat = document.querySelectorAll('.stat-card');
 
     stat.forEach((card) => {
@@ -467,67 +516,81 @@ async function search() {
     });
 }
 
-async function refresh(){
-  const refreshBtn = document.querySelector('.view-all-controls .btn-outline');
-  const refreshBtn2 = document.querySelector('.section-actions .btn-primary');
-  refreshBtn.addEventListener('click', async () => {
-    try {
-      showLoading(true);
-      await loadAllDocuments();
-      await loadUserInteractions(currentUserId);
-      renderAllSections();
-    } catch (error) {
-      console.error("Error refreshing:", error);
-      showError("Failed to refresh documents");
-    } finally {
-      showLoading(false);
-    }
-  });
-  refreshBtn2.addEventListener('click', async () => {
-    try {
-      showLoading(true);
-      await loadAllDocuments();
-      await loadUserInteractions(currentUserId);
-      renderAllSections();
-    } catch (error) {
-      console.error("Error refreshing:", error);
-      showError("Failed to refresh documents");
-    } finally {
-      showLoading(false);
-    }
+function logOut(){
+  const logOutBtn = document.querySelector('a[href="#"] .fa-sign-out-alt')?.parentElement;
+  logOutBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    localStorage.clear();
+
+    window.location.href = "../index.html";
   });
 }
 
+function popularSuggestions(){
+  return loadedDocuments
+    .filter(doc => doc.id) //filter out current doc
+    .sort((a, b) => (b.clicks || 0)  - (a.clicks || 0))
+    .slice(0, 3);
+}
 
-async function getSuggestions(currentDocId, currentCategory) {
-  const docsRef = collection(db, "documents");
+async function preferences(){
 
-  // Try to find similar docs in same category
-  const similarQuery = query(
-    docsRef,
-    where("category", "==", currentCategory),
-    where("id", "!=", currentDocId),
-    orderBy("clicks", "desc"),
-    limit(3)
-  );
+  const myhistory = userInteractions.viewed || []; //array of doc ids
+  const getHistory = myhistory.map(docId => getDoc(doc(db, "constitutionalDocuments", docId)));
+  const docSnap = await Promise.all(getHistory);
 
-  const similarSnapshot = await getDocs(similarQuery);
-
-  if (!similarSnapshot.empty) {
-    return similarSnapshot.docs.map(doc => doc.data());
+  const preference = {
+    category: {},
+    author: {},
+    institution: {},
+    fileType: {},
+    keywords: {}
   }
 
-  // Fallback to top-viewed docs
-  const popularQuery = query(
-    docsRef,
-    orderBy("clicks", "desc"),
-    limit(3)
-  );
+  docSnap.forEach(doc => {
+    if (!doc.exists()) return;
+    const data = doc.data();
 
-  const popularSnapshot = await getDocs(popularQuery);
-  return popularSnapshot.docs.map(doc => doc.data());
+    ['category', 'author', 'institution', 'fileType'].forEach(key => {
+      if (data[key]) {
+        preference[key][data[key]] = (preference[key][data[key]] || 0) + 1;
+      }
+    });
+
+    (data.keywords || []).forEach(keyword => {
+      preference.keywords[keyword] = (preference.keywords[keyword] || 0) + 1;
+    });
+  });
+  console.log("Preference:", preference);
+  
+  return preference;//works
 }
 
+const currentDocId = localStorage.getItem("currentDoc") || null;
+
+function suggestionsByPreference(preference, allDocs, currentDocId) {
+
   
+  return allDocs
+    .filter(doc => doc.id !== currentDocId) // Exclude current document
+    .map(doc => {
+      let value = 0;
+
+      value += (preference.category[doc.category] || 0) * 2;
+      value += (preference.author[doc.author] || 0) * 2;
+      value += (preference.institution[doc.institution] || 0) * 2;
+      value += (preference.fileType[doc.fileType] || 0) * 2;
+      (doc.keywords || []).forEach(keyword => {
+        value += (preference.keywords[keyword] || 0) * 2;
+      });
+      return {doc, value}; 
+    })
+    .sort((a, b) => b.value - a.value)
+    .slice(0, 3)
+    .map(item => item.doc);
+}
 // Initialize the app when DOM is loaded
-document.addEventListener('DOMContentLoaded', initApp);
+document.addEventListener('DOMContentLoaded', async () => {
+    await initApp();
+    logOut();
+});
