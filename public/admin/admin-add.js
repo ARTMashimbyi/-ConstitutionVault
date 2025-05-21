@@ -138,3 +138,19 @@ function showSuccess(msg) {
   uploadStatus.textContent   = `✅ ${msg}`;
   uploadStatus.style.display = "block";
 }
+
+
+
+if (typeof module !== 'undefined' && module.exports) {
+  // Export for tests
+  module.exports = {
+    showError,
+    showSuccess,
+    handleFileTypeChange
+  };
+} else {
+  // Expose to window in browser
+  window.showError = showError;
+  window.showSuccess = showSuccess;
+  window.handleFileTypeChange = handleFileTypeChange;
+}
