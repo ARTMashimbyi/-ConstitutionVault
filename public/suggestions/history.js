@@ -15,7 +15,7 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const loadedDocuments = [];
+let loadedDocuments = [];
 let userInteractions = {};
 
 const currentUserId = localStorage.getItem("currentUserId") || null;//retrieve uid from local storage(sign in)
@@ -31,7 +31,7 @@ if(!currentUserId){
 async function initApp() {
     try {
       showLoading(true);
-      //await loadAllDocuments(currentUserId);
+     await  loadAllDocuments();
       await loadUserInteractions(currentUserId);
       setupEventListeners();
       renderAllSections(); //since in loadAllDocuments
@@ -42,8 +42,26 @@ async function initApp() {
       showLoading(false);
     }
 }
+async function loadAllDocuments(){
+  const collectionRef = collection(db, "constitutionalDocuments");
+    onSnapshot(collectionRef, (snapshot) => {
+        loadedDocuments = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data(),
+            isNew: isDocumentNew(doc.data().uploadDate)
+        }));
+        renderAllSections();
+    });
+}
+function isDocumentNew(uploadDate) {
+    if (!uploadDate) return false;
+    const uploadTime = new Date(uploadDate).getTime();
+    const weekAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
+    return uploadTime > weekAgo;
+}
+
 const arr1 =[]; //update history to show latest first
-async function loadAllDocuments(user) {            
+async function loadAllHistory(user) {            
     const userRef = doc(db, "user_history", user);
     const userSnap = await getDoc(userRef);
 
@@ -69,7 +87,7 @@ try{
       }    
 console.log(arr1[0]);
 }
-
+loadAllHistory(currentUserId);
 async function loadUserInteractions(userId) {
     const userRef = doc(db, "users", userId);
     const userSnap = await getDoc(userRef);
@@ -87,22 +105,28 @@ async function loadUserInteractions(userId) {
     }
 }
 
-
+let history_array =[];
 async function getTitle(data){ 
   if(data.length){
-        const container = document.getElementById('all-documents-grid');
+        //const container = document.getElementById('all-documents-grid');
        const docID = data;
-        const docRef = doc(collection(db, 'constitutionalDocuments'), docID );
-        const docSnap1 = await getDoc(docRef);
-        if (docSnap1.exists()) {
-          const docData = docSnap1.data();
-          //console.log(docData);
-        loadedDocuments.push(docData);
+       loadedDocuments.forEach(doc=>{
+        if(doc.id==data){
+          history_array.push(doc);
+        }
+       })
+        //const docRef = loadedDocuments.find(data);
+        //console.log(loadedDocuments[0]);
+       // const docSnap1 = await getDoc(docRef);
+    //     if (docSnap1.exists()) {
+    //       const docData = docSnap1.data();
+    //       //console.log(docData);
+    //     history_array.push(docData);
         
-    }
-     else {
-      console.log("no recent documents_GetTitle");
-    }
+    // }
+    //  else {
+    //   console.log("no recent documents_GetTitle");
+    // }
   }
 }
 
@@ -124,7 +148,7 @@ function renderAllDocuments() {
     return;
   }
 
-  loadedDocuments.forEach(doc => {
+  history_array.forEach(doc => {
     container.appendChild(createDocCard(doc));
   });
 }
@@ -221,6 +245,7 @@ async function incrementViewCount(docId) {
         } catch (error) {
           console.error("Error incrementing view count:", error);
         }
+        
     }
 
 function openDocument(doc) {
