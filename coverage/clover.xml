@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1747855662562" clover="3.2.0">
-  <project timestamp="1747855662562" name="All files">
+<coverage generated="1748004888173" clover="3.2.0">
+  <project timestamp="1748004888173" name="All files">
     <metrics statements="2206" coveredstatements="338" conditionals="1033" coveredconditionals="154" methods="393" coveredmethods="40" elements="3632" coveredelements="532" complexity="0" loc="2206" ncloc="2206" packages="11" files="29" classes="29"/>
     <package name="admin">
       <metrics statements="418" coveredstatements="196" conditionals="209" coveredconditionals="93" methods="69" coveredmethods="28"/>
-      <file name="admin-add.js" path="D:\2025 Work\SD\project\Project13\-ConstitutionVault\public\admin\admin-add.js">
+      <file name="admin-add.js" path="D:\2025 Work\SD\project\Project14\-ConstitutionVault\public\admin\admin-add.js">
         <metrics statements="71" coveredstatements="67" conditionals="32" coveredconditionals="26" methods="9" coveredmethods="7"/>
         <line num="4" count="12" type="stmt"/>
         <line num="5" count="12" type="stmt"/>
@@ -78,7 +78,7 @@
         <line num="154" count="0" type="stmt"/>
         <line num="155" count="0" type="stmt"/>
       </file>
-      <file name="hierarcy.js" path="D:\2025 Work\SD\project\Project13\-ConstitutionVault\public\admin\hierarcy.js">
+      <file name="hierarcy.js" path="D:\2025 Work\SD\project\Project14\-ConstitutionVault\public\admin\hierarcy.js">
         <metrics statements="274" coveredstatements="129" conditionals="146" coveredconditionals="67" methods="46" coveredmethods="21"/>
         <line num="3" count="13" type="stmt"/>
         <line num="13" count="13" type="stmt"/>
@@ -355,7 +355,7 @@
         <line num="625" count="0" type="stmt"/>
         <line num="632" count="13" type="stmt"/>
       </file>
-      <file name="moveFiles.js" path="D:\2025 Work\SD\project\Project13\-ConstitutionVault\public\admin\moveFiles.js">
+      <file name="moveFiles.js" path="D:\2025 Work\SD\project\Project14\-ConstitutionVault\public\admin\moveFiles.js">
         <metrics statements="69" coveredstatements="0" conditionals="31" coveredconditionals="0" methods="14" coveredmethods="0"/>
         <line num="3" count="0" type="stmt"/>
         <line num="4" count="0" type="stmt"/>
@@ -427,7 +427,7 @@
         <line num="163" count="0" type="cond" truecount="0" falsecount="2"/>
         <line num="164" count="0" type="stmt"/>
       </file>
-      <file name="script.js" path="D:\2025 Work\SD\project\Project13\-ConstitutionVault\public\admin\script.js">
+      <file name="script.js" path="D:\2025 Work\SD\project\Project14\-ConstitutionVault\public\admin\script.js">
         <metrics statements="4" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
         <line num="7" count="0" type="stmt"/>
         <line num="17" count="0" type="stmt"/>
@@ -437,7 +437,7 @@
     </package>
     <package name="admin sign in">
       <metrics statements="85" coveredstatements="0" conditionals="8" coveredconditionals="0" methods="10" coveredmethods="0"/>
-      <file name="admin_sign_in.js" path="D:\2025 Work\SD\project\Project13\-ConstitutionVault\public\admin sign in\admin_sign_in.js">
+      <file name="admin_sign_in.js" path="D:\2025 Work\SD\project\Project14\-ConstitutionVault\public\admin sign in\admin_sign_in.js">
         <metrics statements="85" coveredstatements="0" conditionals="8" coveredconditionals="0" methods="10" coveredmethods="0"/>
         <line num="8" count="0" type="stmt"/>
         <line num="19" count="0" type="stmt"/>
@@ -528,7 +528,7 @@
     </package>
     <package name="admin.home_page">
       <metrics statements="60" coveredstatements="0" conditionals="22" coveredconditionals="0" methods="7" coveredmethods="0"/>
-      <file name="admin_home.js" path="D:\2025 Work\SD\project\Project13\-ConstitutionVault\public\admin\home_page\admin_home.js">
+      <file name="admin_home.js" path="D:\2025 Work\SD\project\Project14\-ConstitutionVault\public\admin\home_page\admin_home.js">
         <metrics statements="60" coveredstatements="0" conditionals="22" coveredconditionals="0" methods="7" coveredmethods="0"/>
         <line num="11" count="0" type="stmt"/>
         <line num="13" count="0" type="stmt"/>
@@ -594,7 +594,7 @@
     </package>
     <package name="delete">
       <metrics statements="192" coveredstatements="43" conditionals="76" coveredconditionals="16" methods="22" coveredmethods="7"/>
-      <file name="delete.js" path="D:\2025 Work\SD\project\Project13\-ConstitutionVault\public\delete\delete.js">
+      <file name="delete.js" path="D:\2025 Work\SD\project\Project14\-ConstitutionVault\public\delete\delete.js">
         <metrics statements="39" coveredstatements="0" conditionals="10" coveredconditionals="0" methods="5" coveredmethods="0"/>
         <line num="3" count="0" type="stmt"/>
         <line num="5" count="0" type="stmt"/>
@@ -636,7 +636,7 @@
         <line num="64" count="0" type="stmt"/>
         <line num="65" count="0" type="stmt"/>
       </file>
-      <file name="preview.js" path="D:\2025 Work\SD\project\Project13\-ConstitutionVault\public\delete\preview.js">
+      <file name="preview.js" path="D:\2025 Work\SD\project\Project14\-ConstitutionVault\public\delete\preview.js">
         <metrics statements="54" coveredstatements="43" conditionals="28" coveredconditionals="16" methods="12" coveredmethods="7"/>
         <line num="3" count="3" type="stmt"/>
         <line num="5" count="3" type="stmt"/>
@@ -693,7 +693,7 @@
         <line num="106" count="10" type="cond" truecount="1" falsecount="1"/>
         <line num="107" count="10" type="stmt"/>
       </file>
-      <file name="viewer.js" path="D:\2025 Work\SD\project\Project13\-ConstitutionVault\public\delete\viewer.js">
+      <file name="viewer.js" path="D:\2025 Work\SD\project\Project14\-ConstitutionVault\public\delete\viewer.js">
         <metrics statements="99" coveredstatements="0" conditionals="38" coveredconditionals="0" methods="5" coveredmethods="0"/>
         <line num="5" count="0" type="stmt"/>
         <line num="16" count="0" type="stmt"/>
@@ -798,7 +798,7 @@
     </package>
     <package name="edit">
       <metrics statements="57" coveredstatements="0" conditionals="22" coveredconditionals="0" methods="11" coveredmethods="0"/>
-      <file name="edit.js" path="D:\2025 Work\SD\project\Project13\-ConstitutionVault\public\edit\edit.js">
+      <file name="edit.js" path="D:\2025 Work\SD\project\Project14\-ConstitutionVault\public\edit\edit.js">
         <metrics statements="53" coveredstatements="0" conditionals="22" coveredconditionals="0" methods="11" coveredmethods="0"/>
         <line num="3" count="0" type="stmt"/>
         <line num="5" count="0" type="stmt"/>
@@ -854,7 +854,7 @@
         <line num="97" count="0" type="stmt"/>
         <line num="98" count="0" type="stmt"/>
       </file>
-      <file name="firebase.js" path="D:\2025 Work\SD\project\Project13\-ConstitutionVault\public\edit\firebase.js">
+      <file name="firebase.js" path="D:\2025 Work\SD\project\Project14\-ConstitutionVault\public\edit\firebase.js">
         <metrics statements="4" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
         <line num="12" count="0" type="stmt"/>
         <line num="23" count="0" type="stmt"/>
@@ -864,7 +864,7 @@
     </package>
     <package name="search">
       <metrics statements="322" coveredstatements="99" conditionals="164" coveredconditionals="45" methods="47" coveredmethods="5"/>
-      <file name="AdminSearchInterface.js" path="D:\2025 Work\SD\project\Project13\-ConstitutionVault\public\search\AdminSearchInterface.js">
+      <file name="AdminSearchInterface.js" path="D:\2025 Work\SD\project\Project14\-ConstitutionVault\public\search\AdminSearchInterface.js">
         <metrics statements="51" coveredstatements="0" conditionals="18" coveredconditionals="0" methods="12" coveredmethods="0"/>
         <line num="13" count="0" type="stmt"/>
         <line num="14" count="0" type="cond" truecount="0" falsecount="2"/>
@@ -918,7 +918,7 @@
         <line num="104" count="0" type="stmt"/>
         <line num="106" count="0" type="stmt"/>
       </file>
-      <file name="Filters.js" path="D:\2025 Work\SD\project\Project13\-ConstitutionVault\public\search\Filters.js">
+      <file name="Filters.js" path="D:\2025 Work\SD\project\Project14\-ConstitutionVault\public\search\Filters.js">
         <metrics statements="12" coveredstatements="9" conditionals="0" coveredconditionals="0" methods="2" coveredmethods="1"/>
         <line num="11" count="4" type="stmt"/>
         <line num="12" count="4" type="stmt"/>
@@ -933,7 +933,7 @@
         <line num="34" count="0" type="stmt"/>
         <line num="35" count="0" type="stmt"/>
       </file>
-      <file name="SearchBar.js" path="D:\2025 Work\SD\project\Project13\-ConstitutionVault\public\search\SearchBar.js">
+      <file name="SearchBar.js" path="D:\2025 Work\SD\project\Project14\-ConstitutionVault\public\search\SearchBar.js">
         <metrics statements="42" coveredstatements="0" conditionals="2" coveredconditionals="0" methods="6" coveredmethods="0"/>
         <line num="12" count="0" type="stmt"/>
         <line num="13" count="0" type="stmt"/>
@@ -978,7 +978,7 @@
         <line num="78" count="0" type="stmt"/>
         <line num="79" count="0" type="stmt"/>
       </file>
-      <file name="SearchInterface.js" path="D:\2025 Work\SD\project\Project13\-ConstitutionVault\public\search\SearchInterface.js">
+      <file name="SearchInterface.js" path="D:\2025 Work\SD\project\Project14\-ConstitutionVault\public\search\SearchInterface.js">
         <metrics statements="93" coveredstatements="25" conditionals="84" coveredconditionals="21" methods="13" coveredmethods="2"/>
         <line num="8" count="1" type="stmt"/>
         <line num="11" count="5" type="cond" truecount="2" falsecount="0"/>
@@ -1074,7 +1074,7 @@
         <line num="186" count="0" type="stmt"/>
         <line num="187" count="0" type="stmt"/>
       </file>
-      <file name="SearchResults.js" path="D:\2025 Work\SD\project\Project13\-ConstitutionVault\public\search\SearchResults.js">
+      <file name="SearchResults.js" path="D:\2025 Work\SD\project\Project14\-ConstitutionVault\public\search\SearchResults.js">
         <metrics statements="71" coveredstatements="65" conditionals="26" coveredconditionals="24" methods="2" coveredmethods="2"/>
         <line num="22" count="10" type="stmt"/>
         <line num="25" count="10" type="cond" truecount="4" falsecount="0"/>
@@ -1148,7 +1148,7 @@
         <line num="121" count="8" type="stmt"/>
         <line num="123" count="8" type="stmt"/>
       </file>
-      <file name="SortOptions.js" path="D:\2025 Work\SD\project\Project13\-ConstitutionVault\public\search\SortOptions.js">
+      <file name="SortOptions.js" path="D:\2025 Work\SD\project\Project14\-ConstitutionVault\public\search\SortOptions.js">
         <metrics statements="12" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="2" coveredmethods="0"/>
         <line num="16" count="0" type="stmt"/>
         <line num="17" count="0" type="stmt"/>
@@ -1163,7 +1163,7 @@
         <line num="37" count="0" type="stmt"/>
         <line num="38" count="0" type="stmt"/>
       </file>
-      <file name="UserFilteredSearchInterface.js" path="D:\2025 Work\SD\project\Project13\-ConstitutionVault\public\search\UserFilteredSearchInterface.js">
+      <file name="UserFilteredSearchInterface.js" path="D:\2025 Work\SD\project\Project14\-ConstitutionVault\public\search\UserFilteredSearchInterface.js">
         <metrics statements="41" coveredstatements="0" conditionals="34" coveredconditionals="0" methods="10" coveredmethods="0"/>
         <line num="11" count="0" type="stmt"/>
         <line num="12" count="0" type="cond" truecount="0" falsecount="2"/>
@@ -1210,7 +1210,7 @@
     </package>
     <package name="suggestions">
       <metrics statements="518" coveredstatements="0" conditionals="260" coveredconditionals="0" methods="110" coveredmethods="0"/>
-      <file name="history.js" path="D:\2025 Work\SD\project\Project13\-ConstitutionVault\public\suggestions\history.js">
+      <file name="history.js" path="D:\2025 Work\SD\project\Project14\-ConstitutionVault\public\suggestions\history.js">
         <metrics statements="200" coveredstatements="0" conditionals="97" coveredconditionals="0" methods="40" coveredmethods="0"/>
         <line num="5" count="0" type="stmt"/>
         <line num="16" count="0" type="stmt"/>
@@ -1413,7 +1413,7 @@
         <line num="454" count="0" type="stmt"/>
         <line num="460" count="0" type="stmt"/>
       </file>
-      <file name="history_home.js" path="D:\2025 Work\SD\project\Project13\-ConstitutionVault\public\suggestions\history_home.js">
+      <file name="history_home.js" path="D:\2025 Work\SD\project\Project14\-ConstitutionVault\public\suggestions\history_home.js">
         <metrics statements="85" coveredstatements="0" conditionals="38" coveredconditionals="0" methods="12" coveredmethods="0"/>
         <line num="4" count="0" type="stmt"/>
         <line num="15" count="0" type="stmt"/>
@@ -1501,7 +1501,7 @@
         <line num="202" count="0" type="stmt"/>
         <line num="207" count="0" type="stmt"/>
       </file>
-      <file name="home.js" path="D:\2025 Work\SD\project\Project13\-ConstitutionVault\public\suggestions\home.js">
+      <file name="home.js" path="D:\2025 Work\SD\project\Project14\-ConstitutionVault\public\suggestions\home.js">
         <metrics statements="233" coveredstatements="0" conditionals="125" coveredconditionals="0" methods="58" coveredmethods="0"/>
         <line num="4" count="0" type="stmt"/>
         <line num="15" count="0" type="stmt"/>
@@ -1740,15 +1740,15 @@
     </package>
     <package name="user signup">
       <metrics statements="35" coveredstatements="0" conditionals="6" coveredconditionals="0" methods="2" coveredmethods="0"/>
-      <file name="firebase.js" path="D:\2025 Work\SD\project\Project13\-ConstitutionVault\public\user signup\firebase.js">
+      <file name="firebase.js" path="D:\2025 Work\SD\project\Project14\-ConstitutionVault\public\user signup\firebase.js">
         <metrics statements="2" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
         <line num="2" count="0" type="stmt"/>
         <line num="3" count="0" type="stmt"/>
       </file>
-      <file name="outh-callback.js" path="D:\2025 Work\SD\project\Project13\-ConstitutionVault\public\user signup\outh-callback.js">
+      <file name="outh-callback.js" path="D:\2025 Work\SD\project\Project14\-ConstitutionVault\public\user signup\outh-callback.js">
         <metrics statements="0" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
       </file>
-      <file name="signup.js" path="D:\2025 Work\SD\project\Project13\-ConstitutionVault\public\user signup\signup.js">
+      <file name="signup.js" path="D:\2025 Work\SD\project\Project14\-ConstitutionVault\public\user signup\signup.js">
         <metrics statements="33" coveredstatements="0" conditionals="6" coveredconditionals="0" methods="2" coveredmethods="0"/>
         <line num="20" count="0" type="stmt"/>
         <line num="29" count="0" type="stmt"/>
@@ -1787,12 +1787,12 @@
     </package>
     <package name="user-interface">
       <metrics statements="4" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="2" coveredmethods="0"/>
-      <file name="user-filtered.js" path="D:\2025 Work\SD\project\Project13\-ConstitutionVault\public\user-interface\user-filtered.js">
+      <file name="user-filtered.js" path="D:\2025 Work\SD\project\Project14\-ConstitutionVault\public\user-interface\user-filtered.js">
         <metrics statements="2" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="0"/>
         <line num="5" count="0" type="stmt"/>
         <line num="8" count="0" type="stmt"/>
       </file>
-      <file name="user-search.js" path="D:\2025 Work\SD\project\Project13\-ConstitutionVault\public\user-interface\user-search.js">
+      <file name="user-search.js" path="D:\2025 Work\SD\project\Project14\-ConstitutionVault\public\user-interface\user-search.js">
         <metrics statements="2" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="0"/>
         <line num="5" count="0" type="stmt"/>
         <line num="7" count="0" type="stmt"/>
@@ -1800,7 +1800,7 @@
     </package>
     <package name="user_history">
       <metrics statements="392" coveredstatements="0" conditionals="195" coveredconditionals="0" methods="86" coveredmethods="0"/>
-      <file name="history.js" path="D:\2025 Work\SD\project\Project13\-ConstitutionVault\public\user_history\history.js">
+      <file name="history.js" path="D:\2025 Work\SD\project\Project14\-ConstitutionVault\public\user_history\history.js">
         <metrics statements="188" coveredstatements="0" conditionals="97" coveredconditionals="0" methods="40" coveredmethods="0"/>
         <line num="4" count="0" type="stmt"/>
         <line num="15" count="0" type="stmt"/>
@@ -1991,7 +1991,7 @@
         <line num="451" count="0" type="stmt"/>
         <line num="457" count="0" type="stmt"/>
       </file>
-      <file name="home.js" path="D:\2025 Work\SD\project\Project13\-ConstitutionVault\public\user_history\home.js">
+      <file name="home.js" path="D:\2025 Work\SD\project\Project14\-ConstitutionVault\public\user_history\home.js">
         <metrics statements="204" coveredstatements="0" conditionals="98" coveredconditionals="0" methods="46" coveredmethods="0"/>
         <line num="4" count="0" type="stmt"/>
         <line num="15" count="0" type="stmt"/>
@@ -2201,7 +2201,7 @@
     </package>
     <package name="user_settings">
       <metrics statements="123" coveredstatements="0" conditionals="71" coveredconditionals="0" methods="27" coveredmethods="0"/>
-      <file name="settings.js" path="D:\2025 Work\SD\project\Project13\-ConstitutionVault\public\user_settings\settings.js">
+      <file name="settings.js" path="D:\2025 Work\SD\project\Project14\-ConstitutionVault\public\user_settings\settings.js">
         <metrics statements="123" coveredstatements="0" conditionals="71" coveredconditionals="0" methods="27" coveredmethods="0"/>
         <line num="11" count="0" type="stmt"/>
         <line num="22" count="0" type="stmt"/>

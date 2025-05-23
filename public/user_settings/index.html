@@ -31,7 +31,7 @@
       <form id="filterForm">
         <section class="setting-card">
           <h2>Filter Content</h2>
-          <p class="helper-text">Select what you want to see in search results, suggestions, and listings.</p>
+          
           
           <!-- Author filter -->
           <article class="filter-section">
@@ -40,7 +40,7 @@
               <button type="button" class="toggle-all" data-target="authorOptions">Select All</button>
             </header>
             <fieldset class="dropdown-container">
-              <legend class="visually-hidden">Author Options</legend>
+              <legend class="visually-hidden"></legend>
               <section class="search-box">
                 <input type="text" class="filter-search" placeholder="Search authors..." data-target="authorOptions">
               </section>
@@ -57,7 +57,7 @@
               <button type="button" class="toggle-all" data-target="categoryOptions">Select All</button>
             </header>
             <fieldset class="dropdown-container">
-              <legend class="visually-hidden">Category Options</legend>
+              <legend class="visually-hidden"></legend>
               <section class="search-box">
                 <input type="text" class="filter-search" placeholder="Search categories..." data-target="categoryOptions">
               </section>
@@ -74,7 +74,7 @@
               <button type="button" class="toggle-all" data-target="keywordOptions">Select All</button>
             </header>
             <fieldset class="dropdown-container">
-              <legend class="visually-hidden">Keyword Options</legend>
+              <legend class="visually-hidden"></legend>
               <section class="search-box">
                 <input type="text" class="filter-search" placeholder="Search keywords..." data-target="keywordOptions">
               </section>
@@ -91,7 +91,7 @@
               <button type="button" class="toggle-all" data-target="institutionOptions">Select All</button>
             </header>
             <fieldset class="dropdown-container">
-              <legend class="visually-hidden">Institution Options</legend>
+              <legend class="visually-hidden"></legend>
               <section class="search-box">
                 <input type="text" class="filter-search" placeholder="Search institutions..." data-target="institutionOptions">
               </section>
@@ -105,31 +105,31 @@
         <section class="setting-card file-type-section">
           <h2>File Types</h2>
           <fieldset class="file-type-options">
-            <legend class="visually-hidden">File Type Options</legend>
+            <legend class="visually-hidden"></legend>
             <label class="checkbox-container">
               <input type="checkbox" name="fileTypes" value="document" checked>
-              <span class="checkmark"></span>
-              <span class="label-text">Documents</span>
+              <mark class="checkmark"></mark>
+              <output class="label-text">Documents</output>
             </label>
             <label class="checkbox-container">
               <input type="checkbox" name="fileTypes" value="video" checked>
-              <span class="checkmark"></span>
-              <span class="label-text">Videos</span>
+              <mark class="checkmark"></mark>
+              <output class="label-text">Videos</output>
             </label>
             <label class="checkbox-container">
               <input type="checkbox" name="fileTypes" value="image" checked>
-              <span class="checkmark"></span>
-              <span class="label-text">Images</span>
+              <mark class="checkmark"></mark>
+              <output class="label-text">Images</output>
             </label>
             <label class="checkbox-container">
               <input type="checkbox" name="fileTypes" value="audio" checked>
-              <span class="checkmark"></span>
-              <span class="label-text">Audio</span>
+              <mark class="checkmark"></mark>
+              <output class="label-text">Audio</output>
             </label>
             <label class="checkbox-container">
               <input type="checkbox" name="fileTypes" value="text" checked>
-              <span class="checkmark"></span>
-              <span class="label-text">Text</span>
+              <mark class="checkmark"></mark>
+              <output class="label-text">Text</output>
             </label>
           </fieldset>
         </section>
@@ -137,7 +137,7 @@
         <section class="setting-card">
           <h2>Display Settings</h2>
           <fieldset class="display-options">
-            <legend class="visually-hidden">Display Options</legend>
+            <legend class="visually-hidden"></legend>
             <figure class="display-option">
               <figcaption>
                 <label for="sort">Default Sort Order</label>
@@ -192,7 +192,7 @@
         <section class="setting-card date-range-section">
           <h2>Date Range</h2>
           <fieldset class="date-range-options">
-            <legend class="visually-hidden">Date Range Options</legend>
+            <legend class="visually-hidden"></legend>
             <figure class="date-input">
               <figcaption>
                 <label for="dateFrom">From</label>
@@ -208,10 +208,10 @@
             <aside class="date-toggle">
               <label class="checkbox-container">
                 <input type="checkbox" id="allTime" name="allTime">
-                <span class="checkmark"></span>
-                <span class="label-text">All Time</span>
+                <mark class="checkmark"></mark>
+                <output class="label-text">All Time</output>
               </label>
-              <small>When checked, ignores date range</small>
+              
             </aside>
           </fieldset>
         </section>
