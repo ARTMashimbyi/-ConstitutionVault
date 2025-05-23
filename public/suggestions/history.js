@@ -24,22 +24,19 @@ loadAllDocuments(currentUserId);
 
 
 if(!currentUserId){
-    alert("Please login to view documents.");
+    Notification.show("Please login to view documents.");
     window.location.href = "../user%20signup/index.html";
 }
 
 async function initApp() {
     try {
-      showLoading(true);
-     await  loadAllDocuments();
+      await  loadAllDocuments();
       await loadUserInteractions(currentUserId);
       setupEventListeners();
       renderAllSections(); //since in loadAllDocuments
     } catch (error) {
       console.error("Initialization error:", error);
       showError("Failed to load documents");
-    } finally {
-      showLoading(false);
     }
 }
 async function loadAllDocuments(){
@@ -159,7 +156,7 @@ function renderAllDocuments() {
 function createDocCard(doc) {
   
   const card = document.createElement('article');
-  card.className = 'doc-card';
+  card.className = 'document-card';
   
   if (doc.isNew) {
     const badge = document.createElement('mark');
@@ -167,8 +164,48 @@ function createDocCard(doc) {
     badge.textContent = 'NEW';
     card.appendChild(badge);
   }
+
+  const fig = document.createElement('figure');
+  let previewEl;
+
+  switch (doc.fileType) {
+    case "image":
+      previewEl = document.createElement("img");
+      previewEl.src = doc.downloadURL;
+      previewEl.alt = doc.title || 'Image preview';
+      break;
+    case "audio":
+      previewEl = document.createElement("audio");
+      previewEl.controls = true;
+      previewEl.src = doc.downloadURL;
+      break;
+    case "video":
+      previewEl = document.createElement("video");
+      previewEl.controls = true;
+      previewEl.src = doc.downloadURL;
+      break;
+    case "document":
+    default:
+      if (doc.downloadURL && doc.downloadURL.endsWith(".pdf")) {
+        previewEl = document.createElement("embed");
+        previewEl.src = `${doc.downloadURL}#page=1&view=FitH`;
+        previewEl.type = "application/pdf";
+        previewEl.width = "100%";
+        previewEl.height = "400px";
+      } else {
+        previewEl = document.createElement("p");
+        previewEl.textContent = "Preview not available for this file type.";
+      }
+      break;
+  }
+
+  if (previewEl && (previewEl.tagName === 'IMG' || previewEl.tagName === 'IFRAME')) {
+    previewEl.loading = "lazy";
+  }
+  if (previewEl) fig.appendChild(previewEl);
+  card.appendChild(fig);
   
-  card.innerHTML = `
+  card.innerHTML += `
     <h3>${doc.title || 'Untitled Document'}</h3>
     <menu class="doc-meta">
       <li><i class="fas fa-file"></i> ${doc.fileType || 'Unknown'}</li>
@@ -177,12 +214,15 @@ function createDocCard(doc) {
     </menu>
     ${doc.institution ? `<p>${doc.institution}</p>` : ''}
     <menu class="doc-actions">
-      <li><button class="action-btn view-btn"><i class="fas fa-eye"></i> View</button></li>
+      <li><button class="action-btn view-btn"><i class="fas fa-eye"></i> View All</button></li>
       <li>
         <button class="action-btn fav-btn ${doc.isFavorite ? 'active' : ''}" 
                 aria-label="${doc.isFavorite ? 'Remove from favorites' : 'Add to favorites'}">
           <i class="fas fa-star"></i>
         </button>
+      </li>
+      <li>
+        <button class="action-btn share-btn" aria-label="Share document"><i class="fas fa-share-alt"></i></button>
       </li>
     </menu>
   `;
@@ -203,8 +243,7 @@ function createDocCard(doc) {
     console.log(doc);
     console.log(typeof(doc));
   });
-  
-  //card.addEventListener('click', () => openDocument(doc));
+
   console.log("card loaded");
   return card;
   }
@@ -240,8 +279,7 @@ async function incrementViewCount(docId) {
             }, { merge: true })
           ]);
           
-         // await loadUserInteractions(currentUserId); // Reload user interactions
-          //updateStats(); // Update stats after incrementing view count
+         
         } catch (error) {
           console.error("Error incrementing view count:", error);
         }
@@ -251,7 +289,6 @@ async function incrementViewCount(docId) {
 function openDocument(doc) {
     console.log(`Opening document: ${doc.title}`);
     window.open(doc.downloadURL || '#', '_blank');//update time here?
-    // Implement actual document opening logic here
     console.log(doc.id);
     console.log(currentUserId);
 }
@@ -331,109 +368,6 @@ async function renderAllSections() {
     //update stats
     updateStats();
 }
-
-// Apply filters to documents
-function applyFilters() {
-  const categoryFilter = document.querySelector('.filter-controls select:nth-of-type(1)')?.value;
-  const typeFilter = document.querySelector('.filter-controls select:nth-of-type(2)')?.value;
-  const searchTerm = document.querySelector('.view-all-container .search-input')?.value.toLowerCase();
-
-  let filtered = [...loadedDocuments];
-
-  // Apply category filter
-  if (categoryFilter && categoryFilter !== 'All Categories') {
-    filtered = filtered.filter(doc => doc.category === categoryFilter);
-  }
-
-  // Apply type filter
-  if (typeFilter && typeFilter !== 'All Types') {
-    filtered = filtered.filter(doc => doc.fileType === typeFilter);
-  }
-
-  // Apply search
-  if (searchTerm) {
-    filtered = filtered.filter(doc =>
-      (doc.title?.toLowerCase().includes(searchTerm) ||
-      doc.description?.toLowerCase().includes(searchTerm) ||
-      doc.category?.toLowerCase().includes(searchTerm))
-    );
-  }
-
-  // Re-render with filtered documents
-  const container = document.getElementById('all-documents-grid');
-  if (!container) return;
-
-  container.innerHTML = '';
-
-  if (filtered.length === 0) {
-    container.innerHTML = `
-      <article class="empty-state" style="grid-column: 1/-1">
-        <i class="fas fa-search"></i>
-        <p>No documents match your filters</p>
-      </article>
-    `;
-    return;
-  }
-
-  filtered.forEach(doc => {
-    container.appendChild(createDocCard(doc));
-  });
-}  
-  // Set up all event listeners
-  function setupEventListeners() {
-    // Search functionality
-    const searchInput = document.querySelector('.search-input');
-    if (searchInput) {
-      searchInput.addEventListener('input', (e) => {
-        const searchTerm = e.target.value.toLowerCase();
-        if (searchTerm.length > 2) {
-          const filtered = loadedDocuments.filter(doc =>
-            doc.title?.toLowerCase().includes(searchTerm) ||
-            doc.description?.toLowerCase().includes(searchTerm) ||
-            doc.category?.toLowerCase().includes(searchTerm)
-          );
-          renderDocuments('.suggestions', filtered.slice(0, 3));
-        } else {
-          renderDocuments('.suggestions', loadedDocuments.slice(0, 3));
-        }
-      });
-    }
-  
-    // Quick action buttons
-    document.querySelectorAll('.quick-action').forEach(action => {
-      action.addEventListener('click', () => {
-        const actionText = action.querySelector('h4')?.textContent;
-        console.log(`${actionText} clicked`);
-      });
-    });
-  
-    // Filter event listeners
-    document.querySelectorAll('.filter-dropdown').forEach(dropdown => {
-      dropdown.addEventListener('change', applyFilters);
-    });
-  
-    const viewAllSearch = document.querySelector('.view-all-container .search-input');
-    if (viewAllSearch) {
-      viewAllSearch.addEventListener('input', applyFilters);
-    }
-  
-    // Pagination buttons (simplified example)
-    document.querySelectorAll('.page-btn').forEach(btn => {
-      if (!btn.querySelector('i')) { // Skip arrow buttons
-        btn.addEventListener('click', function() {
-          document.querySelectorAll('.page-btn').forEach(b => b.classList.remove('active'));
-          this.classList.add('active');
-          console.log(`Loading page ${this.textContent}`);
-        });
-      }
-    });
-  }
-  
-  // UI Helper functions
-  function showLoading(show) {
-    const loader = document.getElementById('loading-indicator');
-    if (loader) loader.style.display = show ? 'block' : 'none';
-  }
   
   function showError(message) {
     const errorContainer = document.getElementById('error-container');
@@ -443,17 +377,11 @@ function applyFilters() {
     }
   }
 
-  function updateStats(user){
+  function updateStats(){
     const totalDocs = loadedDocuments.length;
     const totalViews = userInteractions.viewed?.length || 0;
     const totalFav = userInteractions.isFavorite?.length || 0;
     const totalShares = userInteractions.shared?.length || 0;
-
-    // console.log("viewed:", totalViews);
-    // console.log("favorites:", totalFav);
-    // console.log("userInteractions:", userInteractions);
-    
-    
 
     const stat = document.querySelectorAll('.stat-card');
 

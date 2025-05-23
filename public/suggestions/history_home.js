@@ -18,13 +18,8 @@ let loadedDocuments = [];
 let userInteractions = {};
 
 const currentUserId = localStorage.getItem("currentUserId") || null;//retrieve uid from local storage(sign in)
-console.log("Current User ID:", currentUserId);
+//console.log("Current User ID:", currentUserId);
 
-
-if(!currentUserId){
-    alert("Please login to view documents.");
-    window.location.href = "../user%20signup/index.html";
-}
 
 async function initApp() {
     try {
@@ -73,7 +68,7 @@ async function userHistory(user){
         const history = userSnap.data().viewed;
       history.forEach(doc=>{
         arr1.unshift(doc);
-       console.log(doc);
+       //console.log(doc);
       });     
         var copiedarray = arr1.slice(0,5);
         
@@ -114,7 +109,7 @@ async function getTitle(data){
         const docSnap1 = await getDoc(docRef);
         if (docSnap1.exists()) {
           const docData = docSnap1.data();
-          console.log(docData.title)
+          //console.log(docData.title)
           const fileTypeIcons = {
                     document: '📄',
                     video: '🎬',
@@ -144,11 +139,7 @@ async function getTitle(data){
       
       }
   }
-                
 
-
-
-  
   // UI Helper functions
   function showLoading(show) {
     const loader = document.getElementById('loading-indicator');
@@ -168,13 +159,6 @@ async function getTitle(data){
     const totalViews = userInteractions.viewed?.length || 0;
     const totalFav = userInteractions.isFavorite?.length || 0;
     const totalShares = userInteractions.shared?.length || 0;
-
-    // console.log("viewed:", totalViews);
-    // console.log("favorites:", totalFav);
-    // console.log("userInteractions:", userInteractions);
-    
-    
-
     const stat = document.querySelectorAll('.stat-card');
 
     stat.forEach((card) => {

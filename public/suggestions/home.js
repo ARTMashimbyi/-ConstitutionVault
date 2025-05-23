@@ -1,153 +1,90 @@
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
-import { getFirestore, collection, query, orderBy, limit, getDocs, updateDoc, increment,setDoc, doc, onSnapshot, arrayUnion, arrayRemove,getDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+import {
+  getFirestore, collection, doc, getDoc, getDocs, setDoc, updateDoc, onSnapshot,
+  arrayUnion, arrayRemove, increment
+} from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+
+// Firebase config
 const firebaseConfig = {
-    apiKey: "AIzaSyAU_w_Oxi6noX_A1Ma4XZDfpIY-jkoPN-c",
-    authDomain: "constitutionvault-1b5d1.firebaseapp.com",
-    projectId: "constitutionvault-1b5d1",
-    storageBucket: "constitutionvault-1b5d1.appspot.com",
-    messagingSenderId: "616111688261",
-    appId: "1:616111688261:web:97cc0a35c8035c0814312c",
-    measurementId: "G-YJEYZ85T3S"
+  apiKey: "AIzaSyAU_w_Oxi6noX_A1Ma4XZDfpIY-jkoPN-c",
+  authDomain: "constitutionvault-1b5d1.firebaseapp.com",
+  projectId: "constitutionvault-1b5d1",
+  storageBucket: "constitutionvault-1b5d1.appspot.com",
+  messagingSenderId: "616111688261",
+  appId: "1:616111688261:web:97cc0a35c8035c0814312c",
+  measurementId: "G-YJEYZ85T3S"
 };
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+
 let loadedDocuments = [];
 let userInteractions = {};
 let currentDoc = null;
+const currentUserId = localStorage.getItem("currentUserId") || null;
+const currentDocId = localStorage.getItem("currentDoc") || null;
+const settings = JSON.parse(localStorage.getItem("userSettings") || "{}");
+console.log("settings", settings);
 
-const currentUserId = localStorage.getItem("currentUserId") || null;//retrieve uid from local storage(sign in)
-console.log("Current User ID:", currentUserId);
 
-
-if(!currentUserId){
-    alert("Please login to view documents.");
-    window.location.href = "../user%20signup/index.html";
+if (!currentUserId) {
+  Notification.show("Please login to view documents.");
+  window.location.href = "../user%20signup/index.html";
 }
+
+document.addEventListener('DOMContentLoaded', async () => {
+  await initApp();
+  logOut();
+});
 
 async function initApp() {
-    try {
-      showLoading(true);
-      search();
-      await loadAllDocuments();
-      await loadUserInteractions(currentUserId);
-      setupEventListeners();
-      //renderAllSections(); //since in loadAllDocuments
-    } catch (error) {
-      console.error("Initialization error:", error);
-      showError("Failed to load documents");
-    } finally {
-      showLoading(false);
-    }
-}
-async function loadAllDocuments() {
-    const collectionRef = collection(db, "constitutionalDocuments");
-    onSnapshot(collectionRef, (snapshot) => {
-        loadedDocuments = snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data(),
-            isNew: isDocumentNew(doc.data().uploadDate)
-        }));
-        renderAllSections();
-    });
-}
-
-async function loadUserInteractions(userId) {
-    const userRef = doc(db, "users", userId);
-    const userSnap = await getDoc(userRef);
-    if (userSnap.exists()) {
-        userInteractions = userSnap.data().userInteractions || {
-            clicks: {},
-            viewed: [],
-            isFavorite: [],
-            shared: []
-        };
-        console.log("User interactions loaded:", userInteractions);
-        updateStats(userInteractions);
-    } else {
-        console.error("User document does not exist.");
-    }
-}
-//Mukondi
-// async function userHistory(user){
-//   const arr1 =[];
-//   const userRef = doc(db, "users", user);
-//     const userSnap = await getDoc(userRef);
-//     if (userSnap.exists()) {
-//       try{const history = userSnap.data().userInteractions.viewed;
-//       history.forEach(doc=>{
-//         getTitle(doc);
-//       });     
-// }
-//    catch{ 
-
-//   const historyList = document.getElementById('history');
-//   const li=`
-//           No user history
-//           `;
-//           historyList.innerHTML=li;
-// }
-// }
-// }
-// userHistory(currentUserId);
-// let html='';
-// async function getTitle(data){ 
-//   if(data.length){
-//        const docID = data;
-//         const docRef = doc(collection(db, 'constitutionalDocuments'), docID );
-//         const docSnap1 = await getDoc(docRef);
-//         if (docSnap1.exists()) {
-//           const docData = docSnap1.data();
-//           console.log(docData.title)
-//           const li=`
-//           <li>
-//             <section >${docData.title}</section>
-//           </li>
-//           `;
-//          html +=li;
-//         }      
-//       const historyList=document.getElementById('history');
-//       historyList.innerHTML=html;
-//       }
-      
-     
-//   }
-
-
-// Render all documents in the main grid
-function renderAllDocuments() {
-  const container = document.getElementById('all-documents-grid');
-  if (!container) return;
-
-  container.innerHTML = '';
-
-  if (loadedDocuments.length === 0) {
-    container.innerHTML = `
-      <article class="empty-state" style="grid-column: 1/-1">
-        <i class="fas fa-folder-open"></i>
-        <p>No documents found</p>
-      </article>
-    `;
-    return;
+  try {
+    setupSearchBtn();
+    await loadAllDocuments();
+    await loadUserInteractions(currentUserId);
+  } catch (error) {
+    console.error("Initialization error:", error);
+    showError("Failed to load documents");
   }
+}
 
-  loadedDocuments.forEach(doc => {
-    container.appendChild(createDocCard(doc));
+async function loadAllDocuments() {
+  const collectionRef = collection(db, "constitutionalDocuments");
+  onSnapshot(collectionRef, (snapshot) => {
+    loadedDocuments = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+      isNew: isDocumentNew(doc.data().uploadDate)
+    }));
+    applyFilters();
+    renderAllSections();
   });
 }
 
-
-function isDocumentNew(uploadDate) {
-    if (!uploadDate) return false;
-    const uploadTime = new Date(uploadDate).getTime();
-    const weekAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
-    return uploadTime > weekAgo;
+async function loadUserInteractions(userId) {
+  const userRef = doc(db, "users", userId);
+  const userSnap = await getDoc(userRef);
+  if (userSnap.exists()) {
+    userInteractions = userSnap.data().userInteractions || {
+      clicks: {},
+      viewed: [],
+      isFavorite: [],
+      shared: []
+    };
+    updateStats();
+  } else {
+    console.error("User document does not exist.");
+  }
 }
 
+function isDocumentNew(uploadDate) {
+  if (!uploadDate) return false;
+  const uploadTime = new Date(uploadDate).getTime();
+  const weekAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
+  return uploadTime > weekAgo;
+}
 
-// Create semantic document card element
 function createDocCard(doc) {
   const card = document.createElement('article');
   card.className = 'document-card';
@@ -159,7 +96,6 @@ function createDocCard(doc) {
     card.appendChild(badge);
   }
 
-  // === Preview Section ===
   const fig = document.createElement('figure');
   let previewEl;
 
@@ -181,8 +117,7 @@ function createDocCard(doc) {
       break;
     case "document":
     default:
-      const isPDF = doc.downloadURL && doc.downloadURL.endsWith(".pdf");
-      if (isPDF) {
+      if (doc.downloadURL && doc.downloadURL.endsWith(".pdf")) {
         previewEl = document.createElement("embed");
         previewEl.src = `${doc.downloadURL}#page=1&view=FitH`;
         previewEl.type = "application/pdf";
@@ -198,11 +133,9 @@ function createDocCard(doc) {
   if (previewEl && (previewEl.tagName === 'IMG' || previewEl.tagName === 'IFRAME')) {
     previewEl.loading = "lazy";
   }
-
   if (previewEl) fig.appendChild(previewEl);
   card.appendChild(fig);
 
-  // === Meta + Actions ===
   card.innerHTML += `
     <h3>${doc.title || 'Untitled Document'}</h3>
     <menu class="doc-meta">
@@ -225,42 +158,34 @@ function createDocCard(doc) {
     </menu>
   `;
 
-  // === Event Listeners ===
-  const favBtn = card.querySelector('.fav-btn');
-  favBtn.addEventListener('click', async (e) => {
+  card.querySelector('.fav-btn').addEventListener('click', async (e) => {
     e.stopPropagation();
     await toggleFavorite(doc.id, !doc.isFavorite);
   });
 
-  const viewBtn = card.querySelector('.view-btn');
-  viewBtn.addEventListener('click', async (e) => {
+  card.querySelector('.view-btn').addEventListener('click', async (e) => {
     e.stopPropagation();
     await incrementViewCount(doc.id);
-    
     await ViewCount(doc.id);
     openDocument(doc);
   });
 
-  const shareBtn = card.querySelector('.share-btn');
-  shareBtn.addEventListener('click', async (e) => {
+  card.querySelector('.share-btn').addEventListener('click', async (e) => {
     e.preventDefault();
-
     const shareData = {
       title: doc.title || 'Untitled',
       text: doc.description || 'Check this out!',
-      url: doc.downloadURL || '#'//protected url T_T*, TO DO: make it viewable
-    }
-
-    if(navigator.share) {
+      url: `${window.location.origin}/delete/viewer.html?id=${doc.id}` || '#'
+    };
+    if (navigator.share) {
       try {
         await navigator.share(shareData);
-        await incrementShareCount(doc.id);//add to db id of shared doc
-        updateStats();//home stats rendering
-        console.log('Document shared successfully');
+        await incrementShareCount(doc.id);
+        updateStats();
       } catch (error) {
         console.error('Error sharing document:', error);
       }
-    } else{
+    } else {
       try {
         await navigator.clipboard.writeText(shareData.url);
       } catch (error) {
@@ -270,103 +195,12 @@ function createDocCard(doc) {
   });
 
   return card;
-  }
-
-
-  
-
-async function incrementViewCount(docId) {
-    try {
-      console.log("in increment id:", currentUserId);
-      
-      const docRef = doc(db, "constitutionalDocuments", docId);
-      const userRef = doc(db, "users", currentUserId);
-
-      const userSnap = await getDoc(userRef);
-      if (!userSnap.exists()) {
-        console.error("Document does not exist.");
-        return;
-      }
-      
-      await Promise.all([
-        updateDoc(docRef, {
-        clicks: increment(1),
-        lastViewed: new Date().toISOString()
-      }),
-      updateDoc(userRef, {
-          [`userInteractions.clicks.${docId}`]: increment(1),
-          [`userInteractions.viewed`]: arrayUnion(docId)
-        }, { merge: true })
-      ]);
-      
-      await loadUserInteractions(currentUserId); // Reload user interactions
-      updateStats(); // Update stats after incrementing view count
-    } catch (error) {
-      console.error("Error incrementing view count:", error);
-    }
 }
 
-// Mukondi update history
-async function ViewCount(docId) {
-    console.log("ViewCount called");
-    try {
-      console.log("in id:", currentUserId);
-      
-      const docRef = doc(db, "constitutionalDocuments", docId);
-      const userRef = doc(db, "user_history", currentUserId);
-      console.log(userRef);
-      const userSnap = await getDoc(userRef);
-      if (!userSnap.exists()) {
-        console.error("Document does not exist.");
-        let user = currentUserId;
-        //await setDoc(doc(db, "user_history", user));
-        await setDoc(doc(db, "user_history", user), {
-          [`viewed`]: arrayUnion(docId)
-       } );
-        return;
-      }
-      
-
-      await Promise.all([
-        
-         updateDoc(userRef, {
-        [`viewed`]: arrayRemove(docId)},
-        {merge: true}),
-         
-      updateDoc(userRef, {
-          
-          [`viewed`]: arrayUnion(docId)
-        }, { merge: true })
-      ]);
-      
-     // await loadUserInteractions(currentUserId); // Reload user interactions
-      //updateStats(); // Update stats after incrementing view count
-    } catch (error) {
-      console.error("Error incrementing view count:", error);
-    }
-}
-
-// function openDocument(doc) {
-//     console.log(`Opening document: ${doc.title}`);
-//     window.open(doc.downloadURL || '#', '_blank');//update time here?
-//     // Implement actual document opening logic here
-// }
-
-function openDocument(doc) {
-    currentDoc = doc.id;
-    localStorage.setItem("currentDoc", currentDoc);
-    //console.log(`Opening document: ${doc.title}`);
-    window.open(doc.downloadURL || '#', '_blank');//update time here?
-    // Implement actual document opening logic here
-}
-
-// Render documents to a specific section
 function renderDocuments(sectionSelector, docs) {
   const container = document.querySelector(sectionSelector);
   if (!container) return;
-
   container.innerHTML = '';
-
   if (!docs || docs.length === 0) {
     container.innerHTML = `
       <article class="empty-state">
@@ -376,279 +210,170 @@ function renderDocuments(sectionSelector, docs) {
     `;
     return;
   }
-
-  docs.forEach(doc => {
-    container.appendChild(createDocCard(doc));
-  });
+  docs.forEach(doc => container.appendChild(createDocCard(doc)));
 }
 
-
-// Toggle favorite status in Firestore
-async function toggleFavorite(docId, shouldFavorite) {
-  try {
-    const userRef = doc(db, "users", currentUserId);
-    const userSnap = await getDoc(userRef);
-
-    if(!userSnap.exists()) {
-        console.error("User document does not exist.");
-        return;
-    }
-
-    await updateDoc(userRef, {
-      [`userInteractions.isFavorite`]: shouldFavorite ? arrayUnion(docId) : arrayRemove(docId)
-    });  
-
-    await loadUserInteractions(currentUserId);
-    renderAllSections(); // Re-render sections after toggling favorite
-    updateStats(); // Update stats after toggling favorite
-  } catch (error) {
-    console.error("Error updating favorite:", error);
-  }
+function renderAllDocuments() {
+  renderDocuments('#all-documents-grid', applyFilters());
 }
 
-// Render all document sections
 async function renderAllSections() {
-    let suggested;
-    await loadUserInteractions(currentUserId); // Reload user interactions
-    // Render suggestions ad favorites(first 3 documents)
-    loadedDocuments.forEach(doc => {
-      doc.isFavorite = userInteractions.isFavorite?.includes(doc.id);
-    });
-    
-    const preference = await preferences(); // get preference object
-    const isEmpty = Object.values(preference).every(
-        prefCategory => Object.keys(prefCategory).length === 0
-    );
+  await loadUserInteractions(currentUserId);
+  loadedDocuments.forEach(doc => {
+    doc.isFavorite = userInteractions.isFavorite?.includes(doc.id);
+  });
 
-    if(!isEmpty){
-        suggested = suggestionsByPreference(preference, loadedDocuments, currentDocId);
-    } else{
-        suggested = popularSuggestions();
-    }
-    
-    renderDocuments('.suggestions', suggested);//updates real time, issue or nah, idk
+  const preference = await preferences();
+  const isEmpty = Object.values(preference).every(
+    prefCategory => Object.keys(prefCategory).length === 0
+  );
+  const suggested = isEmpty
+    ? popularSuggestions()
+    : suggestionsByPreference(preference, loadedDocuments, currentDocId);
 
-    // Render favorites
-    const favorites = loadedDocuments.filter(doc => doc.isFavorite);
-    renderDocuments('.favorites', favorites);
-  
-    // Render all documents
-    renderAllDocuments();
-
-    //update stats
-    updateStats();
+  renderDocuments('.suggestions', suggested);
+  renderDocuments('.favorites', loadedDocuments.filter(doc => doc.isFavorite));
+  renderAllDocuments();
+  updateStats();
 }
 
-// Apply filters to documents
 function applyFilters() {
-  const categoryFilter = document.querySelector('.filter-controls select:nth-of-type(1)')?.value;
-  const typeFilter = document.querySelector('.filter-controls select:nth-of-type(2)')?.value;
-  const searchTerm = document.querySelector('.view-all-container .search-input')?.value.toLowerCase();
+  const userSettings = JSON.parse(localStorage.getItem("userSettings") || "{}");
+  console.log("userSettings", userSettings);
+  console.log("loadedDocuments", loadedDocuments);
 
-  let filtered = [...loadedDocuments];
-
-  // Apply category filter
-  if (categoryFilter && categoryFilter !== 'All Categories') {
-    filtered = filtered.filter(doc => doc.category === categoryFilter);
+  if (!Array.isArray(loadedDocuments)) {
+    console.warn("loadedDocuments is not defined or not an array.");
+    return [];
   }
+   
+  let filtered;
+  if(userSettings){
+    filtered = loadedDocuments.filter(doc => {
+      const normalize = str => str?.toLowerCase().trim();
+      const authorMatch = !Array.isArray(userSettings.author) || 
+        userSettings.author
+        .map(normalize)
+        .includes(normalize(doc.author));
 
-  // Apply type filter
-  if (typeFilter && typeFilter !== 'All Types') {
-    filtered = filtered.filter(doc => doc.fileType === typeFilter);
-  }
+      const categoryMatch = !Array.isArray(userSettings.category) || 
+        userSettings.category.map(normalize).includes(normalize(doc.category));
 
-  // Apply search
-  if (searchTerm) {
-    filtered = filtered.filter(doc =>
-      (doc.title?.toLowerCase().includes(searchTerm) ||
-      doc.description?.toLowerCase().includes(searchTerm) ||
-      doc.category?.toLowerCase().includes(searchTerm))
-    );
-  }
+      const institutionMatch = !Array.isArray(userSettings.institution) || 
+        userSettings.institution.map(normalize).includes(normalize(doc.institution));
 
-  // Re-render with filtered documents
-  const container = document.getElementById('all-documents-grid');
-  if (!container) return;
+      let keywordsMatch = true;
 
-  container.innerHTML = '';
+      if (Array.isArray(userSettings.keywords)) {
+      const wanted = userSettings.keywords
+          .map(k => k.trim().toLowerCase())
+          .filter(k => k); // remove empty strings
 
-  if (filtered.length === 0) {
-    container.innerHTML = `
-      <article class="empty-state" style="grid-column: 1/-1">
-        <i class="fas fa-search"></i>
-        <p>No documents match your filters</p>
-      </article>
-    `;
-    return;
-  }
-
-  filtered.forEach(doc => {
-    container.appendChild(createDocCard(doc));
-  });
-}  
-  // Set up all event listeners
-  function setupEventListeners() {
-    // Search functionality
-    const searchInput = document.querySelector('.search-input');
-    if (searchInput) {
-      searchInput.addEventListener('input', (e) => {
-        const searchTerm = e.target.value.toLowerCase();
-        if (searchTerm.length > 2) {
-          const filtered = loadedDocuments.filter(doc =>
-            doc.title?.toLowerCase().includes(searchTerm) ||
-            doc.description?.toLowerCase().includes(searchTerm) ||
-            doc.category?.toLowerCase().includes(searchTerm)
+          if (Array.isArray(doc.keywords)) {
+            keywordsMatch = doc.keywords.some(kw =>
+            wanted.includes(kw.toLowerCase())
           );
-          renderDocuments('.suggestions', filtered.slice(0, 3));
-        } else {
-          renderDocuments('.suggestions', loadedDocuments.slice(0, 3));
-        }
-      });
-    }
-  
-    // Quick action buttons
-    document.querySelectorAll('.quick-action').forEach(action => {
-      action.addEventListener('click', () => {
-        const actionText = action.querySelector('h4')?.textContent;
-        console.log(`${actionText} clicked`);
-      });
-    });
-  
-    // Filter event listeners
-    document.querySelectorAll('.filter-dropdown').forEach(dropdown => {
-      dropdown.addEventListener('change', applyFilters);
-    });
-  
-    const viewAllSearch = document.querySelector('.view-all-container .search-input');
-    if (viewAllSearch) {
-      viewAllSearch.addEventListener('input', applyFilters);
-    }
-  
-    // Pagination buttons (simplified example)
-    document.querySelectorAll('.page-btn').forEach(btn => {
-      if (!btn.querySelector('i')) { // Skip arrow buttons
-        btn.addEventListener('click', function() {
-          document.querySelectorAll('.page-btn').forEach(b => b.classList.remove('active'));
-          this.classList.add('active');
-          console.log(`Loading page ${this.textContent}`);
-        });
+      } else {
+          keywordsMatch = false;
+        }   
       }
+
+
+      const match = authorMatch && categoryMatch && institutionMatch;
+
+      console.log(authorMatch, categoryMatch, institutionMatch, keywordsMatch);
+
+      return match;
     });
   }
+  console.log("filtered", filtered);
   
-  // UI Helper functions
-  function showLoading(show) {
-    const loader = document.getElementById('loading-indicator');
-    if (loader) loader.style.display = show ? 'block' : 'none';
-  }
-  
-  function showError(message) {
-    const errorContainer = document.getElementById('error-container');
-    if (errorContainer) {
-      errorContainer.textContent = message;
-      errorContainer.style.display = 'block';
-    }
-  }
+  return filtered;
 
-  function updateStats(user){
-    const totalDocs = loadedDocuments.length;
-    const totalViews = userInteractions.viewed?.length || 0;
-    const totalFav = userInteractions.isFavorite?.length || 0;
-    const totalShares = userInteractions.shared?.length || 0;
-
-    const stat = document.querySelectorAll('.stat-card');
-
-    stat.forEach((card) => {
-        const label = card.querySelector('.stat-label')?.textContent;
-        const value = card.querySelector('.stat-value');
-
-        if(!value) return;
-        switch (label) {
-            case 'Total Documents':
-                value.textContent = totalDocs;
-                break;
-            case 'Viewed':
-                value.textContent = totalViews;
-                break;
-            case 'Favorites':
-                value.textContent = totalFav;
-                break;
-            case 'Shared':
-                value.textContent = totalShares;
-                break;
-            default:
-                break;
-        }
-    });
-  }
-
-async function search() {
-    const searchBtn = document.querySelector('.search-btn');
-        searchBtn.addEventListener('click', () => {
-            window.location.href = "../user-interface/user-filtered.html";
-    });
 }
 
-function logOut(){
-  const logOutBtn = document.querySelector('a[href="#"] .fa-sign-out-alt')?.parentElement;
-  logOutBtn.addEventListener('click', (e) => {
-    e.preventDefault();
-    localStorage.clear();
+function showError(message) {
+  const errorContainer = document.getElementById('error-container');
+  if (errorContainer) {
+    errorContainer.textContent = message;
+    errorContainer.style.display = 'block';
+  }
+}
 
-    window.location.href = "../index.html";
+function updateStats() {
+  const totalDocs = loadedDocuments.length;
+  const totalViews = userInteractions.viewed?.length || 0;
+  const totalFav = userInteractions.isFavorite?.length || 0;
+  const totalShares = userInteractions.shared?.length || 0;
+  document.querySelectorAll('.stat-card').forEach(card => {
+    const label = card.querySelector('.stat-label')?.textContent;
+    const value = card.querySelector('.stat-value');
+    if (!value) return;
+    switch (label) {
+      case 'Total Documents': value.textContent = totalDocs; break;
+      case 'Viewed': value.textContent = totalViews; break;
+      case 'Favorites': value.textContent = totalFav; break;
+      case 'Shared': value.textContent = totalShares; break;
+    }
   });
 }
 
-function popularSuggestions(){
-  return loadedDocuments
-    .filter(doc => doc.id) //filter out current doc
-    .sort((a, b) => (b.clicks || 0)  - (a.clicks || 0))
-    .slice(0, 3);
+function setupSearchBtn() {
+  const searchBtn = document.querySelector('.search-btn');
+  if (searchBtn) {
+    searchBtn.addEventListener('click', () => {
+      window.location.href = "../user-interface/user-filtered.html";
+    });
+  }
 }
 
-async function preferences(){
+function logOut() {
+  const logOutBtn = document.querySelector('a[href="#"] .fa-sign-out-alt')?.parentElement;
+  if (logOutBtn) {
+    logOutBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      localStorage.clear();
+      window.location.href = "../index.html";
+    });
+  }
+}
 
-  const myhistory = userInteractions.viewed || []; //array of doc ids
+function openDocument(doc) {
+  currentDoc = doc.id;
+  localStorage.setItem("currentDoc", currentDoc);
+  window.location.href = doc.downloadURL || "#";
+}
+
+function popularSuggestions() {
+  return loadedDocuments
+    .filter(doc => doc.id)
+    .sort((a, b) => (b.clicks || 0) - (a.clicks || 0))
+    .slice(0, 5);
+}
+
+async function preferences() {
+  const myhistory = userInteractions.viewed || [];
   const getHistory = myhistory.map(docId => getDoc(doc(db, "constitutionalDocuments", docId)));
   const docSnap = await Promise.all(getHistory);
-
-  const preference = {
-    category: {},
-    author: {},
-    institution: {},
-    fileType: {},
-    keywords: {}
-  }
-
+  const preference = { category: {}, author: {}, institution: {}, fileType: {}, keywords: {} };
   docSnap.forEach(doc => {
     if (!doc.exists()) return;
     const data = doc.data();
-
     ['category', 'author', 'institution', 'fileType'].forEach(key => {
-      if (data[key]) {
-        preference[key][data[key]] = (preference[key][data[key]] || 0) + 1;
-      }
+      if (data[key]) preference[key][data[key]] = (preference[key][data[key]] || 0) + 1;
     });
-
     (data.keywords || []).forEach(keyword => {
       preference.keywords[keyword] = (preference.keywords[keyword] || 0) + 1;
     });
   });
-  console.log("Preference:", preference);
-  
-  return preference;//works
+  return preference;
 }
 
-const currentDocId = localStorage.getItem("currentDoc") || null;
-
 function suggestionsByPreference(preference, allDocs, currentDocId) {
-
-  
   return allDocs
-    .filter(doc => doc.id !== currentDocId) // Exclude current document
+    .filter(doc => doc.id !== currentDocId)
     .map(doc => {
       let value = 0;
-
       value += (preference.category[doc.category] || 0) * 2;
       value += (preference.author[doc.author] || 0) * 2;
       value += (preference.institution[doc.institution] || 0) * 2;
@@ -656,14 +381,92 @@ function suggestionsByPreference(preference, allDocs, currentDocId) {
       (doc.keywords || []).forEach(keyword => {
         value += (preference.keywords[keyword] || 0) * 2;
       });
-      return {doc, value}; 
+      return { doc, value };
     })
     .sort((a, b) => b.value - a.value)
-    .slice(0, 3)
+    .slice(0, 5)
     .map(item => item.doc);
 }
-// Initialize the app when DOM is loaded
-document.addEventListener('DOMContentLoaded', async () => {
-    await initApp();
-    logOut();
-});
+
+async function toggleFavorite(docId, shouldFavorite) {
+  try {
+    const userRef = doc(db, "users", currentUserId);
+    const userSnap = await getDoc(userRef);
+    if (!userSnap.exists()) return;
+    await updateDoc(userRef, {
+      [`userInteractions.isFavorite`]: shouldFavorite ? arrayUnion(docId) : arrayRemove(docId)
+    });
+    await loadUserInteractions(currentUserId);
+    renderAllSections();
+    updateStats();
+  } catch (error) {
+    console.error("Error updating favorite:", error);
+  }
+}
+
+async function incrementShareCount(docId) {
+  try {
+    const userRef = doc(db, "users", currentUserId);
+    const userSnap = await getDoc(userRef);
+    if (!userSnap.exists()) {
+      await setDoc(userRef, {
+        userInteractions: { shared: [docId] }
+      }, { merge: true });
+    }
+    await updateDoc(userRef, {
+      [`userInteractions.shared`]: arrayUnion(docId)
+    }, { merge: true });
+    await loadUserInteractions(currentUserId);
+    updateStats();
+  } catch (error) {
+    console.error("Error incrementing share count:", error);
+  }
+}
+
+export async function updateSharedStat(docId) {
+  const docRef = doc(db, "constitutionalDocuments", docId);
+  const docSnap = await getDoc(docRef);
+  if (docSnap.exists()) {
+    const data = docSnap.data();
+    const sharedCount = data.shares || 0;
+    document.getElementById("shared-count").textContent = sharedCount;
+  }
+}
+
+export async function incrementViewCount(docId) {
+  try {
+    const docRef = doc(db, "constitutionalDocuments", docId);
+    const userRef = doc(db, "users", currentUserId);
+    const userSnap = await getDoc(userRef);
+    if (!userSnap.exists()) return;
+    await Promise.all([
+      updateDoc(docRef, {
+        clicks: increment(1),
+        lastViewed: new Date().toISOString()
+      }),
+      updateDoc(userRef, {
+        [`userInteractions.clicks.${docId}`]: increment(1),
+        [`userInteractions.viewed`]: arrayUnion(docId)
+      }, { merge: true })
+    ]);
+    await loadUserInteractions(currentUserId);
+    updateStats();
+  } catch (error) {
+    console.error("Error incrementing view count:", error);
+  }
+}
+
+export async function ViewCount(docId) {
+  try {
+    const userRef = doc(db, "user_history", currentUserId);
+    const userSnap = await getDoc(userRef);
+    if (!userSnap.exists()) {
+      await setDoc(userRef, { viewed: arrayUnion(docId) }, { merge: true });
+      return;
+    }
+    await updateDoc(userRef, { viewed: arrayRemove(docId) });
+    await updateDoc(userRef, { viewed: arrayUnion(docId) }, { merge: true });
+  } catch (error) {
+    console.error("Error incrementing view count:", error);
+  }
+}
