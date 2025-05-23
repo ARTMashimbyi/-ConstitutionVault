@@ -1,75 +1,162 @@
-# -ConstitutionVault
-
 # Constitution Vault
 
 [![codecov](https://codecov.io/gh/ARTMashimbyi/-ConstitutionVault/branch/main/graph/badge.svg)](https://codecov.io/gh/ARTMashimbyi/-ConstitutionVault)
-Your project description goes here.
 
-# 📚 Constitution Vault - Frontend
+# Constitutional Vault
 
-This is the frontend for **Constitution Vault**, a document management web application
+Project Description:
+Constitutional Vault is a comprehensive digital archive system designed for managing and accessing historical constitutional documents. The platform features:
 
----
+- Secure admin portal for authorized users to upload, organize, and manage documents in hierarchical structures
+- Public search interface with natural language processing capabilities
+- Support for various file types (PDFs, text, multimedia) with rich metadata
+- RESTful API designed for future extensibility (e.g., chatbot integration)
 
-## 🚀 Features
+## 🚀 Key Features
 
-- 📂 Upload documents with metadata (name, writer, year, subject)
-- 🔍 Search documents by title, writer, or subject
-- 📄 View documents inline (PDF rendering)
-- 🗑️ Select and delete one or more documents
-- 🎨 Clean, modern UI with sidebar navigation
+📂 Advanced Document Management:
 
----
+- File upload, supporting multiple formats (PDF, DOCX, TXT, JPG, PNG, Audio and Video )
+- Structured metadata fields including:
+  - Title, Author/Writer, Publication Year
+  - Subject/Category with hierarchical tagging
+  - Institution/Organization
+  - Custom keywords and tags
+- Automatic metadata extraction from supported file types
+- Editing and Deleting capabilities
 
-## 🧱 Folder Structure
+🔍 Intelligent Search System:
 
-```
-public/
-├── index.html         # Main homepage
-├── add.html           # Upload document page
-├── read.html          # Inline PDF viewer
-├── style.css          # UI styles
-├── index.js           # Logic for fetching, searching, deleting
-├── add.js             # Handles file uploads
-├── read.js            # Displays PDFs
-└── assets/            # (Optional) UI images, logos
-```
+- Natural language processing for conversational queries
+- Advanced search filters by:
+  - Date ranges (year, decade, century)
+  - Document type (text, audio, video)
+  - Subject categories and subcategories
+  - Institution/organization
+  - Geographic region
+- Voice search capability with speech-to-text
+- Saved searches and View history
 
----
+📄 Document Viewing & Annotation:
 
-## 🔧 Requirements
+- Online PDF rendering with text selection
+- Multi-page document viewer with thumbnail navigation
+- Download options in multiple formats
 
-- A running backend API (`http://localhost:3000`) connected to your Azure SQL database.
-- PDF documents are uploaded and stored as binary in the backend.
+🛠️ Administrative Tools:
 
----
+- Bulk document operations (move, delete and edit)
+- Hierarchical directory management:
+  - Create nested folder structures
+  - Drag-and-drop reorganization
+  - Batch metadata editing
+- User access controls with role-based permissions
+- Activity logs and audit trails
+- Data import/export functionality
 
-## 🛠️ Setup Instructions
+🎨 User Experience:
 
-1. **Clone the Repository**
+- Responsive design supporting desktop/tablet/mobile
+- Dark/light mode theming
+- Customizable dashboard with:
+  - Recently viewed documents
+  - Favorite/bookmarked items
+  - Personalized recommendations
+- Accessibility features:
+  - Screen reader support
+  - High contrast mode
 
-```bash
-git clone https://github.com/your-username/constitution-vault-frontend.git
-cd constitution-vault-frontend
-```
+🔗 Integration Capabilities:
 
-2. **Install Dependencies**
+- RESTful API for third-party integrations
+- Webhooks for event notifications
+- Export to common formats (BibTeX, RIS, CSV)
+- Social media sharing options
+- Future-ready architecture for:
+  - Chatbot integration (WhatsApp, Telegram)
 
-Make sure you have Node.js and npm installed. Then run:
+⚙️ System Features:
 
-```bash
-npm install
-```
+- Secure authentication with:
+  - Email/password login
 
-3. **Run the Development Server**
+🔐 Demo Admin Access:
+For testing purposes, you can use the following admin credentials:
 
-To start the frontend application, run:
+- Email: constitution682@gmail.com
+- Password: CodeCrusaders25!
 
-```bash
-npm start
-```
+* Social login (Google)
 
-This will start the app on `http://localhost:3000`, assuming your backend is running on that address.
+## Installation & Setup Guide
+
+Prerequisites:
+
+- Node.js (v16+)
+- npm (v8+)
+- Firebase account
+- Google Cloud account
+- Azure account (for deployment)
+
+Installation Steps:
+
+1. Clone the repository:
+   git clone https://github.com/ARTMashimbyi/-ConstitutionVault.git
+   cd constitutional-vault
+
+2. Install server dependencies:
+   cd server
+   npm install
+
+Configuration:
+
+1. Create .env file in server directory with:
+
+2. Place Firebase service account JSON in server/key directory
+
+Running the Application:
+Development Mode:
+
+1. Start server:
+   npm install -g nodemon
+   cd server
+   npm install
+   npm install firebase-admin
+   npm install @google-cloud/aiplatform
+   npm start
+
+Project Structure:
+CONSTITUTIONALVAULT/
+├── public/ # Client code
+│ ├── admin/ # Admin portal
+│ ├── delete_edit/ # Document management
+│ ├── user_search/ # Search interface
+│ ├── suggestions/ # User dashboard
+│ └── user_settings/ # User preferences
+├── server/ # Server code
+│ ├── config/ # Configuration
+│ ├── routes/ # API routes
+│ └── app.js # Main server
+
+API Endpoints:
+Admin:
+
+- POST /api/admin/upload # Upload document
+- PUT /api/admin/document/:id # Update document
+- DELETE /api/admin/document/:id # Delete document
+- POST /api/admin/directory # Create directory
+
+Search:
+
+- GET /api/search?q=query # Search documents
+- GET /api/search/suggestions # Get suggestions
+
+User:
+
+- POST /api/user/signup # User registration
+- POST /api/user/login # User login
+- GET /api/user/history # Search history
+- POST /api/user/favorite # Toggle favorites
 
 ---
 
@@ -101,29 +188,28 @@ Once the tests complete, you'll see the output in your terminal, indicating whet
 
 ---
 
-## 📁 Pages
+Troubleshooting:
 
-- `index.html` – Lists all uploaded books and allows searching & deleting.
-- `add.html` – Form to upload a new book and PDF file.
-- `read.html?id=1` – View PDF inline based on book ID from URL.
+- Firebase errors: Verify credentials
+- Vertex AI issues: Check API access
+- CORS errors: Verify server configuration
 
----
+Contributing:
 
-## 🔄 API Endpoints Used
+1. Fork repository
+2. Create feature branch
+3. Commit changes
+4. Push to branch
+5. Create Pull Request
 
-The frontend makes requests to the following backend routes:
+🔐 Demo Admin Access:
+For testing purposes, you can use the following admin credentials:
 
-| Method | Endpoint              | Description          |
-| ------ | --------------------- | -------------------- |
-| GET    | `/books`              | Fetch all books      |
-| POST   | `/upload`             | Upload new document  |
-| GET    | `/books/:id/document` | Fetch PDF for a book |
-| DELETE | `/books/:id`          | Delete a book by ID  |
+- Email: constitution682@gmail.com
+- Password: CodeCrusaders25!
 
 ---
 
 ## ✨ Code Coverage
 
 [![codecov](https://codecov.io/gh/ARTMashimbyi/-ConstitutionVault/branch/main/graph/badge.svg)](https://codecov.io/gh/ARTMashimbyi/-ConstitutionVault)
-
-Coverage information is uploaded to Codecov, and you can view detailed reports there.
