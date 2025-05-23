@@ -75,12 +75,15 @@ async function userHistory(user){
         arr1.unshift(doc);
        console.log(doc);
       });     
-        var copiedarray = arr1.slice(0,5).reverse();
+        var copiedarray = arr1.slice(0,5);
         
-        copiedarray.forEach(doc=>{
-          getTitle(doc);
+        await getTitle(copiedarray[0]);
+        await getTitle(copiedarray[1]);
+        await getTitle(copiedarray[2]);
+        await getTitle(copiedarray[3]);
+        await getTitle(copiedarray[4]);
           //console.log(doc);
-       });
+       ;
       }
    catch{ 
     console.log("catching");

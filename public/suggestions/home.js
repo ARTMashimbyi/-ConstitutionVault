@@ -236,6 +236,7 @@ function createDocCard(doc) {
   viewBtn.addEventListener('click', async (e) => {
     e.stopPropagation();
     await incrementViewCount(doc.id);
+    
     await ViewCount(doc.id);
     openDocument(doc);
   });
@@ -269,47 +270,12 @@ function createDocCard(doc) {
   });
 
   return card;
-}
-
-async function incrementShareCount(docId) {
-    try {
-      const docRef = doc(db, "constitutionalDocuments", docId);
-      const userRef = doc(db, "users", currentUserId);
-
-      const userSnap = await getDoc(userRef);
-      if (!userSnap.exists()) {
-        await setDoc(userRef, {
-          userInteractions: {
-            shared: [docId]
-          }
-        }, { merge: true });
-      }
-
-      await Promise.all([
-        updateDoc(userRef, {
-          [`userInteractions.shared`]: arrayUnion(docId)
-        }, { merge: true })
-      ]);
-      
-      await loadUserInteractions(currentUserId); // Reload user interactions
-      updateStats(); // Update stats after incrementing share count
-    } catch (error) {
-      console.error("Error incrementing share count:", error);
-    }
-}
-
-export async function updateSharedStat(docId) {
-  const docRef = doc(db, "constitutionalDocuments", docId);
-  const docSnap = await getDoc(docRef);
-  if (docSnap.exists()) {
-    const data = docSnap.data();
-    const sharedCount = data.shares || 0;
-    document.getElementById("shared-count").textContent = sharedCount;
   }
-}
 
 
-export async function incrementViewCount(docId) {
+  
+
+async function incrementViewCount(docId) {
     try {
       console.log("in increment id:", currentUserId);
       
@@ -340,9 +306,8 @@ export async function incrementViewCount(docId) {
     }
 }
 
-
 // Mukondi update history
-export async function ViewCount(docId) {
+async function ViewCount(docId) {
     console.log("ViewCount called");
     try {
       console.log("in id:", currentUserId);
@@ -356,17 +321,17 @@ export async function ViewCount(docId) {
         let user = currentUserId;
         //await setDoc(doc(db, "user_history", user));
         await setDoc(doc(db, "user_history", user), {
-          [`viewed`]: arrayUnion(docId)}, { merge: true }
-            );
+          [`viewed`]: arrayUnion(docId)
+       } );
         return;
       }
       
 
       await Promise.all([
         
-        await updateDoc(userRef, {
-        [`viewed`]: arrayRemove(docId)}),
-      
+         updateDoc(userRef, {
+        [`viewed`]: arrayRemove(docId)},
+        {merge: true}),
          
       updateDoc(userRef, {
           
@@ -374,15 +339,25 @@ export async function ViewCount(docId) {
         }, { merge: true })
       ]);
       
+     // await loadUserInteractions(currentUserId); // Reload user interactions
+      //updateStats(); // Update stats after incrementing view count
     } catch (error) {
       console.error("Error incrementing view count:", error);
     }
 }
 
+// function openDocument(doc) {
+//     console.log(`Opening document: ${doc.title}`);
+//     window.open(doc.downloadURL || '#', '_blank');//update time here?
+//     // Implement actual document opening logic here
+// }
+
 function openDocument(doc) {
     currentDoc = doc.id;
     localStorage.setItem("currentDoc", currentDoc);
-    window.location.href = doc.downloadURL || doc.downloadURL || "#";
+    //console.log(`Opening document: ${doc.title}`);
+    window.open(doc.downloadURL || '#', '_blank');//update time here?
+    // Implement actual document opening logic here
 }
 
 // Render documents to a specific section
@@ -628,7 +603,7 @@ function popularSuggestions(){
   return loadedDocuments
     .filter(doc => doc.id) //filter out current doc
     .sort((a, b) => (b.clicks || 0)  - (a.clicks || 0))
-    .slice(0, 5);
+    .slice(0, 3);
 }
 
 async function preferences(){
@@ -684,7 +659,7 @@ function suggestionsByPreference(preference, allDocs, currentDocId) {
       return {doc, value}; 
     })
     .sort((a, b) => b.value - a.value)
-    .slice(0, 5)
+    .slice(0, 3)
     .map(item => item.doc);
 }
 // Initialize the app when DOM is loaded

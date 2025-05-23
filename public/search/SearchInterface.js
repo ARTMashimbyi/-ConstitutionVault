@@ -1,131 +1,190 @@
 // public/search/SearchInterface.js
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
-import {
-  getFirestore,
-  collection,
-  getDocs
-} from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
-
 import { renderSearchBar }     from "./SearchBar.js";
 import { renderSearchResults } from "./SearchResults.js";
+import { renderFilters }       from "./Filters.js";
+import { renderSortOptions }   from "./SortOptions.js";
 
-// ── Your Firebase web-app config (must match your console) ──
-const firebaseConfig = {
-  apiKey:            "AIzaSyAU_w_Oxi6noX_A1Ma4XZDfpIY-jkoPN-c",
-  authDomain:        "constitutionvault-1b5d1.firebaseapp.com",
-  projectId:         "constitutionvault-1b5d1",
-  storageBucket:     "constitutionvault-1b5d1.appspot.com",
-  messagingSenderId: "616111688261",
-  appId:             "1:616111688261:web:97cc0a35c8035c0814312c",
-  measurementId:     "G-YJEYZ85T3S"
-};
+const API_BASE = "http://localhost:4000";
 
-// Initialize Firebase & Firestore
-const app = initializeApp(firebaseConfig);
-const db  = getFirestore(app);
-
-/**
- * Mounts the search UI into the given container and performs live filtering.
- *
- * @param {string} containerId – ID of the element to render into
- */
 export function initializeSearchInterface(containerId) {
-  const container = document.getElementById(containerId);
-  if (!container) {
-    console.error(`Search container "${containerId}" not found.`);
-    return;
-  }
+  const saved = JSON.parse(localStorage.getItem("userSettings") || "{}");
+  if (saved.themeClass === "dark-mode") document.body.classList.add("dark-mode");
 
-  // 1) Create a wrapping <section> for ARIA & styling
+  // parse CSV lists from settings
+  const parseList = s =>
+    typeof s === "string" && s.trim()
+      ? s.split(",").map(x=>x.trim().toLowerCase()).filter(Boolean)
+      : [];
+  const wantedAuthors      = parseList(saved.author);
+  const wantedCategories   = parseList(saved.category);
+  const wantedInstitutions = parseList(saved.institution);
+  const wantedKeywords     = parseList(saved.keywords);
+
+  // state
+  let currentQuery = "";
+  let currentType  = saved.type     || "";
+  let currentSort  = saved.sort     || "";
+  let dateFrom     = saved.allTime  ? "" : (saved.dateFrom || "");
+  let dateTo       = saved.allTime  ? "" : (saved.dateTo   || "");
+  const snippetLen = parseInt(saved.snippetLength,10) || 100;
+  const gridCols   = parseInt(saved.columns,      10) || 2;
+
+  // filler words
+  const stopWords = new Set([
+    "can","i","please","have","get","me","the","a","to","for","of","in",
+    "do","you","uhm","um","uh"
+  ]);
+
+  // map spoken keywords → fileType
+  const typeMap = {
+    video:"video", videos:"video", clip:"video",
+    image:"image", images:"image", picture:"image",
+    audio:"audio", audios:"audio", sound:"audio",
+    text:"text", texts:"text", note:"text", notes:"text",
+    presentation:"document", ppt:"document", slides:"document",
+    document:"document", documents:"document",
+    file:"document", files:"document"
+  };
+
+  // build UI
+  const container = document.getElementById(containerId);
+  if (!container) return console.error(`Missing #${containerId}`);
+
   const wrapper = document.createElement("section");
   wrapper.id = "search-interface";
-  wrapper.setAttribute("aria-label", "ConstitutionVault Search Interface");
+  wrapper.setAttribute("aria-label","Search Interface");
 
-  // 2) Render & mount the search bar (returns an <aside> or <section>, depending on your SearchBar.js)
-  const searchBar = renderSearchBar(handleSearch);
+  // Search bar
+  const searchBar = renderSearchBar(q => {
+    currentQuery = q;
+    refresh();
+  });
 
-  // 3) Create & mount the results container
+  // Type dropdown
+  const filtersUI = renderFilters(f => {
+    currentType = f.type;
+    refresh();
+  });
+  filtersUI.querySelector("#filter-type").value = currentType;
+
+  // Sort dropdown
+  const sortUI = renderSortOptions(s => {
+    currentSort = s;
+    refresh();
+  });
+  sortUI.querySelector("select").value = currentSort;
+
+  // Results grid
   const resultsSection = document.createElement("section");
   resultsSection.id = "search-results";
+  resultsSection.style.display             = "grid";
+  resultsSection.style.gridTemplateColumns = `repeat(${gridCols},1fr)`;
+  resultsSection.style.gap                 = "1.5rem";
 
-  // Append in one go (no <div> used)
-  wrapper.append(searchBar, resultsSection);
-  container.append(wrapper);
+  wrapper.append(searchBar, filtersUI, sortUI, resultsSection);
+  container.appendChild(wrapper);
 
-  // 4) Run an initial empty search
-  handleSearch("");
+  // initial load
+  refresh();
 
-  /**
-   * Fetches all documents from Firestore, filters & sorts them,
-   * then passes them to renderSearchResults.
-   *
-   * @param {string} query
-   */
-  async function handleSearch(query) {
-    // show loading state
-    resultsSection.innerHTML = "<p>🔄 Loading…</p>";
+  async function refresh() {
+    // normalize & strip filler words
+    let raw = (currentQuery||"").trim().toLowerCase()
+      .split(/\s+/).filter(w=>!stopWords.has(w)).join(" ");
+
+    // detect & strip ONE type keyword (without erasing entire query)
+    for (let kw in typeMap) {
+      const rx = new RegExp(`\\b${kw}\\b`,"i");
+      if (rx.test(raw)) {
+        currentType = typeMap[kw];
+        filtersUI.querySelector("#filter-type").value = currentType;
+        raw = raw.replace(rx,"").trim();
+        break;
+      }
+    }
+
+    // if nothing typed AND no other filters, do full “load all”
+    const noText = !raw;
+    const anyFilter = !!(currentType || currentSort || dateFrom || dateTo);
+    if (noText && !anyFilter) {
+      return fetchAllDocuments();
+    }
+
+    // build URL with whatever is set
+    const parts = [
+      `query=${encodeURIComponent(raw)}`,
+      currentType  ? `type=${encodeURIComponent(currentType)}` : null,
+      currentSort  ? `sort=${encodeURIComponent(currentSort)}` : null,
+      dateFrom     ? `dateFrom=${encodeURIComponent(dateFrom)}` : null,
+      dateTo       ? `dateTo=${encodeURIComponent(dateTo)}`   : null
+    ].filter(Boolean).join("&");
+
+    const url = `${API_BASE}/api/search?${parts}`;
+    resultsSection.innerHTML = raw
+      ? "<p>🔄 Searching…</p>"
+      : "<p>🔄 Applying filters…</p>";
 
     try {
-      // pull every doc
-      const snapshot = await getDocs(
-        collection(db, "constitutionalDocuments")
-      );
+      const res = await fetch(url);
+      const { results = [], message, error } = await res.json();
 
-      const lower = query.trim().toLowerCase();
-      const hits = [];
+      if (error) {
+        return resultsSection.innerHTML = `<p>❌ ${error}</p>`;
+      }
 
-      snapshot.forEach(doc => {
-        const data = { id: doc.id, ...doc.data() };
+      // client‐side author/category/keyword filters
+      const filtered = results.filter(item=>{
+        if (wantedAuthors.length &&
+            !(item.author && wantedAuthors.includes(item.author.toLowerCase())))
+          return false;
+        if (wantedCategories.length &&
+            !(item.category && wantedCategories.includes(item.category.toLowerCase())))
+          return false;
+        if (wantedInstitutions.length &&
+            !(item.institution && wantedInstitutions.includes(item.institution.toLowerCase())))
+          return false;
+        if (wantedKeywords.length) {
+          const kws = (item.keywords||[]).map(k=>k.toLowerCase());
+          if (!wantedKeywords.some(w=>kws.includes(w))) return false;
+        }
+        return true;
+      });
 
-        // gather searchable text fields
-        const textFields = [
-          data.title,
-          data.description,
-          data.author,
-          data.category,
-          data.institution
-        ]
-          .filter(Boolean)
-          .map(s => s.toLowerCase());
+      if (!filtered.length) {
+        return resultsSection.innerHTML =
+          `<p class="no-results">😔 No matches for “${raw}”</p>`;
+      }
 
-        // keywords match
-        const keywordMatch = Array.isArray(data.keywords) &&
-          data.keywords.some(kw => kw.toLowerCase().includes(lower));
-
-        if (
-          !lower ||
-          textFields.some(field => field.includes(lower)) ||
-          keywordMatch
-        ) {
-          hits.push(data);
+      // truncate snippet
+      filtered.forEach(it=>{
+        if (it.snippet && it.snippet.length > snippetLen) {
+          it.snippet = it.snippet.slice(0, snippetLen)+"…";
         }
       });
 
-      // sort by title
-      hits.sort((a, b) =>
-        (a.title || "").localeCompare(b.title || "")
-      );
+      renderSearchResults(resultsSection, filtered);
 
-      // shape data for the renderer
-      const results = hits.map(item => ({
-        id:         item.id,
-        title:       item.title,
-        description: item.description || "",
-        author:      item.author || "",
-        institution: item.institution || "",
-        category:    item.category || "",
-        keywords:    Array.isArray(item.keywords) ? item.keywords : [],
-        url:         item.downloadURL || item.url || "",
-        fileType:    item.fileType   || "document"
-      }));
+    } catch(err) {
+      console.error(err);
+      resultsSection.innerHTML = "<p>❌ Something went wrong.</p>";
+    }
+  }
 
-      // hand off to SearchResults
+  // load everything at once
+  async function fetchAllDocuments() {
+    resultsSection.innerHTML = "<p>🔄 Loading all documents…</p>";
+    try {
+      const res = await fetch(`${API_BASE}/api/search?query=`);
+      const { results = [], error } = await res.json();
+      if (error) {
+        resultsSection.innerHTML = `<p>❌ ${error}</p>`;
+        return;
+      }
       renderSearchResults(resultsSection, results);
-
-    } catch (err) {
-      console.error("Error fetching or filtering documents:", err);
-      resultsSection.innerHTML = "<p>❌ Failed to load results.</p>";
+    } catch(err) {
+      console.error(err);
+      resultsSection.innerHTML = "<p>❌ Failed to load documents.</p>";
     }
   }
 }

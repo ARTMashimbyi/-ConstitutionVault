@@ -1,4 +1,5 @@
 
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
 import { getFirestore, collection, query, orderBy, limit, getDocs, updateDoc, increment, doc, onSnapshot, arrayUnion, arrayRemove,getDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 const firebaseConfig = {
@@ -14,7 +15,7 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const loadedDocuments = [];
+let loadedDocuments = [];
 let userInteractions = {};
 
 const currentUserId = localStorage.getItem("currentUserId") || null;//retrieve uid from local storage(sign in)
@@ -23,20 +24,14 @@ loadAllDocuments(currentUserId);
 
 
 if(!currentUserId){
-    Swal.fire({
-        icon: 'info',
-        title: 'Login Required',
-        text: 'Please login to view documents.',
-        confirmButtonText: 'OK'
-        });
-
-    window.location.href = "../index.html";
+    alert("Please login to view documents.");
+    window.location.href = "../user%20signup/index.html";
 }
 
 async function initApp() {
     try {
       showLoading(true);
-      //await loadAllDocuments(currentUserId);
+     await  loadAllDocuments();
       await loadUserInteractions(currentUserId);
       setupEventListeners();
       renderAllSections(); //since in loadAllDocuments
@@ -47,8 +42,26 @@ async function initApp() {
       showLoading(false);
     }
 }
+async function loadAllDocuments(){
+  const collectionRef = collection(db, "constitutionalDocuments");
+    onSnapshot(collectionRef, (snapshot) => {
+        loadedDocuments = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data(),
+            isNew: isDocumentNew(doc.data().uploadDate)
+        }));
+        renderAllSections();
+    });
+}
+function isDocumentNew(uploadDate) {
+    if (!uploadDate) return false;
+    const uploadTime = new Date(uploadDate).getTime();
+    const weekAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
+    return uploadTime > weekAgo;
+}
+
 const arr1 =[]; //update history to show latest first
-async function loadAllDocuments(user) {            
+async function loadAllHistory(user) {            
     const userRef = doc(db, "user_history", user);
     const userSnap = await getDoc(userRef);
 
@@ -74,7 +87,7 @@ try{
       }    
 console.log(arr1[0]);
 }
-
+loadAllHistory(currentUserId);
 async function loadUserInteractions(userId) {
     const userRef = doc(db, "users", userId);
     const userSnap = await getDoc(userRef);
@@ -92,22 +105,28 @@ async function loadUserInteractions(userId) {
     }
 }
 
-
+let history_array =[];
 async function getTitle(data){ 
   if(data.length){
-        const container = document.getElementById('all-documents-grid');
+        //const container = document.getElementById('all-documents-grid');
        const docID = data;
-        const docRef = doc(collection(db, 'constitutionalDocuments'), docID );
-        const docSnap1 = await getDoc(docRef);
-        if (docSnap1.exists()) {
-          const docData = docSnap1.data();
-          //console.log(docData);
-        loadedDocuments.push(docData);
+       loadedDocuments.forEach(doc=>{
+        if(doc.id==data){
+          history_array.push(doc);
+        }
+       })
+        //const docRef = loadedDocuments.find(data);
+        //console.log(loadedDocuments[0]);
+       // const docSnap1 = await getDoc(docRef);
+    //     if (docSnap1.exists()) {
+    //       const docData = docSnap1.data();
+    //       //console.log(docData);
+    //     history_array.push(docData);
         
-    }
-     else {
-      console.log("no recent documents_GetTitle");
-    }
+    // }
+    //  else {
+    //   console.log("no recent documents_GetTitle");
+    // }
   }
 }
 
@@ -129,7 +148,7 @@ function renderAllDocuments() {
     return;
   }
 
-  loadedDocuments.forEach(doc => {
+  history_array.forEach(doc => {
     container.appendChild(createDocCard(doc));
   });
 }
@@ -138,61 +157,18 @@ function renderAllDocuments() {
 
 // Create semantic document card element
 function createDocCard(doc) {
+  
   const card = document.createElement('article');
-  card.className = 'document-card';
-
+  card.className = 'doc-card';
+  
   if (doc.isNew) {
     const badge = document.createElement('mark');
     badge.className = 'doc-badge';
     badge.textContent = 'NEW';
     card.appendChild(badge);
   }
-
-  // === Preview Section ===
-  const fig = document.createElement('figure');
-  let previewEl;
-
-  switch (doc.fileType) {
-    case "image":
-      previewEl = document.createElement("img");
-      previewEl.src = doc.downloadURL;
-      previewEl.alt = doc.title || 'Image preview';
-      break;
-    case "audio":
-      previewEl = document.createElement("audio");
-      previewEl.controls = true;
-      previewEl.src = doc.downloadURL;
-      break;
-    case "video":
-      previewEl = document.createElement("video");
-      previewEl.controls = true;
-      previewEl.src = doc.downloadURL;
-      break;
-    case "document":
-    default:
-      const isPDF = doc.downloadURL && doc.downloadURL.endsWith(".pdf");
-      if (isPDF) {
-        previewEl = document.createElement("embed");
-        previewEl.src = `${doc.downloadURL}#page=1&view=FitH`;
-        previewEl.type = "application/pdf";
-        previewEl.width = "100%";
-        previewEl.height = "400px";
-      } else {
-        previewEl = document.createElement("p");
-        previewEl.textContent = "Preview not available for this file type.";
-      }
-      break;
-  }
-
-  if (previewEl && (previewEl.tagName === 'IMG' || previewEl.tagName === 'IFRAME')) {
-    previewEl.loading = "lazy";
-  }
-
-  if (previewEl) fig.appendChild(previewEl);
-  card.appendChild(fig);
-
-  // === Meta + Actions Section ===
-  const metaHtml = `
+  
+  card.innerHTML = `
     <h3>${doc.title || 'Untitled Document'}</h3>
     <menu class="doc-meta">
       <li><i class="fas fa-file"></i> ${doc.fileType || 'Unknown'}</li>
@@ -201,30 +177,23 @@ function createDocCard(doc) {
     </menu>
     ${doc.institution ? `<p>${doc.institution}</p>` : ''}
     <menu class="doc-actions">
-      <li><button class="action-btn view-btn"><i class="fas fa-eye"></i> View All</button></li>
+      <li><button class="action-btn view-btn"><i class="fas fa-eye"></i> View</button></li>
       <li>
         <button class="action-btn fav-btn ${doc.isFavorite ? 'active' : ''}" 
                 aria-label="${doc.isFavorite ? 'Remove from favorites' : 'Add to favorites'}">
           <i class="fas fa-star"></i>
         </button>
       </li>
-      <li>
-        <button class="action-btn share-btn" aria-label="Share document"><i class="fas fa-share-alt"></i></button>
-      </li>
     </menu>
   `;
-  // Insert metaHtml after preview figure
-  card.insertAdjacentHTML('beforeend', metaHtml);
-
+  
   // Add event listeners
   const favBtn = card.querySelector('.fav-btn');
   favBtn.addEventListener('click', async (e) => {
     e.stopPropagation();
     await toggleFavorite(doc.id, !doc.isFavorite);
   });
-  
   console.log(doc.id);
-  
   const viewBtn = card.querySelector('.view-btn');
   viewBtn.addEventListener('click', async (e) => {
     e.stopPropagation();
@@ -234,39 +203,11 @@ function createDocCard(doc) {
     console.log(doc);
     console.log(typeof(doc));
   });
-
-  const shareBtn = card.querySelector('.share-btn');
-  shareBtn.addEventListener('click', async (e) => {
-    e.preventDefault();
-
-    const shareData = {
-      title: doc.title || 'Untitled',
-      text: doc.description || 'Check this out!',
-      url: doc.downloadURL || '#'//protected url T_T*, TO DO: make it viewable
-    }
-
-    if(navigator.share) {
-      try {
-        await navigator.share(shareData);
-        console.log('Document shared successfully');
-      } catch (error) {
-        console.error('Error sharing document:', error);
-      }
-    } else{
-      try {
-        await navigator.clipboard.writeText(shareData.url);
-      } catch (error) {
-        console.error('Error sharing document:', error);
-      }
-    }
-  });
-
-  // card.addEventListener('click', () => openDocument(doc));
   
+  //card.addEventListener('click', () => openDocument(doc));
   console.log("card loaded");
   return card;
-}
-
+  }
   
 
 async function incrementViewCount(docId) {
@@ -304,6 +245,7 @@ async function incrementViewCount(docId) {
         } catch (error) {
           console.error("Error incrementing view count:", error);
         }
+        
     }
 
 function openDocument(doc) {
@@ -507,6 +449,11 @@ function applyFilters() {
     const totalFav = userInteractions.isFavorite?.length || 0;
     const totalShares = userInteractions.shared?.length || 0;
 
+    // console.log("viewed:", totalViews);
+    // console.log("favorites:", totalFav);
+    // console.log("userInteractions:", userInteractions);
+    
+    
 
     const stat = document.querySelectorAll('.stat-card');
 

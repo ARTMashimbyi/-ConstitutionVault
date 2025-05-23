@@ -1,7 +1,7 @@
 // public/search/SortOptions.js
 
 /**
- * Renders a sort‑by dropdown.  
+ * Renders a sort-by dropdown.
  * Calls onSortChange with one of:
  *   ""            – default (no sorting)
  *   "title-asc"   – Title ascending
@@ -12,12 +12,12 @@
  * @param {(sortValue: string) => void} onSortChange
  * @returns {HTMLDivElement}
  */
-function renderSortOptions(onSortChange) {
+export function renderSortOptions(onSortChange) {
   const wrapper = document.createElement("div");
   wrapper.className = "sort-options";
 
   const label = document.createElement("label");
-  label.htmlFor = "sort-select";
+  label.htmlFor   = "sort-select";
   label.textContent = "Sort by:";
 
   const select = document.createElement("select");
@@ -34,10 +34,6 @@ function renderSortOptions(onSortChange) {
     onSortChange(select.value);
   });
 
-  wrapper.appendChild(label);
-  wrapper.appendChild(select);
-
+  wrapper.append(label, select);
   return wrapper;
 }
-
-module.exports = { renderSortOptions };

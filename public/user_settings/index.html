@@ -1,110 +1,228 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Settings</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      margin: 2rem;
-      transition: background-color 0.3s, color 0.3s;
-    }
-    body.light-mode {
-      background-color: #ffffff;
-      color: #000000;
-    }
-    body.dark-mode {
-      background-color: #130f49;
-      color: #f1f1f1;
-    }
-    main { max-width: 600px; margin: auto; }
-    h1 { font-size: 1.8rem; margin-bottom: 1rem; }
-    label { display: block; margin-top: 1rem; font-weight: bold; }
-    input[type="text"] {
-      width: 100%;
-      padding: 0.5rem;
-      margin-top: 0.3rem;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
-    input[type="checkbox"] { margin-right: 0.5rem; }
-    button {
-      margin-top: 1.5rem;
-      padding: 0.6rem 1.2rem;
-      background-color: #007bff;
-      border: none;
-      color: white;
-      font-size: 1rem;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    section { margin-bottom: 2rem; }
-  </style>
-</head>
-<body class="light-mode">
-  <main>
-    <h1>Settings</h1>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Settings</title>
+    <link rel="stylesheet" href="settings.css" />
+  </head>
 
-    <section>
-      <label>
-        <input type="checkbox" id="themeToggle" />
-        Enable Dark Mode
-      </label>
-    </section>
+  <body>
+    <main>
+      <header>
+        <h1>Settings</h1>
+        <!-- Back button -->
+        <nav>
+          <button id="backButton" class="back-button">← Back</button>
+        </nav>
+      </header>
 
-    <h2>Filter homepage:</h2>
-
-    <form id="filterForm">
-      <section>
-        <label for="author">Author</label>
-        <input type="text" id="author" name="author" placeholder="e.g. Jane Doe" />
-      </section>
-      <section>
-        <label for="category">Category</label>
-        <input type="text" id="category" name="category" placeholder="e.g. Technology" />
-      </section>
-      <section>
-        <label for="keywords">Keywords</label>
-        <input type="text" id="keywords" name="keywords" placeholder="e.g. AI, Science" />
-      </section>
-      <section>
-        <label for="institution">Institution / Place</label>
-        <input type="text" id="institution" name="institution" placeholder="e.g. MIT, London" />
+      <!-- Mode selector -->
+      <section class="setting-card theme-section">
+        <h2>Theme</h2>
+        <nav class="mode-switcher">
+          <button data-mode="" id="mode-default">Default</button>
+          <button data-mode="dark-mode" id="mode-dark">Dark</button>
+          <button data-mode="solar-mode" id="mode-solar">Solarized</button>
+          <button data-mode="hc-mode" id="mode-hc">High-Contrast</button>
+        </nav>
       </section>
 
-      <button type="submit">Save Settings</button>
-    </form>
-  </main>
+      <form id="filterForm">
+        <section class="setting-card">
+          <h2>Filter Content</h2>
+          
+          
+          <!-- Author filter -->
+          <article class="filter-section">
+            <header class="filter-header">
+              <h3>Author</h3>
+              <button type="button" class="toggle-all" data-target="authorOptions">Select All</button>
+            </header>
+            <fieldset class="dropdown-container">
+              <legend class="visually-hidden"></legend>
+              <section class="search-box">
+                <input type="text" class="filter-search" placeholder="Search authors..." data-target="authorOptions">
+              </section>
+              <section class="dropdown-options" id="authorOptions">
+                <p class="loading-indicator">Loading authors...</p>
+              </section>
+            </fieldset>
+          </article>
 
-  <script>
-    const toggle = document.getElementById('themeToggle');
-    const body = document.body;
+          <!-- Category filter -->
+          <article class="filter-section">
+            <header class="filter-header">
+              <h3>Category</h3>
+              <button type="button" class="toggle-all" data-target="categoryOptions">Select All</button>
+            </header>
+            <fieldset class="dropdown-container">
+              <legend class="visually-hidden"></legend>
+              <section class="search-box">
+                <input type="text" class="filter-search" placeholder="Search categories..." data-target="categoryOptions">
+              </section>
+              <section class="dropdown-options" id="categoryOptions">
+                <p class="loading-indicator">Loading categories...</p>
+              </section>
+            </fieldset>
+          </article>
 
-    window.onload = () => {
-      const savedSettings = JSON.parse(localStorage.getItem("userSettings"));
-      if (savedSettings?.theme === "dark") {
-        body.className = "dark-mode";
-        toggle.checked = true;
-      }
-    };
+          <!-- Keywords filter -->
+          <article class="filter-section">
+            <header class="filter-header">
+              <h3>Keywords</h3>
+              <button type="button" class="toggle-all" data-target="keywordOptions">Select All</button>
+            </header>
+            <fieldset class="dropdown-container">
+              <legend class="visually-hidden"></legend>
+              <section class="search-box">
+                <input type="text" class="filter-search" placeholder="Search keywords..." data-target="keywordOptions">
+              </section>
+              <section class="dropdown-options" id="keywordOptions">
+                <p class="loading-indicator">Loading keywords...</p>
+              </section>
+            </fieldset>
+          </article>
 
-    toggle.addEventListener('change', () => {
-      body.className = toggle.checked ? 'dark-mode' : 'light-mode';
-    });
+          <!-- Institution filter -->
+          <article class="filter-section">
+            <header class="filter-header">
+              <h3>Institution / Place</h3>
+              <button type="button" class="toggle-all" data-target="institutionOptions">Select All</button>
+            </header>
+            <fieldset class="dropdown-container">
+              <legend class="visually-hidden"></legend>
+              <section class="search-box">
+                <input type="text" class="filter-search" placeholder="Search institutions..." data-target="institutionOptions">
+              </section>
+              <section class="dropdown-options" id="institutionOptions">
+                <p class="loading-indicator">Loading institutions...</p>
+              </section>
+            </fieldset>
+          </article>
+        </section>
 
-    document.getElementById('filterForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      const settings = {
-        author: this.author.value.trim(),
-        category: this.category.value.trim(),
-        keywords: this.keywords.value.trim(),
-        institution: this.institution.value.trim(),
-        theme: toggle.checked ? 'dark' : 'light'
-      };
-      localStorage.setItem("userSettings", JSON.stringify(settings));
-      window.location.href = "/public/user-interface/user-filtered.html"; // Adjust if your structure is different
-    });
-  </script>
-</body>
+        <section class="setting-card file-type-section">
+          <h2>File Types</h2>
+          <fieldset class="file-type-options">
+            <legend class="visually-hidden"></legend>
+            <label class="checkbox-container">
+              <input type="checkbox" name="fileTypes" value="document" checked>
+              <mark class="checkmark"></mark>
+              <output class="label-text">Documents</output>
+            </label>
+            <label class="checkbox-container">
+              <input type="checkbox" name="fileTypes" value="video" checked>
+              <mark class="checkmark"></mark>
+              <output class="label-text">Videos</output>
+            </label>
+            <label class="checkbox-container">
+              <input type="checkbox" name="fileTypes" value="image" checked>
+              <mark class="checkmark"></mark>
+              <output class="label-text">Images</output>
+            </label>
+            <label class="checkbox-container">
+              <input type="checkbox" name="fileTypes" value="audio" checked>
+              <mark class="checkmark"></mark>
+              <output class="label-text">Audio</output>
+            </label>
+            <label class="checkbox-container">
+              <input type="checkbox" name="fileTypes" value="text" checked>
+              <mark class="checkmark"></mark>
+              <output class="label-text">Text</output>
+            </label>
+          </fieldset>
+        </section>
+
+        <section class="setting-card">
+          <h2>Display Settings</h2>
+          <fieldset class="display-options">
+            <legend class="visually-hidden"></legend>
+            <figure class="display-option">
+              <figcaption>
+                <label for="sort">Default Sort Order</label>
+              </figcaption>
+              <select id="sort" name="sort">
+                <option value="">Default</option>
+                <option value="title-asc">Title ↑</option>
+                <option value="title-desc">Title ↓</option>
+                <option value="year-asc">Date ↑</option>
+                <option value="year-desc">Date ↓</option>
+              </select>
+            </figure>
+            
+            <figure class="display-option">
+              <figcaption>
+                <label for="columns">Results per Row</label>
+              </figcaption>
+              <select id="columns" name="columns">
+                <option value="1">1</option>
+                <option value="2" selected>2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+              </select>
+            </figure>
+            
+            <figure class="display-option">
+              <figcaption>
+                <label for="pageSize">Results Per Page</label>
+              </figcaption>
+              <select id="pageSize" name="pageSize">
+                <option value="10">10</option>
+                <option value="20" selected>20</option>
+                <option value="50">50</option>
+              </select>
+            </figure>
+            
+            <figure class="display-option">
+              <figcaption>
+                <label for="snippetLength">Snippet Preview Length</label>
+              </figcaption>
+              <select id="snippetLength" name="snippetLength">
+                <option value="50">50 chars</option>
+                <option value="100" selected>100 chars</option>
+                <option value="200">200 chars</option>
+                <option value="300">300 chars</option>
+                <option value="500">500 chars</option>
+              </select>
+            </figure>
+          </fieldset>
+        </section>
+
+        <section class="setting-card date-range-section">
+          <h2>Date Range</h2>
+          <fieldset class="date-range-options">
+            <legend class="visually-hidden"></legend>
+            <figure class="date-input">
+              <figcaption>
+                <label for="dateFrom">From</label>
+              </figcaption>
+              <input type="date" id="dateFrom" name="dateFrom">
+            </figure>
+            <figure class="date-input">
+              <figcaption>
+                <label for="dateTo">To</label>
+              </figcaption>
+              <input type="date" id="dateTo" name="dateTo">
+            </figure>
+            <aside class="date-toggle">
+              <label class="checkbox-container">
+                <input type="checkbox" id="allTime" name="allTime">
+                <mark class="checkmark"></mark>
+                <output class="label-text">All Time</output>
+              </label>
+              
+            </aside>
+          </fieldset>
+        </section>
+
+        <footer class="form-actions">
+          <button type="submit" class="primary-button">Save Settings</button>
+          <button type="button" id="resetButton" class="secondary-button">Reset Defaults</button>
+        </footer>
+      </form>
+    </main>
+
+    <script type="module" src="settings.js"></script>
+  </body>
 </html>
