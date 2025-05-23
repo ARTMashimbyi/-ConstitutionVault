@@ -248,17 +248,17 @@ async function ViewCount(docId) {
         let user = currentUserId;
         //await setDoc(doc(db, "user_history", user));
         await setDoc(doc(db, "user_history", user), {
-          [`viewed`]: arrayUnion(docId)}, { merge: true }
-            );
+          [`viewed`]: arrayUnion(docId)
+       } );
         return;
       }
       
 
       await Promise.all([
         
-        await updateDoc(userRef, {
-        [`viewed`]: arrayRemove(docId)}),
-      
+         updateDoc(userRef, {
+        [`viewed`]: arrayRemove(docId)},
+        {merge: true}),
          
       updateDoc(userRef, {
           

@@ -125,18 +125,48 @@ Development Mode:
    npm install @google-cloud/aiplatform
    npm start
 
-Project Structure:
+## Project Structure:
+
 CONSTITUTIONALVAULT/
-├── public/ # Client code
-│ ├── admin/ # Admin portal
+│
+├── public/ # Client-side application
+│ ├── admin/ # Admin portal components
+│ │ ├── admin-add.html # File upload interface
+│ │ ├── admin-add.js # Upload functionality
+│ │ ├── hierarcy.html # Directory management UI
+│ │ └── hierarcy.js # Directory logic
+│ │
 │ ├── delete_edit/ # Document management
+│ │ ├── delete.html # Delete confirmation UI
+│ │ ├── delete.js # Delete functionality
+│ │ ├── edit.html # Edit document interface
+│ │ └── edit.js # Edit functionality
+│ │
 │ ├── user_search/ # Search interface
+│ │ └── AdminSearchInterface.js # Search logic and components
+│ │
 │ ├── suggestions/ # User dashboard
+│ │ ├── home.html # Main dashboard view
+│ │ └── home.js # Dashboard functionality
+│ │
 │ └── user_settings/ # User preferences
-├── server/ # Server code
-│ ├── config/ # Configuration
-│ ├── routes/ # API routes
-│ └── app.js # Main server
+│ ├── settings.html # Settings UI
+│ └── settings.js # Settings management logic
+│
+├── server/ # Server-side application
+│ ├── config/ # Configuration files
+│ │ ├── firebaseAdmin.js # Firebase configuration
+│ │ └── vertexClient.js # Vertex AI setup
+│ │
+│ ├── routes/ # API endpoints
+│ │ ├── admin.routes.js # Admin API routes
+│ │ ├── search.routes.js # Search API routes
+│ │ └── user.routes.js # User API routes
+│  
+│
+├── .gitignore # Git ignore rules
+├── package.json # Project dependencies
+└── README.md # Project documentation
 
 API Endpoints:
 Admin:

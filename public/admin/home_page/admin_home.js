@@ -100,11 +100,11 @@ document.addEventListener('DOMContentLoaded', async function() {
         if (recentDocsSnapshot.empty) {
             recentDocsList.innerHTML = `
                 <li class="document-item">
-                    <span class="doc-icon">📄</span>
+                    <p class="doc-icon">📄</p>
                     <article class="doc-info">
                         <h3 class="doc-title">No documents yet</h3>
                         <aside class="doc-meta">
-                            <span>Use the upload section to add documents</span>
+                            <p>Use the upload section to add documents</p>
                         </aside>
                     </article>
                 </li>
@@ -128,13 +128,13 @@ document.addEventListener('DOMContentLoaded', async function() {
                 const docItem = document.createElement('li');
                 docItem.className = 'document-item';
                 docItem.innerHTML = `
-                    <span class="doc-icon">${icon}</span>
+                    <p class="doc-icon">${icon}</p>
                     <article class="doc-info">
                         <h3 class="doc-title">${title}</h3>
                         <aside class="doc-meta">
-                            <span>${data.fileType || 'Unknown type'}</span>
-                            <span>${directory}</span>
-                            <span>Added: ${date}</span>
+                            <p>${data.fileType || 'Unknown type'}</p>
+                            <p>${directory}</p>
+                            <p>Added: ${date}</p>
                         </aside>
                     </article>
                 `;
@@ -156,11 +156,11 @@ document.addEventListener('DOMContentLoaded', async function() {
         const recentDocsList = document.getElementById('recentDocumentsList');
         recentDocsList.innerHTML = `
             <li class="document-item">
-                <span class="doc-icon">❌</span>
+                <p class="doc-icon">❌</p>
                 <article class="doc-info">
                     <h3 class="doc-title">Error loading documents</h3>
                     <aside class="doc-meta">
-                        <span>Check console for details</span>
+                        <p>Check console for details</p>
                     </aside>
                 </article>
             </li>
