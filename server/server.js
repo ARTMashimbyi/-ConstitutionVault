@@ -1,4 +1,4 @@
-// server/server.js
+// server/server.js 
 
 // 0) Load .env from the project root
 const path = require('path');
@@ -14,6 +14,8 @@ const pathModule  = require('path');
 const searchRouter      = require('./routes/search');
 const filesRouter       = require('./routes/files');
 const directoriesRouter = require('./routes/directories');
+const metadataRouter    = require('./routes/metadata');
+const filtersRouter     = require('./routes/filters');       // <-- New line
 
 const app = express();
 
@@ -34,6 +36,8 @@ app.use(express.json());
 app.use('/api/search',      searchRouter);
 app.use('/api/files',       filesRouter);
 app.use('/api/directories', directoriesRouter);
+app.use('/api/metadata',    metadataRouter);
+app.use('/api/filters',     filtersRouter);        // <-- New line
 
 // 5) Optional: Serve frontend
 // app.use('/', express.static(pathModule.join(__dirname, '..', 'public')));

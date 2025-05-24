@@ -24,7 +24,7 @@ function extractSnippet(fullText = '', query = '') {
 }
 
 /**
- * GET /api/search?query=&type=&sort=&dateFrom=&dateTo=
+ * GET /api/search?query=&type=&sort=&dateFrom=&dateTo=&author=[]&category=[]&institution=[]&keywords=[]
  */
 async function semanticSearch(req, res) {
   const rawQ       = (req.query.query || '').trim().toLowerCase();
@@ -33,13 +33,37 @@ async function semanticSearch(req, res) {
   const dateFrom   = req.query.dateFrom; // YYYY-MM-DD
   const dateTo     = req.query.dateTo;   // YYYY-MM-DD
 
+  // Parse filters: support both string and array (from frontend)
+  function parseFilter(val) {
+    if (!val) return [];
+    if (typeof val === "string") {
+      try {
+        // If frontend sends JSON.stringify([...]), parse as array
+        const arr = JSON.parse(val);
+        if (Array.isArray(arr)) return arr.map(s => s.toLowerCase());
+        return [val.toLowerCase()];
+      } catch {
+        // Just a string, not JSON
+        return [val.toLowerCase()];
+      }
+    }
+    if (Array.isArray(val)) return val.map(s => s.toLowerCase());
+    return [];
+  }
+
+  const authorFilter      = parseFilter(req.query.author);
+  const categoryFilter    = parseFilter(req.query.category);
+  const institutionFilter = parseFilter(req.query.institution);
+  const keywordsFilter    = parseFilter(req.query.keywords);
+
   // 1) Load and type‐filter
   const snapshot = await db.collection('constitutionalDocuments').get();
   let docs = snapshot.docs
     .map(d => ({ id: d.id, ...d.data() }))
     .filter(d => !typeFilter || d.fileType === typeFilter);
 
-  // DEBUG: log date params and pre-filter count
+  // DEBUG: log received filters and counts
+  console.log('🔍 Filters:', { authorFilter, categoryFilter, institutionFilter, keywordsFilter });
   console.log('🔍 dateFrom:', dateFrom, 'dateTo:', dateTo, 'total docs before filter:', docs.length);
 
   // 2) Date‐range filter
@@ -62,7 +86,27 @@ async function semanticSearch(req, res) {
     console.log('… docs after date filter:', docs.length);
   }
 
-  // 3) No query => return first page
+  // 3) Metadata filters
+  if (authorFilter.length) {
+    docs = docs.filter(d => d.author && authorFilter.includes(String(d.author).toLowerCase()));
+  }
+  if (categoryFilter.length) {
+    docs = docs.filter(d => d.category && categoryFilter.includes(String(d.category).toLowerCase()));
+  }
+  if (institutionFilter.length) {
+    docs = docs.filter(d => d.institution && institutionFilter.includes(String(d.institution).toLowerCase()));
+  }
+  if (keywordsFilter.length) {
+    docs = docs.filter(d => {
+      if (!d.keywords) return false;
+      const docKeywords = Array.isArray(d.keywords)
+        ? d.keywords.map(x=>x.toLowerCase())
+        : [String(d.keywords).toLowerCase()];
+      return keywordsFilter.some(k => docKeywords.includes(k));
+    });
+  }
+
+  // 4) No query => return first page
   if (!rawQ) {
     const results = docs.slice(0, 20).map(d => ({
       title:       d.title,
@@ -79,7 +123,7 @@ async function semanticSearch(req, res) {
     return res.json({ results });
   }
 
-  // 4) Attempt semantic embedding
+  // 5) Attempt semantic embedding
   let qEmbed = null;
   try {
     qEmbed = await getEmbedding(rawQ);
@@ -87,7 +131,7 @@ async function semanticSearch(req, res) {
     console.warn('Embedding error:', e.message);
   }
 
-  // 5) Rank or substring‐filter
+  // 6) Rank or substring‐filter
   let results;
   if (qEmbed && docs.every(d => Array.isArray(d.embedding))) {
     results = docs
@@ -109,7 +153,7 @@ async function semanticSearch(req, res) {
       .map(d => ({ ...d, score: null }));
   }
 
-  // 6) Apply user‐selected sort if provided
+  // 7) Apply user‐selected sort if provided
   if (sortFilter) {
     const [field, dir] = sortFilter.split('-');
     results.sort((a,b) => {
@@ -125,7 +169,7 @@ async function semanticSearch(req, res) {
     });
   }
 
-  // 7) No matches?
+  // 8) No matches?
   if (!results.length) {
     return res.json({
       results: [],
@@ -133,7 +177,7 @@ async function semanticSearch(req, res) {
     });
   }
 
-  // 8) Shape top‐20 response
+  // 9) Shape top‐20 response
   const top = results.slice(0, 20).map(d => ({
     title:       d.title,
     author:      d.author,

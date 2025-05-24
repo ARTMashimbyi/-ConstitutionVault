@@ -6,7 +6,6 @@
     <title>Settings</title>
     <link rel="stylesheet" href="settings.css" />
   </head>
-
   <body>
     <main>
       <header>
@@ -31,19 +30,14 @@
       <form id="filterForm">
         <section class="setting-card">
           <h2>Filter Content</h2>
-          
-          
+
           <!-- Author filter -->
           <article class="filter-section">
             <header class="filter-header">
               <h3>Author</h3>
-              <button type="button" class="toggle-all" data-target="authorOptions">Select All</button>
             </header>
             <fieldset class="dropdown-container">
               <legend class="visually-hidden"></legend>
-              <section class="search-box">
-                <input type="text" class="filter-search" placeholder="Search authors..." data-target="authorOptions">
-              </section>
               <section class="dropdown-options" id="authorOptions">
                 <p class="loading-indicator">Loading authors...</p>
               </section>
@@ -54,13 +48,9 @@
           <article class="filter-section">
             <header class="filter-header">
               <h3>Category</h3>
-              <button type="button" class="toggle-all" data-target="categoryOptions">Select All</button>
             </header>
             <fieldset class="dropdown-container">
               <legend class="visually-hidden"></legend>
-              <section class="search-box">
-                <input type="text" class="filter-search" placeholder="Search categories..." data-target="categoryOptions">
-              </section>
               <section class="dropdown-options" id="categoryOptions">
                 <p class="loading-indicator">Loading categories...</p>
               </section>
@@ -71,13 +61,9 @@
           <article class="filter-section">
             <header class="filter-header">
               <h3>Keywords</h3>
-              <button type="button" class="toggle-all" data-target="keywordOptions">Select All</button>
             </header>
             <fieldset class="dropdown-container">
               <legend class="visually-hidden"></legend>
-              <section class="search-box">
-                <input type="text" class="filter-search" placeholder="Search keywords..." data-target="keywordOptions">
-              </section>
               <section class="dropdown-options" id="keywordOptions">
                 <p class="loading-indicator">Loading keywords...</p>
               </section>
@@ -88,13 +74,9 @@
           <article class="filter-section">
             <header class="filter-header">
               <h3>Institution / Place</h3>
-              <button type="button" class="toggle-all" data-target="institutionOptions">Select All</button>
             </header>
             <fieldset class="dropdown-container">
               <legend class="visually-hidden"></legend>
-              <section class="search-box">
-                <input type="text" class="filter-search" placeholder="Search institutions..." data-target="institutionOptions">
-              </section>
               <section class="dropdown-options" id="institutionOptions">
                 <p class="loading-indicator">Loading institutions...</p>
               </section>
@@ -107,27 +89,32 @@
           <fieldset class="file-type-options">
             <legend class="visually-hidden"></legend>
             <label class="checkbox-container">
-              <input type="checkbox" name="fileTypes" value="document" checked>
+              <input
+                type="checkbox"
+                name="fileTypes"
+                value="document"
+                checked
+              />
               <mark class="checkmark"></mark>
               <output class="label-text">Documents</output>
             </label>
             <label class="checkbox-container">
-              <input type="checkbox" name="fileTypes" value="video" checked>
+              <input type="checkbox" name="fileTypes" value="video" checked />
               <mark class="checkmark"></mark>
               <output class="label-text">Videos</output>
             </label>
             <label class="checkbox-container">
-              <input type="checkbox" name="fileTypes" value="image" checked>
+              <input type="checkbox" name="fileTypes" value="image" checked />
               <mark class="checkmark"></mark>
               <output class="label-text">Images</output>
             </label>
             <label class="checkbox-container">
-              <input type="checkbox" name="fileTypes" value="audio" checked>
+              <input type="checkbox" name="fileTypes" value="audio" checked />
               <mark class="checkmark"></mark>
               <output class="label-text">Audio</output>
             </label>
             <label class="checkbox-container">
-              <input type="checkbox" name="fileTypes" value="text" checked>
+              <input type="checkbox" name="fileTypes" value="text" checked />
               <mark class="checkmark"></mark>
               <output class="label-text">Text</output>
             </label>
@@ -150,7 +137,7 @@
                 <option value="year-desc">Date ↓</option>
               </select>
             </figure>
-            
+
             <figure class="display-option">
               <figcaption>
                 <label for="columns">Results per Row</label>
@@ -162,7 +149,7 @@
                 <option value="4">4</option>
               </select>
             </figure>
-            
+
             <figure class="display-option">
               <figcaption>
                 <label for="pageSize">Results Per Page</label>
@@ -173,7 +160,7 @@
                 <option value="50">50</option>
               </select>
             </figure>
-            
+
             <figure class="display-option">
               <figcaption>
                 <label for="snippetLength">Snippet Preview Length</label>
@@ -197,28 +184,29 @@
               <figcaption>
                 <label for="dateFrom">From</label>
               </figcaption>
-              <input type="date" id="dateFrom" name="dateFrom">
+              <input type="date" id="dateFrom" name="dateFrom" />
             </figure>
             <figure class="date-input">
               <figcaption>
                 <label for="dateTo">To</label>
               </figcaption>
-              <input type="date" id="dateTo" name="dateTo">
+              <input type="date" id="dateTo" name="dateTo" />
             </figure>
             <aside class="date-toggle">
               <label class="checkbox-container">
-                <input type="checkbox" id="allTime" name="allTime">
+                <input type="checkbox" id="allTime" name="allTime" />
                 <mark class="checkmark"></mark>
                 <output class="label-text">All Time</output>
               </label>
-              
             </aside>
           </fieldset>
         </section>
 
         <footer class="form-actions">
           <button type="submit" class="primary-button">Save Settings</button>
-          <button type="button" id="resetButton" class="secondary-button">Reset Defaults</button>
+          <button type="button" id="resetButton" class="secondary-button">
+            Reset Defaults
+          </button>
         </footer>
       </form>
     </main>
