@@ -2,7 +2,6 @@
 
 const { db, bucket } = require('../config/firebaseAdmin');
 const path            = require('path');
-const fs              = require('fs');
 const pdfParse        = require('pdf-parse');
 
 /**
@@ -56,7 +55,7 @@ exports.uploadFile = async (req, res) => {
       storagePath,
       downloadURL,
       uploadedAt: new Date().toISOString(),
-      clicks: 0,
+      clicks:     0,
       fullText
     };
     const docRef = await db.collection('constitutionalDocuments').add(docData);
@@ -80,13 +79,35 @@ exports.listFiles = async (req, res) => {
       .get();
 
     const files = snapshot.docs.map(doc => ({
-      id: doc.id,
+      id:   doc.id,
       ...doc.data()
     }));
 
     res.json(files);
   } catch (err) {
     console.error('Error in listFiles:', err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
+/**
+ * GET /api/files/:id
+ * Fetch a single file by its Firestore ID.
+ */
+exports.getFileById = async (req, res) => {
+  try {
+    const snap = await db
+      .collection('constitutionalDocuments')
+      .doc(req.params.id)
+      .get();
+
+    if (!snap.exists) {
+      return res.status(404).json({ error: 'File not found' });
+    }
+
+    res.json({ id: snap.id, ...snap.data() });
+  } catch (err) {
+    console.error('Error in getFileById:', err);
     res.status(500).json({ error: err.message });
   }
 };

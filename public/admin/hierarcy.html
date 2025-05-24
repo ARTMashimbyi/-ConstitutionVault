@@ -1,97 +1,112 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Constitution Vault - Admin Portal</title>
-    
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Constitution Vault – Admin Portal</title>
+
     <link rel="stylesheet" href="hierarcy.css" />
     <link rel="stylesheet" href="movefiles.css" />
-</head>
-<body>
+  </head>
+  <body>
     <header>
-        <h1>Constitution Vault Admin</h1>
-        <section class="user-controls">
-            <span>Welcome, Admin</span>
-            <button class="logout-btn">home</button>
-        </section>
+      <h1>Constitution Vault Admin</h1>
+      <section class="user-controls">
+        <strong>Welcome, Admin</strong>
+        <button class="logout-btn">Home</button>
+      </section>
     </header>
-    
+
     <main class="container">
-        <aside class="sidebar">
-            <h2>Archive Directory</h2>
-            <nav class="directory-tree">
-                <ul id="root-directory">
-                    <!-- Directory structure will be populated by JavaScript -->
-                </ul>
-            </nav>
-        </aside>
-        
-        <section class="main-content">
-            <nav class="path-nav" id="path-navigation">
-                <a href="#">Root</a>
-                <!-- Path navigation will be populated by JavaScript -->
-            </nav>
-            
-            <section class="actions">
-                <form class="search-bar">
-                    <span class="search-icon">🔍</span>
-                    <input type="text" placeholder="Search in current directory...">
-                </form>
-                
-                <section class="btn-group">
-                    <button class="btn" id="new-dir-btn">
-                        <span>New Directory</span>
-                    </button>
-                    <button class="btn" id="upload-btn">
-                        <span>Upload Files</span>
-                    </button>
-                </section>
-            </section>
-            <section id="directory-container" class="directory-container"></section>
-            
-            <article class="content-grid" id="content-grid">
-                <!-- Content will be populated by JavaScript -->
-            </article>
-            
-            <!-- Empty state for empty directories -->
-            <section class="empty-state" id="empty-state" style="display:none;">
-                <figure style="font-size: 4rem;">📂</figure>
-                <p>This directory is empty.</p>
-                <button class="btn" style="margin: 1rem auto;">Upload Files</button>
-            </section>
+      <aside class="sidebar">
+        <h2>Archive Directory</h2>
+        <nav class="directory-tree">
+          <ul id="root-directory">
+            <!-- Populated by hierarcy.js -->
+          </ul>
+        </nav>
+      </aside>
+
+      <section class="main-content">
+        <nav aria-label="Breadcrumb" class="path-nav" id="path-navigation">
+          <ol>
+            <li><a href="#" data-path="/">Root</a></li>
+          </ol>
+        </nav>
+
+        <section class="actions">
+          <form class="search-bar">
+            <label for="search-input">
+              <i aria-hidden="true" class="search-icon">🔍</i>
+            </label>
+            <input
+              type="text"
+              id="search-input"
+              placeholder="Search in current directory…"
+            />
+          </form>
+
+          <section class="btn-group">
+            <button class="btn" id="new-dir-btn">New Directory</button>
+            <button class="btn" id="upload-btn">Upload Files</button>
+          </section>
         </section>
+
+        <article class="content-grid" id="content-grid">
+          <!-- Populated by hierarcy.js -->
+        </article>
+
+        <section class="empty-state" id="empty-state" hidden>
+          <figure aria-hidden="true" style="font-size: 4rem">📂</figure>
+          <p>This directory is empty.</p>
+          <button class="btn" id="empty-upload-btn">Upload Files</button>
+        </section>
+      </section>
     </main>
-    
+
     <!-- New Directory Modal -->
     <dialog class="modal-bg" id="new-dir-modal">
-        <article class="modal">
-            <h2>Create New Directory</h2>
-            <form id="new-dir-form">
-                <fieldset class="form-group">
-                    <label for="dir-name">Directory Name</label>
-                    <input type="text" id="dir-name" placeholder="Enter directory name" required>
-                </fieldset>
-                <fieldset class="form-group">
-                    <label for="dir-description">Description (Optional)</label>
-                    <input type="text" id="dir-description" placeholder="Brief description of this directory">
-                </fieldset>
-                <section class="modal-actions">
-                    <button type="button" class="btn btn-secondary" id="cancel-dir-btn">Cancel</button>
-                    <button type="submit" class="btn">Create</button>
-                </section>
-            </form>
-        </article>
+      <article class="modal">
+        <h2>Create New Directory</h2>
+        <form id="new-dir-form">
+          <fieldset class="form-group">
+            <label for="dir-name">Directory Name</label>
+            <input
+              type="text"
+              id="dir-name"
+              placeholder="Enter directory name"
+              required
+            />
+          </fieldset>
+          <fieldset class="form-group">
+            <label for="dir-description">Description (Optional)</label>
+            <input
+              type="text"
+              id="dir-description"
+              placeholder="Brief description of this directory"
+            />
+          </fieldset>
+          <section class="modal-actions">
+            <button type="button" class="btn btn-secondary" id="cancel-dir-btn">
+              Cancel
+            </button>
+            <button type="submit" class="btn">Create</button>
+          </section>
+        </form>
+      </article>
     </dialog>
 
-    <section id="hierarchy-container"></section>
-
     <form id="create-directory-form">
-        <input type="text" id="directory-path" placeholder="e.g., Africa/Nigeria/2023" />
-        <button type="submit">Create Directory</button>
+      <label for="directory-path">New path:</label>
+      <input
+        type="text"
+        id="directory-path"
+        placeholder="e.g., Africa/Nigeria/2023"
+      />
+      <button type="submit">Create Directory</button>
     </form>
-   
-    <script type="module" src="hierarcy.js"></script>
-    <script type="module" src="movefiles.js"></script>
-</body>
+
+    <script type="module" src="hierarcy.js?v=10"></script>
+    <script type="module" src="moveFiles.js"></script>
+  </body>
 </html>

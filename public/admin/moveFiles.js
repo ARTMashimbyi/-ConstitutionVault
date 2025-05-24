@@ -1,13 +1,18 @@
 // public/moveFiles.js
 
+// ─── CONFIG ────────────────────────────────────────────────────────────
+const API_BASE = 'http://localhost:4000/api';
+
+// ─── STATE ─────────────────────────────────────────────────────────────
 let fileToMove   = null;
 let moveMode     = false;
 let statusMsg    = null;
 
+// ─── ONLOAD ────────────────────────────────────────────────────────────
 window.addEventListener("DOMContentLoaded", () => {
   console.log("📄 DOM Loaded for File Mover");
 
-  // Create a status message area
+  // create a status message container
   statusMsg = document.createElement("div");
   statusMsg.id    = "moveStatus";
   statusMsg.className = "move-status";
@@ -15,7 +20,7 @@ window.addEventListener("DOMContentLoaded", () => {
     .querySelector(".main-content")
     .appendChild(statusMsg);
 
-  // Check for ?move=<docId>
+  // check for ?move=<docId>
   const moveId = new URLSearchParams(window.location.search).get("move");
   if (moveId) {
     activateMoveMode(moveId);
@@ -24,19 +29,17 @@ window.addEventListener("DOMContentLoaded", () => {
   enhanceContentGrid();
 });
 
-/**
- * Fetches the file metadata via your API and enables move mode.
- */
+// ─── ACTIVATE MOVE MODE ─────────────────────────────────────────────────
 async function activateMoveMode(docId) {
   try {
-    // 🔄 CHANGED: Fetch single file via your API
-    const res = await fetch(`http://localhost:4000/api/files/${docId}`);
-    if (!res.ok) throw new Error("File not found");
+    const res = await fetch(`${API_BASE}/files/${docId}`);
+    if (!res.ok) throw new Error(`File ${docId} not found`);
     const fileData = await res.json();
 
     fileToMove = { id: docId, data: fileData };
     moveMode   = true;
 
+    // render move banner
     const container = document.getElementById("directory-container");
     container.innerHTML = `
       <div class="move-banner">
@@ -56,6 +59,7 @@ async function activateMoveMode(docId) {
       .getElementById("cancelMoveBtn")
       .addEventListener("click", cancelMove);
 
+    // disable upload while moving
     const uploadBtn = document.getElementById("upload-btn");
     if (uploadBtn) uploadBtn.disabled = true;
 
@@ -69,17 +73,14 @@ async function activateMoveMode(docId) {
   }
 }
 
-/**
- * Performs the "move" by PATCHing the new directory to your API.
- */
+// ─── PERFORM THE MOVE ───────────────────────────────────────────────────
 async function moveFileHere() {
   if (!fileToMove) return;
 
   try {
     const newDir = getCurrentPath();
-    // 🔄 CHANGED: Send PATCH to your API
     const res = await fetch(
-      `http://localhost:4000/api/files/${fileToMove.id}`,
+      `${API_BASE}/files/${fileToMove.id}`,
       {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -89,12 +90,16 @@ async function moveFileHere() {
         })
       }
     );
-    if (!res.ok) throw new Error("Move failed");
+
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(`Move failed: ${res.status} ${errText}`);
+    }
 
     showStatus("✅ File moved successfully!", "success");
     setTimeout(() => {
-      window.location.href = "hierarcy.html";
-    }, 1500);
+      window.location.href = "./hierarcy.html";
+    }, 1200);
 
   } catch (err) {
     console.error("Error moving file:", err);
@@ -102,29 +107,28 @@ async function moveFileHere() {
   }
 }
 
+// ─── CANCEL ─────────────────────────────────────────────────────────────
 function cancelMove() {
-  window.location.href = "hierarcy.html";
+  window.location.href = "./hierarcy.html";
 }
 
-/** Reads your breadcrumb to get the current path */
+// ─── BREADCRUMB → PATH ──────────────────────────────────────────────────
 function getCurrentPath() {
   const segments = [];
   document
     .querySelectorAll("#path-navigation a, #path-navigation span:not(:first-child)")
     .forEach(el => {
-      if (el.tagName === "A" || (el.tagName === "SPAN" && el.textContent !== "/")) {
-        segments.push(el.textContent);
-      }
+      const txt = el.textContent.trim();
+      if (txt && txt !== "/") segments.push(txt);
     });
   const p = "/" + segments.join("/");
   return p === "/" ? "/" : p;
 }
 
-/** Adds a "Move" button to each file card */
+// ─── ADD MOVE BUTTONS ───────────────────────────────────────────────────
 function enhanceContentGrid() {
-  const observer = new MutationObserver(mutations => {
-    if (moveMode) return;
-    addMoveButtonsToItems();
+  const observer = new MutationObserver(() => {
+    if (!moveMode) addMoveButtonsToItems();
   });
   const contentGrid = document.getElementById("content-grid");
   observer.observe(contentGrid, { childList: true });
@@ -135,32 +139,33 @@ function addMoveButtonsToItems() {
   if (moveMode) return;
 
   document.querySelectorAll(".item-card").forEach(item => {
-    const meta = item.querySelector(".item-meta");
-    if (
-      meta &&
-      !meta.textContent.includes("Directory") &&
-      !item.querySelector(".move-btn")
-    ) {
-      const firestoreId = item.getAttribute("data-id").replace("file_", "");
-      const btn = document.createElement("button");
-      btn.className   = "move-btn";
-      btn.textContent = "Move";
-      btn.addEventListener("click", e => {
-        e.stopPropagation();
-        window.location.href = `hierarcy.html?move=${firestoreId}`;
-      });
-      item.appendChild(btn);
-    }
+    // skip directories and already-processed cards
+    const isDir = item.querySelector(".item-meta")?.textContent.includes("Directory");
+    if (isDir || item.querySelector(".move-btn")) return;
+
+    // wire up move button
+    const firestoreId = item.getAttribute("data-id")?.replace("file_", "");
+    if (!firestoreId) return;
+
+    const btn = document.createElement("button");
+    btn.className   = "move-btn";
+    btn.textContent = "Move";
+    btn.addEventListener("click", e => {
+      e.stopPropagation();
+      window.location.href = `./hierarcy.html?move=${firestoreId}`;
+    });
+
+    item.appendChild(btn);
   });
 }
 
-/** Shows status messages in the banner area */
+// ─── STATUS DISPLAY ─────────────────────────────────────────────────────
 function showStatus(message, type = "info") {
   if (!statusMsg) return;
   statusMsg.textContent   = message;
   statusMsg.className     = `move-status ${type}`;
   statusMsg.style.display = "block";
   if (type === "info") {
-    setTimeout(() => (statusMsg.style.display = "none"), 5000);
+    setTimeout(() => (statusMsg.style.display = "none"), 4000);
   }
 }
