@@ -25,7 +25,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/85</span>
+                <span class='fraction'>0/82</span>
             </div>
         
             
@@ -46,7 +46,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/85</span>
+                <span class='fraction'>0/82</span>
             </div>
         
             
@@ -230,22 +230,7 @@
 <a name='L165'></a><a href='#L165'>165</a>
 <a name='L166'></a><a href='#L166'>166</a>
 <a name='L167'></a><a href='#L167'>167</a>
-<a name='L168'></a><a href='#L168'>168</a>
-<a name='L169'></a><a href='#L169'>169</a>
-<a name='L170'></a><a href='#L170'>170</a>
-<a name='L171'></a><a href='#L171'>171</a>
-<a name='L172'></a><a href='#L172'>172</a>
-<a name='L173'></a><a href='#L173'>173</a>
-<a name='L174'></a><a href='#L174'>174</a>
-<a name='L175'></a><a href='#L175'>175</a>
-<a name='L176'></a><a href='#L176'>176</a>
-<a name='L177'></a><a href='#L177'>177</a>
-<a name='L178'></a><a href='#L178'>178</a>
-<a name='L179'></a><a href='#L179'>179</a>
-<a name='L180'></a><a href='#L180'>180</a>
-<a name='L181'></a><a href='#L181'>181</a>
-<a name='L182'></a><a href='#L182'>182</a>
-<a name='L183'></a><a href='#L183'>183</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L168'></a><a href='#L168'>168</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -253,38 +238,20 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -409,6 +376,8 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -426,31 +395,14 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">// Import Firebase modules
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
 import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-analytics.js";
-&nbsp;
-// Firebase configuration
-const firebaseConfig = <span class="cstat-no" title="statement not covered" >{</span>
-    apiKey: "AIzaSyAU_w_Oxi6noX_A1Ma4XZDfpIY-jkoPN-c",
-    authDomain: "constitutionvault-1b5d1.firebaseapp.com",
-    projectId: "constitutionvault-1b5d1",
-    storageBucket: "constitutionvault-1b5d1.firebasestorage.app",
-    messagingSenderId: "616111688261",
-    appId: "1:616111688261:web:97cc0a35c8035c0814312c",
-    measurementId: "G-YJEYZ85T3S"
-};    
-&nbsp;
-// Initialize Firebase
-const app = <span class="cstat-no" title="statement not covered" >initializeApp(firebaseConfig);</span>
-const analytics = <span class="cstat-no" title="statement not covered" >getAnalytics(app);        </span>
-const auth = <span class="cstat-no" title="statement not covered" >getAuth();</span>
-const provider = <span class="cstat-no" title="statement not covered" >new GoogleAuthProvider();</span>
-const db = <span class="cstat-no" title="statement not covered" >getFirestore(app);</span>
-&nbsp;
+import { trackActivity } from "./trackUser.js"; // Import the trackUser module
+import { app, auth, db } from "../path/firebaseInit.js"; // Correct centralized import
 // DOM Elements
 const signInButton = <span class="cstat-no" title="statement not covered" >document.getElementById('signInButton');</span>
 const signOutButton = <span class="cstat-no" title="statement not covered" >document.getElementById('signOutButton');</span>
@@ -466,7 +418,7 @@ const userModal = <span class="cstat-no" title="statement not covered" >document
 // Global variables
 let adminStatus = <span class="cstat-no" title="statement not covered" >false;</span>
 let redirectTimer;
-&nbsp;
+const provider = <span class="cstat-no" title="statement not covered" >new GoogleAuthProvider();</span>
 /**
  * Sign in with Google
  */
@@ -591,8 +543,10 @@ function <span class="fstat-no" title="function not covered" >handleUserAccess(<
 <span class="cstat-no" title="statement not covered" >        message.style.display = "block";</span>
 <span class="cstat-no" title="statement not covered" >        userButton.style.display = "block";</span>
         
-        // Check if user is admin
-        const isAdmin = <span class="cstat-no" title="statement not covered" >await checkAdmin(user);</span>
+<span class="cstat-no" title="statement not covered" >        localStorage.setItem('currentUserId', user.uid);</span>
+<span class="cstat-no" title="statement not covered" >        await trackActivity(user); </span>// Track user activity
+&nbsp;
+        const isAdmin = <span class="cstat-no" title="statement not covered" >await checkAdmin(user);</span>//check if admin
         
         // Update UI based on user role
 <span class="cstat-no" title="statement not covered" >        handleUserAccess(isAdmin);</span>
@@ -609,14 +563,15 @@ function <span class="fstat-no" title="function not covered" >handleUserAccess(<
 <span class="cstat-no" title="statement not covered" >        userButton.style.display = "none";</span>
 <span class="cstat-no" title="statement not covered" >        portalOptions.style.display = "none";</span>
     }
-});</pre></td></tr></table></pre>
+});
+&nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
             </div><!-- /wrapper -->
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-05-23T12:54:47.960Z
+                at 2025-05-24T00:57:53.182Z
             </div>
         <script src="../prettify.js"></script>
         <script>

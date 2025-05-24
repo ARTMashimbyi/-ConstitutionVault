@@ -19,7 +19,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-let loadedDocuments = [];
+export let loadedDocuments = [];
 let userInteractions = {};
 let currentDoc = null;
 const currentUserId = localStorage.getItem("currentUserId") || null;
@@ -49,7 +49,7 @@ async function initApp() {
   }
 }
 
-async function loadAllDocuments() {
+export async function loadAllDocuments() {
   const collectionRef = collection(db, "constitutionalDocuments");
   onSnapshot(collectionRef, (snapshot) => {
     loadedDocuments = snapshot.docs.map(doc => ({
@@ -404,7 +404,7 @@ async function toggleFavorite(docId, shouldFavorite) {
   }
 }
 
-async function incrementShareCount(docId) {
+async function incrementShareCount(docId) {//shared update
   try {
     const userRef = doc(db, "users", currentUserId);
     const userSnap = await getDoc(userRef);
@@ -423,7 +423,7 @@ async function incrementShareCount(docId) {
   }
 }
 
-export async function updateSharedStat(docId) {
+export async function updateSharedStat(docId) { //shared update on tracker
   const docRef = doc(db, "constitutionalDocuments", docId);
   const docSnap = await getDoc(docRef);
   if (docSnap.exists()) {
@@ -433,7 +433,7 @@ export async function updateSharedStat(docId) {
   }
 }
 
-export async function incrementViewCount(docId) {
+export async function incrementViewCount(docId) {// incrementing view on doc and tracker field
   try {
     const docRef = doc(db, "constitutionalDocuments", docId);
     const userRef = doc(db, "users", currentUserId);
@@ -456,7 +456,7 @@ export async function incrementViewCount(docId) {
   }
 }
 
-export async function ViewCount(docId) {
+export async function ViewCount(docId) { //user view tracking
   try {
     const userRef = doc(db, "user_history", currentUserId);
     const userSnap = await getDoc(userRef);

@@ -3,7 +3,7 @@
 <html lang="en">
 
 <head>
-    <title>Code coverage report for search/SortOptions.js</title>
+    <title>Code coverage report for path/firebaseInit.js</title>
     <meta charset="utf-8" />
     <link rel="stylesheet" href="../prettify.css" />
     <link rel="stylesheet" href="../base.css" />
@@ -19,34 +19,34 @@
 <body>
 <div class='wrapper'>
     <div class='pad1'>
-        <h1><a href="../index.html">All files</a> / <a href="index.html">search</a> SortOptions.js</h1>
+        <h1><a href="../index.html">All files</a> / <a href="index.html">path</a> firebaseInit.js</h1>
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/12</span>
+                <span class='fraction'>0/6</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">0% </span>
+                <span class="quiet">Branches</span>
+                <span class='fraction'>0/2</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
-                <span class="quiet">Branches</span>
+                <span class="quiet">Functions</span>
                 <span class='fraction'>0/0</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
-                <span class="quiet">Functions</span>
-                <span class='fraction'>0/2</span>
-            </div>
-        
-            
-            <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/12</span>
+                <span class='fraction'>0/6</span>
             </div>
         
             
@@ -88,26 +88,12 @@
 <a name='L23'></a><a href='#L23'>23</a>
 <a name='L24'></a><a href='#L24'>24</a>
 <a name='L25'></a><a href='#L25'>25</a>
-<a name='L26'></a><a href='#L26'>26</a>
-<a name='L27'></a><a href='#L27'>27</a>
-<a name='L28'></a><a href='#L28'>28</a>
-<a name='L29'></a><a href='#L29'>29</a>
-<a name='L30'></a><a href='#L30'>30</a>
-<a name='L31'></a><a href='#L31'>31</a>
-<a name='L32'></a><a href='#L32'>32</a>
-<a name='L33'></a><a href='#L33'>33</a>
-<a name='L34'></a><a href='#L34'>34</a>
-<a name='L35'></a><a href='#L35'>35</a>
-<a name='L36'></a><a href='#L36'>36</a>
-<a name='L37'></a><a href='#L37'>37</a>
-<a name='L38'></a><a href='#L38'>38</a>
-<a name='L39'></a><a href='#L39'>39</a>
-<a name='L40'></a><a href='#L40'>40</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L26'></a><a href='#L26'>26</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -121,65 +107,37 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">// public/search/SortOptions.js
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">// firebaseConfig.js
+import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
+import { getFirestore } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 &nbsp;
-/**
- * Renders a sort-by dropdown.
- * Calls onSortChange with one of:
- *   ""            – default (no sorting)
- *   "title-asc"   – Title ascending
- *   "title-desc"  – Title descending
- *   "year-asc"    – Year ascending
- *   "year-desc"   – Year descending
- *
- * @param {(sortValue: string) =&gt; void} onSortChange
- * @returns {HTMLDivElement}
- */
-export function <span class="fstat-no" title="function not covered" >renderSortOptions(</span>onSortChange) {
-  const wrapper = <span class="cstat-no" title="statement not covered" >document.createElement("div");</span>
-<span class="cstat-no" title="statement not covered" >  wrapper.className = "sort-options";</span>
+const firebaseConfig = <span class="cstat-no" title="statement not covered" >{</span>
+  apiKey: "AIzaSyAU_w_Oxi6noX_A1Ma4XZDfpIY-jkoPN-c",
+  authDomain: "constitutionvault-1b5d1.firebaseapp.com",
+  projectId: "constitutionvault-1b5d1",
+  storageBucket: "constitutionvault-1b5d1.appspot.com",
+  messagingSenderId: "616111688261",
+  appId: "1:616111688261:web:97cc0a35c8035c0814312c"
+};
 &nbsp;
-  const label = <span class="cstat-no" title="statement not covered" >document.createElement("label");</span>
-<span class="cstat-no" title="statement not covered" >  label.htmlFor   = "sort-select";</span>
-<span class="cstat-no" title="statement not covered" >  label.textContent = "Sort by:";</span>
-&nbsp;
-  const select = <span class="cstat-no" title="statement not covered" >document.createElement("select");</span>
-<span class="cstat-no" title="statement not covered" >  select.id = "sort-select";</span>
-<span class="cstat-no" title="statement not covered" >  select.innerHTML = `</span>
-    &lt;option value=""&gt;Default&lt;/option&gt;
-    &lt;option value="title-asc"&gt;Title ↑&lt;/option&gt;
-    &lt;option value="title-desc"&gt;Title ↓&lt;/option&gt;
-    &lt;option value="year-asc"&gt;Year ↑&lt;/option&gt;
-    &lt;option value="year-desc"&gt;Year ↓&lt;/option&gt;
-  `;
-&nbsp;
-<span class="cstat-no" title="statement not covered" >  select.addEventListener("change", <span class="fstat-no" title="function not covered" >()</span> =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >    onSortChange(select.value);</span>
-  });
-&nbsp;
-<span class="cstat-no" title="statement not covered" >  wrapper.append(label, select);</span>
-<span class="cstat-no" title="statement not covered" >  return wrapper;</span>
+let app;
+<span class="cstat-no" title="statement not covered" >if (!getApps().length) {</span>
+<span class="cstat-no" title="statement not covered" >  app = initializeApp(firebaseConfig);</span>
+} else {
+<span class="cstat-no" title="statement not covered" >  app = getApps()[0];</span>
 }
+&nbsp;
+const auth = <span class="cstat-no" title="statement not covered" >getAuth(app);</span>
+const db = <span class="cstat-no" title="statement not covered" >getFirestore(app);</span>
+&nbsp;
+export { app, auth, db };
 &nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
