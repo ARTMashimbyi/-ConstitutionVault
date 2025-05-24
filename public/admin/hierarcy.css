@@ -9,6 +9,22 @@
   .status-banner.error   { border-color: #a00; background: #fee; }
   
 
+  .move-banner {
+    background: #fff8dc;
+    padding: 1rem 2rem;
+    border: 1px solid #ffe58f;
+    margin-bottom: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px #0001;
+    z-index: 10;
+  }
+  .move-actions {
+    margin-top: 1rem;
+    display: flex;
+    gap: 1rem;
+  }
+  
+
 * {
     box-sizing: border-box;
     margin: 0;

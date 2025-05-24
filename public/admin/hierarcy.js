@@ -4,6 +4,8 @@ const API_BASE = 'http://localhost:4000/api';
 
 let isLoading = false;
 
+
+
 function setLoading(loading, message = 'Refreshing…') {
   isLoading = loading;
   let banner = document.getElementById('statusBanner');
@@ -62,6 +64,8 @@ let archiveData = {};
 // Current path for navigation (always starts at “/” for Root)
 let currentPath = '/';
 
+let allFiles = []
+
 /**
  * Fetches all folders and files from your Express API, seeds archiveData,
  * then kicks off the UI rendering.
@@ -105,6 +109,7 @@ async function loadDataFromFirestore() {
       throw new Error(`Failed to fetch files: ${fileRes.status}`);
     }
     const files = await fileRes.json();
+    allFiles = files; // <-- Assign to global for grid update!
     files.forEach(f => addDocumentToHierarchy(f.id, f));
     console.log('✅  archiveData after files:', archiveData);
 
@@ -115,7 +120,6 @@ async function loadDataFromFirestore() {
     showStatus('❌ Failed to load data', 'error');
   }
 }
-
 
 // (Optional debug)
 // console.log('archiveData:', JSON.stringify(archiveData, null, 2));
@@ -731,57 +735,61 @@ function getCurrentPath() {
 
 
 /**
- * Rebuilds the breadcrumb nav based on the actual current path.
- * Uses findDirectoryByPath() to get each segment’s proper name.
+ * Rebuilds the breadcrumb nav based on currentPath.
+ * Ensures each <a> has a proper data-path for moveFiles.js.
  */
 function updatePathNavigation() {
   const nav = document.getElementById("path-navigation");
-  nav.innerHTML = "";
+  let ol = nav.querySelector("ol");
+  if (!ol) {
+    ol = document.createElement("ol");
+    nav.appendChild(ol);
+  }
+  ol.innerHTML = ""; // Clear old breadcrumbs
 
-  // ALWAYS use the currentPath state, never re-derive from the DOM
+  // Split currentPath into segments
   const path = currentPath;
+  const segments = path === "/" ? [] : path.slice(1).split("/");
 
-  // ── 1) Root crumb ─────────────────────────────────────────────
-  const rootLink = document.createElement("a");
-  rootLink.textContent  = "Root";
-  rootLink.href         = "#";
-  rootLink.dataset.path = "/";
-  rootLink.addEventListener("click", () => navigateToPath("/"));
-  nav.append(rootLink);
+  // Always add root first
+  let accumulated = "";
+  const rootLi = document.createElement("li");
+  const rootA  = document.createElement("a");
+  rootA.textContent = "Root";
+  rootA.href = "#";
+  rootA.setAttribute("data-path", "/");
+  rootA.addEventListener("click", () => navigateToPath("/"));
+  rootLi.appendChild(rootA);
+  ol.appendChild(rootLi);
 
-  // ── 2) If we’re at root, we’re done ─────────────────────────
-  if (path === "/") return;
+  // If at root, we're done
+  if (segments.length === 0) return;
 
-  // ── 3) Otherwise split into segments ("/foo/bar" → ["foo","bar"]) ─
-  const segments = path.slice(1).split("/");
-  let accum = "";
-
+  // Add each path segment as a breadcrumb
+  accumulated = "";
   segments.forEach((seg, idx) => {
-    accum += `/${seg}`;
-
-    // separator
-    const sep = document.createElement("span");
-    sep.textContent = " / ";
-    nav.append(sep);
-
-    // lookup display name via archiveData
-    const dirObj     = findDirectoryByPath(accum);
+    accumulated += "/" + seg;
+    const dirObj = findDirectoryByPath(accumulated);
     const displayName = dirObj ? dirObj.name : seg;
-
-    if (accum === path) {
+    const li = document.createElement("li");
+    if (idx === segments.length - 1) {
+      // Last crumb: not a link
       const span = document.createElement("span");
       span.textContent = displayName;
-      nav.append(span);
+      span.setAttribute("data-path", accumulated); // So moveFiles.js can read it!
+      li.appendChild(span);
     } else {
-      const link = document.createElement("a");
-      link.textContent      = displayName;
-      link.href             = "#";
-      link.dataset.path     = accum;
-      link.addEventListener("click", () => navigateToPath(accum));
-      nav.append(link);
+      const a = document.createElement("a");
+      a.textContent = displayName;
+      a.href = "#";
+      a.setAttribute("data-path", accumulated);
+      a.addEventListener("click", () => navigateToPath(accumulated));
+      li.appendChild(a);
     }
+    ol.appendChild(li);
   });
 }
+
 
 
 /**
@@ -799,7 +807,9 @@ function updateContentGrid() {
   // Debug: only now that currentDir exists
   console.log('Rendering grid for path:', path, '→', currentDir);
 
-  // 2) If there are children, show them
+  let hasItems = false;
+
+  // 2) If there are children, show them (directories and any files added as children)
   if (currentDir && currentDir.children?.length) {
     emptyState.style.display  = 'none';
     contentGrid.style.display = 'grid';
@@ -852,28 +862,62 @@ function updateContentGrid() {
         if (child.type === 'directory') {
           navigateToPath(normalizePath(child.path));
         } else {
-          // preview or details page
           window.location.href = `../delete/preview.html?id=${childId}`;
           localStorage.setItem('selectedID', childId);
         }
       });
 
       contentGrid.appendChild(itemCard);
+      hasItems = true;
     });
+  }
 
-    // 3) (Extra Robustness) Optionally, reinforce folder click:
-    // This is only needed if you ever want to rewire click behavior after rendering
-    // document.querySelectorAll('.item-card.folder').forEach(card => {
-    //   const path = card.getAttribute('data-path');
-    //   card.onclick = () => navigateToPath(path);
-    // });
+  // 3) ALWAYS show all files whose directory matches the current path (even if not in children)
+  if (typeof allFiles !== "undefined" && Array.isArray(allFiles)) {
+    allFiles.forEach(file => {
+      if (normalizePath(file.directory) === normalizePath(path)) {
+        // If not already rendered (not in children)
+        if (!currentDir || !currentDir.children || !currentDir.children.includes(file.id)) {
+          // Build the card for this file
+          let iconHTML;
+          switch ((file.fileType || '').toLowerCase()) {
+            case 'document': iconHTML = `<div class="item-icon">📄</div>`; break;
+            case 'pdf':      iconHTML = `<div class="item-icon">📄</div>`; break;
+            case 'video':    iconHTML = `<div class="item-icon">🎬</div>`; break;
+            case 'image':    iconHTML = `<div class="item-icon">🖼️</div>`; break;
+            case 'audio':    iconHTML = `<div class="item-icon">🔊</div>`; break;
+            default:         iconHTML = `<div class="item-icon">📝</div>`;
+          }
+          const itemCard = document.createElement('div');
+          itemCard.className = 'item-card';
+          itemCard.dataset.id = file.id;
+          itemCard.innerHTML = `
+            ${iconHTML}
+            <div class="item-details">
+              <div class="item-name">${file.title || file.name}</div>
+              <div class="item-meta">
+                ${file.fileType?.toUpperCase() || 'FILE'} · ${file.size || ''}
+              </div>
+            </div>
+          `;
+          itemCard.addEventListener('click', () => {
+            window.location.href = `../delete/preview.html?id=${file.id}`;
+            localStorage.setItem('selectedID', file.id);
+          });
+          contentGrid.appendChild(itemCard);
+          hasItems = true;
+        }
+      }
+    });
+  }
 
-  } else {
-    // Empty state
+  // 4) Show empty state if no items
+  if (!hasItems) {
     contentGrid.style.display = 'none';
     emptyState.style.display  = 'block';
   }
 }
+
 
 
 

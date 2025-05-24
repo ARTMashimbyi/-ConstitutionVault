@@ -4,7 +4,6 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Constitution Vault – Admin Portal</title>
-
     <link rel="stylesheet" href="hierarcy.css" />
     <link rel="stylesheet" href="movefiles.css" />
   </head>
@@ -29,13 +28,14 @@
 
       <section class="main-content">
         <nav aria-label="Breadcrumb" class="path-nav" id="path-navigation">
+          <!-- Your JS will fill in breadcrumbs with data-path -->
           <ol>
             <li><a href="#" data-path="/">Root</a></li>
           </ol>
         </nav>
 
         <section class="actions">
-          <form class="search-bar">
+          <form class="search-bar" autocomplete="off" onsubmit="return false;">
             <label for="search-input">
               <i aria-hidden="true" class="search-icon">🔍</i>
             </label>
@@ -45,10 +45,13 @@
               placeholder="Search in current directory…"
             />
           </form>
-
           <section class="btn-group">
-            <button class="btn" id="new-dir-btn">New Directory</button>
-            <button class="btn" id="upload-btn">Upload Files</button>
+            <button class="btn" id="new-dir-btn" type="button">
+              New Directory
+            </button>
+            <button class="btn" id="upload-btn" type="button">
+              Upload Files
+            </button>
           </section>
         </section>
 
@@ -56,10 +59,12 @@
           <!-- Populated by hierarcy.js -->
         </article>
 
-        <section class="empty-state" id="empty-state" hidden>
+        <section class="empty-state" id="empty-state" style="display: none">
           <figure aria-hidden="true" style="font-size: 4rem">📂</figure>
           <p>This directory is empty.</p>
-          <button class="btn" id="empty-upload-btn">Upload Files</button>
+          <button class="btn" id="empty-upload-btn" type="button">
+            Upload Files
+          </button>
         </section>
       </section>
     </main>
@@ -68,7 +73,7 @@
     <dialog class="modal-bg" id="new-dir-modal">
       <article class="modal">
         <h2>Create New Directory</h2>
-        <form id="new-dir-form">
+        <form id="new-dir-form" autocomplete="off">
           <fieldset class="form-group">
             <label for="dir-name">Directory Name</label>
             <input
@@ -96,15 +101,7 @@
       </article>
     </dialog>
 
-    <form id="create-directory-form">
-      <label for="directory-path">New path:</label>
-      <input
-        type="text"
-        id="directory-path"
-        placeholder="e.g., Africa/Nigeria/2023"
-      />
-      <button type="submit">Create Directory</button>
-    </form>
+    <!-- No unused forms: removed -->
 
     <script type="module" src="hierarcy.js?v=10"></script>
     <script type="module" src="moveFiles.js"></script>
