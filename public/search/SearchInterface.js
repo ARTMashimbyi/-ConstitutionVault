@@ -4,7 +4,25 @@ import { renderSearchBar }     from "./SearchBar.js";
 import { renderSearchResults } from "./SearchResults.js";
 import { renderFilters }       from "./Filters.js";
 import { renderSortOptions }   from "./SortOptions.js";
-import { API_BASE }            from "../shared/utils.js";
+import { initializeApp }       from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+import {
+  getFirestore, collection, getDocs, query, orderBy
+} from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+
+// --- FIREBASE CONFIG (update if needed!) ---
+const firebaseConfig = {
+  apiKey: "AIzaSyAU_w_Oxi6noX_A1Ma4XZDfpIY-jkoPN-c",
+  authDomain: "constitutionvault-1b5d1.firebaseapp.com",
+  projectId: "constitutionvault-1b5d1",
+  storageBucket: "constitutionvault-1b5d1.appspot.com",
+  messagingSenderId: "616111688261",
+  appId: "1:616111688261:web:97cc0a35c8035c0814312c",
+  measurementId: "G-YJEYZ85T3S"
+};
+
+// --- Initialize Firebase if needed ---
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
 export function initializeSearchInterface(containerId) {
   // Get settings once (set in settings page)
@@ -13,7 +31,7 @@ export function initializeSearchInterface(containerId) {
     document.body.classList.add("dark-mode");
   }
 
-  // Parse helper (handles arrays or CSV)
+  // Helper: parse array or CSV string
   const parseList = s =>
     Array.isArray(s)
       ? s.map(x => x.trim().toLowerCase()).filter(Boolean)
@@ -21,7 +39,7 @@ export function initializeSearchInterface(containerId) {
         ? s.split(",").map(x => x.trim().toLowerCase()).filter(Boolean)
         : []);
 
-  // Filter state (frozen to whatever was saved in settings)
+  // Filters
   const wantedAuthors      = parseList(saved.author);
   const wantedCategories   = parseList(saved.category);
   const wantedInstitutions = parseList(saved.institution);
@@ -29,7 +47,7 @@ export function initializeSearchInterface(containerId) {
 
   // --------- FORCE DEFAULT TYPE TO "ALL" ON LOAD ----------
   let currentQuery = "";
-  let currentType  = ""; // always default to "All" on user-search.html
+  let currentType  = ""; // default to "All" (empty string = all)
   let currentSort  = saved.sort     || "";
   let dateFrom     = saved.allTime  ? "" : (saved.dateFrom || "");
   let dateTo       = saved.allTime  ? "" : (saved.dateTo   || "");
@@ -81,40 +99,54 @@ export function initializeSearchInterface(containerId) {
   // --- Only ever use saved filters, never allow changes here ---
 
   async function refresh() {
-    // build query params for main search
-    const queryParams = [
-      `query=${encodeURIComponent((currentQuery || "").trim())}`,
-      currentType  ? `type=${encodeURIComponent(currentType)}` : null,
-      currentSort  ? `sort=${encodeURIComponent(currentSort)}` : null,
-      dateFrom     ? `dateFrom=${encodeURIComponent(dateFrom)}` : null,
-      dateTo       ? `dateTo=${encodeURIComponent(dateTo)}`   : null
-    ].filter(Boolean).join("&");
-
     resultsSection.innerHTML = "<p>🔄 Loading…</p>";
     try {
-      const res = await fetch(`${API_BASE}/search?${queryParams}`);
-      const { results = [], message, error } = await res.json();
+      // 1. Load all documents from Firestore
+      let docsQuery = collection(db, "constitutionalDocuments");
+      let allDocs = [];
+      const q = currentSort
+        ? query(docsQuery, orderBy(currentSort))
+        : docsQuery;
+      const snapshot = await getDocs(q);
+      snapshot.forEach(docSnap => {
+        allDocs.push({ id: docSnap.id, ...docSnap.data() });
+      });
 
-      if (error) {
-        resultsSection.innerHTML = `<p>❌ ${error}</p>`;
-        return;
-      }
-
-      // Client‐side filter with the frozen filters from settings
-      const filtered = results.filter(item => {
+      // 2. Apply search/filter logic
+      let filtered = allDocs.filter(item => {
+        // Query (title or text search)
+        if (currentQuery) {
+          const text = (
+            (item.title || "") +
+            " " +
+            (item.description || "") +
+            " " +
+            (item.textContent || "")
+          ).toLowerCase();
+          if (!text.includes(currentQuery.toLowerCase())) return false;
+        }
+        // Type
+        if (currentType && item.fileType && item.fileType !== currentType) return false;
+        // Authors
         if (wantedAuthors.length &&
             !(item.author && wantedAuthors.includes(item.author.toLowerCase())))
           return false;
+        // Categories
         if (wantedCategories.length &&
             !(item.category && wantedCategories.includes(item.category.toLowerCase())))
           return false;
+        // Institutions
         if (wantedInstitutions.length &&
             !(item.institution && wantedInstitutions.includes(item.institution.toLowerCase())))
           return false;
+        // Keywords
         if (wantedKeywords.length) {
-          const kws = (item.keywords||[]).map(k=>k.toLowerCase());
-          if (!wantedKeywords.some(w=>kws.includes(w))) return false;
+          const kws = (item.keywords || []).map(k => k.toLowerCase());
+          if (!wantedKeywords.some(w => kws.includes(w))) return false;
         }
+        // Date
+        if (dateFrom && item.date && new Date(item.date) < new Date(dateFrom)) return false;
+        if (dateTo && item.date && new Date(item.date) > new Date(dateTo)) return false;
         return true;
       });
 
@@ -124,7 +156,7 @@ export function initializeSearchInterface(containerId) {
         return;
       }
 
-      // Truncate snippet
+      // Truncate snippet (if present)
       filtered.forEach(it => {
         if (it.snippet && it.snippet.length > snippetLen) {
           it.snippet = it.snippet.slice(0, snippetLen) + "…";
