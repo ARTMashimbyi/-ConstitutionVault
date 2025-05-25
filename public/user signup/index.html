@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>User Sign Up</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+    <style>
+      /* simple inline styling for the back button */
+      .btn-back {
+        display: inline-block;
+        margin-bottom: 1rem;
+        padding: 0.5rem 1rem;
+        font: inherit;
+        background: none;
+        border: 1px solid #333;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h2 class="app-name">Constitution Vault</h2>
+    </header>
+
+    <!-- Back button -->
+    <button id="back-button" class="btn-back">← Back</button>
+
+    <h1>Sign Up</h1>
+    <p>Create an account</p>
+
+    <button id="google-signup">Sign up with Google</button>
+
+    <!-- Your custom scripts -->
+    <script type="module" src="signup.js"></script>
+    <script>
+      // Back button wiring
+      document.getElementById("back-button").addEventListener("click", () => {
+        // Adjust the path if your landing page sits elsewhere
+        window.location.href = "../index.html";
+      });
+    </script>
+  </body>
+</html>
