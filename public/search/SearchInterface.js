@@ -138,6 +138,6 @@ export function initializeSearchInterface(containerId) {
     }
   }
 
-  // Initial load
+  // Initial loading
   refresh();
 }
