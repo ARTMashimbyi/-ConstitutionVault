@@ -73,7 +73,7 @@ async function loadAllHistory(userId) {
     }
   }
 }
-
+loadAllHistory(currentUserId);
 async function loadUserInteractions(userId) {
   userInteractions = await getUserInteractions(userId);
   console.log("User interactions loaded:", userInteractions);
