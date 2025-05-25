@@ -1,191 +1,183 @@
-// public/moveFiles.js
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+import {
+  getFirestore,
+  doc,
+  getDoc,
+  updateDoc,
+  collection
+} from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 
-  const hostname = window.location.hostname;
-const API_BASE =
-  hostname === "localhost" || hostname.startsWith("127.0.0.1")
-    ? "http://localhost:4000/api"
-    : "https://constitutionvaultapi-acatgth5g9ekg5fv.southafricanorth-01.azurewebsites.net";
+const firebaseConfig = {
+  apiKey: "AIzaSyAU_w_Oxi6noX_A1Ma4XZDfpIY-jkoPN-c",
+  authDomain: "constitutionvault-1b5d1.firebaseapp.com",
+  projectId: "constitutionvault-1b5d1",
+  storageBucket: "constitutionvault-1b5d1.firebasestorage.app",
+  messagingSenderId: "616111688261",
+  appId: "1:616111688261:web:97cc0a35c8035c0814312c",
+  measurementId: "G-YJEYZ85T3S"
+};
 
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
 let fileToMove = null;
 let moveMode = false;
+let statusMsg = null;
 
-/**
- * Normalize paths: leading slash, no trailing slash (except "/").
- */
-function normalizePath(p) {
-  if (!p) return '/';
-  if (!p.startsWith('/')) p = '/' + p;
-  if (p.length > 1 && p.endsWith('/')) p = p.slice(0, -1);
-  return p;
-}
-
-/**
- * Get current directory path from breadcrumb.
- */
-function getCurrentPath() {
-  const crumbs = document.querySelectorAll("#path-navigation [data-path]");
-  if (!crumbs.length) return '/';
-  // The last crumb is always the current directory
-  return normalizePath(crumbs[crumbs.length - 1].getAttribute("data-path"));
-}
-
-/**
- * Show status message in a banner.
- */
-function showStatus(msg, type = "info") {
-  let status = document.getElementById("moveStatus");
-  if (!status) {
-    status = document.createElement("section");
-    status.id = "moveStatus";
-    status.className = "move-status";
-    document.querySelector(".main-content").prepend(status);
+window.addEventListener("DOMContentLoaded", () => {
+  console.log("📄 DOM Loaded for File Mover");
+  
+  statusMsg = document.createElement('div');
+  statusMsg.id = 'moveStatus';
+  statusMsg.className = 'move-status';
+  document.querySelector('.main-content').appendChild(statusMsg);
+  
+  const urlParams = new URLSearchParams(window.location.search);
+  const moveId = urlParams.get('move');
+  
+  if (moveId) {
+    activateMoveMode(moveId);
   }
-  status.textContent = msg;
-  status.className = `move-status ${type}`;
-  status.style.display = "block";
-  if (type === "success" || type === "info") {
-    setTimeout(() => (status.style.display = "none"), 1500);
-  }
-}
+  
+  enhanceContentGrid();
+});
 
-/**
- * Activate move mode for a given file ID.
- */
 async function activateMoveMode(docId) {
-  moveMode = true;
-  // Fetch file metadata
-  let fileData;
   try {
-    const res = await fetch(`${API_BASE}/files/${docId}`);
-    if (!res.ok) throw new Error("File not found");
-    fileData = await res.json();
+    const docRef = doc(collection(db, "constitutionalDocuments"), docId);
+    const docSnap = await getDoc(docRef);
+    
+    if (docSnap.exists()) {
+      fileToMove = {
+        id: docId,
+        data: docSnap.data()
+      };
+      
+      moveMode = true;
+      
+      const container = document.getElementById('directory-container');
+      container.innerHTML = `
+        <div class="move-banner">
+          <p>Moving file: <strong>${fileToMove.data.title}</strong></p>
+          <p>Select a destination folder and click "Move Here"</p>
+          <div class="move-actions">
+            <button id="moveHereBtn" class="btn move-here-btn">Move Here</button>
+            <button id="cancelMoveBtn" class="btn cancel-move-btn">Cancel</button>
+          </div>
+        </div>
+      `;
+      
+      document.getElementById('moveHereBtn').addEventListener('click', moveFileHere);
+      document.getElementById('cancelMoveBtn').addEventListener('click', cancelMove);
+      
+      const uploadBtn = document.getElementById('upload-btn');
+      if (uploadBtn) uploadBtn.disabled = true;
+      
+      showStatus(`Select destination folder for "${fileToMove.data.title}"`, 'info');
+    } else {
+      showStatus("File not found.", 'error');
+    }
   } catch (err) {
-    showStatus("❌ Failed to load file data.", "error");
-    return;
+    console.error("Error activating move mode:", err);
+    showStatus("Failed to get file information.", 'error');
   }
-  fileToMove = { id: docId, data: fileData };
-
-  // Render move banner at the top
-  let moveBanner = document.getElementById("moveBanner");
-  if (!moveBanner) {
-    moveBanner = document.createElement("section");
-    moveBanner.id = "moveBanner";
-    moveBanner.className = "move-banner";
-    document.querySelector(".main-content").prepend(moveBanner);
-  }
-  moveBanner.innerHTML = `
-    <p>Moving file: <strong>${fileToMove.data.title || fileToMove.data.name || fileToMove.id}</strong></p>
-    <p>Select a destination folder and click "Move Here"</p>
-    <section class="move-actions">
-      <button id="moveHereBtn" class="btn move-here-btn">Move Here</button>
-      <button id="cancelMoveBtn" class="btn cancel-move-btn">Cancel</button>
-    </section>
-  `;
-  moveBanner.style.display = "block";
-
-  // Disable upload and new dir while moving
-  document.getElementById("upload-btn")?.setAttribute("disabled", "true");
-  document.getElementById("new-dir-btn")?.setAttribute("disabled", "true");
-
-  // Wire up buttons
-  document.getElementById("moveHereBtn").onclick = moveFileHere;
-  document.getElementById("cancelMoveBtn").onclick = () => window.location.href = "./hierarcy.html";
-
-  // Remove all Move buttons from file cards to avoid confusion
-  document.querySelectorAll(".move-btn").forEach(btn => btn.remove());
-
-  showStatus(`Select destination folder for "${fileToMove.data.title}"`, "info");
 }
 
-/**
- * Actually perform the move.
- */
 async function moveFileHere() {
   if (!fileToMove) return;
-
+  
   try {
-    // Always use the last breadcrumb's data-path as the current folder
-    const nav = document.getElementById("path-navigation");
-    let newDir = "/";
-    if (nav) {
-      const crumbs = Array.from(nav.querySelectorAll("[data-path]"));
-      if (crumbs.length) {
-        // Find the last breadcrumb with data-path
-        newDir = crumbs[crumbs.length - 1].getAttribute('data-path') || "/";
-      }
-    }
-    newDir = normalizePath(newDir);
-
-    // DEBUG
-    alert(`(Debug) About to move to: "${newDir}"`);
-
-    const res = await fetch(
-      `${API_BASE}/files/${fileToMove.id}`,
-      {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          directory: newDir,
-          updatedAt: new Date().toISOString()
-        })
-      }
-    );
-
-    if (!res.ok) {
-      const errText = await res.text();
-      throw new Error(`Move failed: ${res.status} ${errText}`);
-    }
-
-    showStatus("✅ File moved successfully!", "success");
+    const docRef = doc(collection(db, "constitutionalDocuments"), fileToMove.id);
+    const currentPath = getCurrentPath();
+    
+    await updateDoc(docRef, {
+      directory: currentPath,
+      updatedAt: new Date().toISOString()
+    });
+    
+    showStatus("✅ File moved successfully!", 'success');
+    
     setTimeout(() => {
-      window.location.href = "./hierarcy.html";
-    }, 800);
-
+      window.location.href = `hierarcy.html`;
+    }, 1500);
   } catch (err) {
     console.error("Error moving file:", err);
-    showStatus("❌ Failed to move file.", "error");
+    showStatus("❌ Failed to move file.", 'error');
   }
 }
 
+function cancelMove() {
+  window.location.href = 'hierarcy.html';
+}
 
+function getCurrentPath() {
+  const pathSegments = [];
+  const pathNav = document.getElementById('path-navigation');
+  const pathLinks = pathNav.querySelectorAll('a, span:not(:first-child)');
+  
+  for (let i = 1; i < pathLinks.length; i++) {
+    if (pathLinks[i].tagName === 'A' || (pathLinks[i].tagName === 'SPAN' && pathLinks[i].textContent !== '/')) {
+      pathSegments.push(pathLinks[i].textContent);
+    }
+  }
+  
+  let path = '/' + pathSegments.join('/');
+  if (path === '/') {
+    return '/';
+  }
+  
+  return path;
+}
 
-/**
- * Add "Move" buttons to all file cards (not directories).
- */
-function addMoveButtons() {
-  if (moveMode) return; // Don't show move buttons in move mode
-  document.querySelectorAll(".item-card").forEach(item => {
-    const isDir = item.querySelector(".item-meta")?.textContent.includes("Directory");
-    if (isDir || item.querySelector(".move-btn")) return;
+function enhanceContentGrid() {
+  const observer = new MutationObserver(mutations => {
+    mutations.forEach(mutation => {
+      if (mutation.type === 'childList') {
+        addMoveButtonsToItems();
+      }
+    });
+  });
+  
+  const contentGrid = document.getElementById('content-grid');
+  observer.observe(contentGrid, { childList: true });
+  
+  addMoveButtonsToItems();
+}
 
-    const firestoreId = item.getAttribute("data-id")?.replace("file_", "");
-    if (!firestoreId) return;
-
-    const btn = document.createElement("button");
-    btn.className = "move-btn";
-    btn.textContent = "Move";
-    btn.onclick = (e) => {
-      e.stopPropagation();
-      window.location.href = `./hierarcy.html?move=${firestoreId}`;
-    };
-    item.appendChild(btn);
+function addMoveButtonsToItems() {
+  if (moveMode) return;
+  
+  const items = document.querySelectorAll('.item-card');
+  
+  items.forEach(item => {
+    const itemMeta = item.querySelector('.item-meta');
+    if (itemMeta && !itemMeta.textContent.includes('Directory') && !item.querySelector('.move-btn')) {
+      const itemId = item.getAttribute('data-id');
+      const firestoreId = itemId.replace('file_', '');
+      
+      const moveBtn = document.createElement('button');
+      moveBtn.className = 'move-btn';
+      moveBtn.textContent = 'Move';
+      moveBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        window.location.href = `hierarcy.html?move=${firestoreId}`;
+      });
+      
+      item.appendChild(moveBtn);
+    }
   });
 }
 
-/**
- * On DOM ready, add move buttons, activate move if needed.
- */
-window.addEventListener("DOMContentLoaded", () => {
-  // If URL has ?move=ID, activate move mode for that file
-  const moveId = new URLSearchParams(window.location.search).get("move");
-  if (moveId) activateMoveMode(moveId);
-
-  // Observe content grid for file card changes and (re)add move buttons as needed
-  const contentGrid = document.getElementById("content-grid");
-  if (contentGrid) {
-    const observer = new MutationObserver(addMoveButtons);
-    observer.observe(contentGrid, { childList: true });
-    addMoveButtons();
+function showStatus(message, type = 'info') {
+  if (!statusMsg) return;
+  
+  statusMsg.textContent = message;
+  statusMsg.className = `move-status ${type}`;
+  statusMsg.style.display = 'block';
+  
+  if (type !== 'error' && type !== 'success') {
+    setTimeout(() => {
+      statusMsg.style.display = 'none';
+    }, 5000);
   }
-});
+}

@@ -1,8 +1,6 @@
 // public/admin/edit.js
 
-const API_BASE = window.location.hostname.includes("azurewebsites.net")
-  ? "https://constitutionvaultapi-acatgth5g9ekg5fv.southafricanorth-01.azurewebsites.net/api/files"
-  : "http://localhost:4000/api/files";
+const API_BASE = "http://localhost:4000/api/files";
 
 document.addEventListener("DOMContentLoaded", () => {
   // grab the ID from ?id=…
@@ -19,7 +17,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const dateInput         = document.getElementById("docDate");
   const statusMsg         = document.getElementById("message");
   const cancelButton      = document.getElementById("cancelButton");
-  const backButton        = document.getElementById("backButton"); // new: for extra back button
 
   if (!docId) {
     statusMsg.textContent = "Invalid document ID.";
@@ -27,13 +24,14 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
-  // 1) Load existing data via your API (GET /api/files/:id)
-  fetch(`${API_BASE}/${encodeURIComponent(docId)}`)
+  // 1) load existing data via your API
+  fetch(API_BASE)
     .then(res => {
       if (!res.ok) throw new Error(res.statusText);
       return res.json();
     })
-    .then(doc => {
+    .then(files => {
+      const doc = files.find(f => f.id === docId);
       if (!doc) throw new Error("Document not found");
       // populate form
       titleInput.value       = doc.title || "";
@@ -53,7 +51,7 @@ document.addEventListener("DOMContentLoaded", () => {
       statusMsg.style.color = "red";
     });
 
-  // 2) Submit updates via PATCH to your API
+  // 2) submit updates via PATCH to your API
   editForm.addEventListener("submit", async e => {
     e.preventDefault();
     statusMsg.textContent = "";
@@ -95,13 +93,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // 3) Cancel and extra back button go back to hierarcy.html
+  // 3) cancel goes back
   cancelButton.addEventListener("click", () => {
     window.location.href = `../admin/hierarcy.html`;
   });
-  if (backButton) {
-    backButton.addEventListener("click", () => {
-      window.location.href = `../admin/hierarcy.html`;
-    });
-  }
 });

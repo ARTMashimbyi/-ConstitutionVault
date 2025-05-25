@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Viewer</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        :root {
+            --primary: #4f46e5;
+            --primary-dark: #4338ca;
+            --secondary: #06b6d4;
+            --accent: #f97316;
+            --dark: #1e293b;
+            --light: #f8fafc;
+            --gray-100: #f1f5f9;
+            --gray-200: #e2e8f0;
+            --gray-300: #cbd5e1;
+            --gray-500: #64748b;
+            --gray-700: #334155;
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--gray-100), var(--light));
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            color: var(--dark);
+        }
+        
+        header {
+            width: 100%;
+            max-width: 900px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: var(--shadow-md);
+            padding: 1.5rem 2rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            z-index: 10;
+        }
+        
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent));
+            z-index: 1;
+        }
+        
+        main {
+            width: 100%;
+            max-width: 900px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: var(--shadow-md);
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 500px;
+            flex-grow: 1;
+            position: relative;
+            transform-style: preserve-3d;
+            perspective: 1000px;
+            transition: all 0.3s ease;
+        }
+        
+        main:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-5px);
+        }
+        
+        .document-info {
+            position: relative;
+            padding-left: 1rem;
+        }
+        
+        .document-info::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 3px;
+            background: var(--primary);
+            border-radius: 4px;
+        }
+        
+        h1 {
+            font-size: 1.5rem;
+            color: var(--primary-dark);
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            position: relative;
+            display: inline-block;
+        }
+        
+        h1::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: -2px;
+            width: 0;
+            height: 2px;
+            background: var(--secondary);
+            transition: width 0.3s ease;
+        }
+        
+        header:hover h1::after {
+            width: 100%;
+        }
+        
+        .metadata {
+            color: var(--gray-500);
+            font-size: 0.875rem;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        .metadata time,
+        .metadata address,
+        .metadata data {
+            display: flex;
+            align-items: center;
+            font-style: normal;
+        }
+        
+        .metadata time:not(:last-child)::after,
+        .metadata address:not(:last-child)::after,
+        .metadata data:not(:last-child)::after {
+            content: '•';
+            margin-left: 1rem;
+            color: var(--gray-300);
+        }
+        
+        button {
+            padding: 0.6rem 1.2rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background-color: var(--primary);
+            color: white;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+        
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s ease;
+            z-index: -1;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+        
+        button:hover::before {
+            left: 100%;
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        img, video {
+            max-width: 100%;
+            max-height: 600px;
+            object-fit: contain;
+            border-radius: 6px;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s ease;
+        }
+        
+        img:hover, video:hover {
+            transform: scale(1.02);
+        }
+        
+        iframe {
+            width: 100%;
+            height: 600px;
+            border: none;
+            border-radius: 6px;
+            box-shadow: var(--shadow);
+        }
+        
+        audio {
+            width: 100%;
+            border-radius: 12px;
+        }
+        
+        .loading, .error {
+            padding: 2rem;
+            text-align: center;
+            width: 100%;
+        }
+        
+        .loading {
+            color: var(--gray-500);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .loading::after {
+            content: '';
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--gray-200);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        
+        .error {
+            color: #ef4444;
+            background-color: #fee2e2;
+            border-radius: 8px;
+            border-left: 4px solid #ef4444;
+            animation: shake 0.5s ease-in-out;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        
+        article {
+            padding: 2rem;
+            width: 100%;
+            height: 100%;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Document type indicators */
+        #docType {
+            display: inline-flex;
+            align-items: center;
+            padding-right: 0.5rem;
+        }
+        
+        #docType::before {
+            content: '';
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            margin-right: 0.5rem;
+            background-size: contain;
+            background-repeat: no-repeat;
+            filter: grayscale(1);
+            opacity: 0.7;
+            transition: all 0.3s ease;
+        }
+        
+        header:hover #docType::before {
+            filter: grayscale(0);
+            opacity: 1;
+        }
+        
+        /* File actions styling */
+        .file-actions {
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .file-message {
+            margin-bottom: 1.5rem;
+            color: var(--gray-700);
+            font-size: 1rem;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .action-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .action-link.primary {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .action-link.secondary {
+            background-color: var(--secondary);
+            color: white;
+        }
+        
+        .action-link:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+        
+        /* Responsive design */
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+            
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+                padding: 1.25rem;
+            }
+            
+            nav {
+                align-self: flex-start;
+            }
+            
+            .metadata {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+            
+            .metadata time:not(:last-child)::after,
+            .metadata address:not(:last-child)::after,
+            .metadata data:not(:last-child)::after {
+                display: none;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .action-link {
+                width: 200px;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <section class="document-info">
+            <h1 id="docTitle">Loading document...</h1>
+            <aside class="metadata">
+                <data id="docType" value=""></data>
+                <address id="docAuthor"></address>
+                <time id="docDate" datetime=""></time>
+            </aside>
+        </section>
+        <nav>
+            <button id="backButton" type="button" aria-label="Go back to previous page">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                    <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
+                </svg>
+                Back
+            </button>
+        </nav>
+    </header>
+    
+    <main>
+        <section id="loading" class="loading" aria-live="polite">Loading document...</section>
+        <section id="error" class="error" style="display: none;" role="alert" aria-live="assertive"></section>
+        <article id="content" style="display: none; width: 100%; height: 100%;" role="document"></article>
+    </main>
+    
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+        import { getFirestore, doc, collection, getDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+
+        // Firebase configuration
+        const firebaseConfig = {
+          apiKey: "AIzaSyAU_w_Oxi6noX_A1Ma4XZDfpIY-jkoPN-c",
+          authDomain: "constitutionvault-1b5d1.firebaseapp.com",
+          projectId: "constitutionvault-1b5d1",
+          storageBucket: "constitutionvault-1b5d1.firebasestorage.app",
+          messagingSenderId: "616111688261",
+          appId: "1:616111688261:web:97cc0a35c8035c0814312c",
+          measurementId: "G-YJEYZ85T3S"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // DOM elements
+        const docTitle = document.getElementById('docTitle');
+        const docType = document.getElementById('docType');
+        const docAuthor = document.getElementById('docAuthor');
+        const docDate = document.getElementById('docDate');
+        const backButton = document.getElementById('backButton');
+        const loadingEl = document.getElementById('loading');
+        const errorEl = document.getElementById('error');
+        const contentEl = document.getElementById('content');
+
+        // Get document ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const docId = urlParams.get('id');
+
+        // Back button functionality
+        backButton.addEventListener('click', () => {
+          window.history.back();
+        });
+
+        // Load document
+        async function loadDocument() {
+          if (!docId) {
+            showError("No document ID provided");
+            return;
+          }
+
+          try {
+            const docRef = doc(collection(db, 'constitutionalDocuments'), docId);
+            const docSnap = await getDoc(docRef);
+            
+            if (docSnap.exists()) {
+              const docData = docSnap.data();
+              displayDocument(docData);
+            } else {
+              showError("Document not found");
+            }
+          } catch (error) {
+            console.error("Error loading document:", error);
+            showError(`Error loading document: ${error.message}`);
+          }
+        }
+
+        // Display document
+        function displayDocument(docData) {
+          if (!docData || !docData.downloadURL) {
+            showError("Document data or URL is missing");
+            return;
+          }
+
+          // Update metadata
+          docTitle.textContent = docData.title || 'Untitled Document';
+          docType.textContent = docData.fileType || 'Unknown Type';
+          docType.setAttribute('value', docData.fileType || '');
+          docAuthor.textContent = docData.author || 'Unknown Author';
+          
+          // Format and set date
+          const formattedDate = formatDate(docData.date);
+          docDate.textContent = formattedDate || 'Unknown Date';
+          if (docData.date) {
+            docDate.setAttribute('datetime', new Date(docData.date).toISOString());
+          }
+
+          // Determine content type and display accordingly
+          const fileType = docData.fileType?.toLowerCase() || '';
+          const fileURL = docData.downloadURL;
+
+          // Clear content container
+          contentEl.innerHTML = '';
+
+          // Create appropriate element based on file type
+          if (fileType.includes('pdf')) {
+            // PDF Files
+            const iframe = document.createElement('iframe');
+            iframe.src = fileURL;
+            iframe.title = `PDF: ${docData.title || 'Document'}`;
+            contentEl.appendChild(iframe);
+          } 
+          else if (fileType.includes('image') || /\.(jpg|jpeg|png|gif|svg|webp)$/i.test(fileURL)) {
+            // Image files
+            const figure = document.createElement('figure');
+            const img = document.createElement('img');
+            img.src = fileURL;
+            img.alt = docData.title || 'Document Image';
+            
+            if (docData.title) {
+              const figcaption = document.createElement('figcaption');
+              figcaption.textContent = docData.title;
+              figure.appendChild(img);
+              figure.appendChild(figcaption);
+              contentEl.appendChild(figure);
+            } else {
+              contentEl.appendChild(img);
+            }
+          } 
+          else if (fileType.includes('video') || /\.(mp4|webm|mov|avi)$/i.test(fileURL)) {
+            // Video files
+            const figure = document.createElement('figure');
+            const video = document.createElement('video');
+            video.src = fileURL;
+            video.controls = true;
+            video.autoplay = false;
+            video.setAttribute('aria-label', `Video: ${docData.title || 'Document'}`);
+            
+            if (docData.title) {
+              const figcaption = document.createElement('figcaption');
+              figcaption.textContent = docData.title;
+              figure.appendChild(video);
+              figure.appendChild(figcaption);
+              contentEl.appendChild(figure);
+            } else {
+              contentEl.appendChild(video);
+            }
+          } 
+          else if (fileType.includes('audio') || /\.(mp3|wav|ogg)$/i.test(fileURL)) {
+            // Audio files
+            const figure = document.createElement('figure');
+            const audio = document.createElement('audio');
+            audio.src = fileURL;
+            audio.controls = true;
+            audio.setAttribute('aria-label', `Audio: ${docData.title || 'Document'}`);
+            
+            if (docData.title) {
+              const figcaption = document.createElement('figcaption');
+              figcaption.textContent = docData.title;
+              figure.appendChild(audio);
+              figure.appendChild(figcaption);
+              contentEl.appendChild(figure);
+            } else {
+              contentEl.appendChild(audio);
+            }
+          } 
+          else {
+            // Default: treat as a downloadable or openable file
+            const section = document.createElement('section');
+            section.className = 'file-actions';
+            
+            const message = document.createElement('p');
+            message.className = 'file-message';
+            message.textContent = `File type "${fileType}" may not be viewable in browser.`;
+            
+            const actionsContainer = document.createElement('nav');
+            actionsContainer.className = 'action-buttons';
+            actionsContainer.setAttribute('aria-label', 'File actions');
+            
+            const openLink = document.createElement('a');
+            openLink.href = fileURL;
+            openLink.target = '_blank';
+            openLink.rel = 'noopener noreferrer';
+            openLink.className = 'action-link primary';
+            openLink.setAttribute('aria-label', `Open ${docData.title || 'file'} in new tab`);
+            openLink.innerHTML = `
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                <path fill-rule="evenodd" d="M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5z"/>
+                <path fill-rule="evenodd" d="M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0v-5z"/>
+              </svg>
+              Open File
+            `;
+            
+            const downloadLink = document.createElement('a');
+            downloadLink.href = fileURL;
+            downloadLink.download = docData.title || 'document';
+            downloadLink.className = 'action-link secondary';
+            downloadLink.setAttribute('aria-label', `Download ${docData.title || 'file'}`);
+            downloadLink.innerHTML = `
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+                <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+              </svg>
+              Download File
+            `;
+            
+            actionsContainer.appendChild(openLink);
+            actionsContainer.appendChild(downloadLink);
+            section.appendChild(message);
+            section.appendChild(actionsContainer);
+            contentEl.appendChild(section);
+          }
+
+          // Show content and hide loading
+          loadingEl.style.display = 'none';
+          errorEl.style.display = 'none';
+          contentEl.style.display = 'block';
+        }
+
+        // Show error message
+        function showError(message) {
+          loadingEl.style.display = 'none';
+          contentEl.style.display = 'none';
+          errorEl.textContent = message;
+          errorEl.style.display = 'block';
+        }
+
+        // Format date helper
+        function formatDate(dateString) {
+          if (!dateString) return 'Unknown';
+          const options = { year: 'numeric', month: 'long', day: 'numeric' };
+          return new Date(dateString).toLocaleDateString(undefined, options);
+        }
+
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', loadDocument);
+    </script>
+</body>
+</html>

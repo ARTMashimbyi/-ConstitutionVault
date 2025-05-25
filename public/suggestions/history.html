@@ -1,46 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>History</title>
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
-    />
-    <link rel="stylesheet" href="home.css" />
-  </head>
-  <body>
-    <header>
-      <h1><i class="fas fa-history"></i> Recently Viewed</h1>
-      <menu class="section-actions">
-        <button class="btn btn-outline" onclick="window.history.back()">
-          <i class="fas fa-arrow-left"></i> Back
-        </button>
-      </menu>
-    </header>
-
-    <main>
-      <section class="document-row">
-        <ul class="document-list" id="history">
-          <!-- JS will populate your recent items here -->
-        </ul>
-      </section>
-    </main>
-
-    <!-- Inline viewer modal -->
-    <dialog id="viewer-dialog">
-      <section class="modal-body"></section>
-      <menu>
-        <button id="modal-close">Close</button>
-      </menu>
-    </dialog>
-
-    <!-- Loading & error indicators (optional) -->
-    <output id="loading-indicator" class="loading">Loading…</output>
-    <output id="error-container" class="error"></output>
-
-    <!-- Your refactored script -->
-    <script type="module" src="history_home.js"></script>
-  </body>
+    <style>
+        
+        section {
+          max-height: 600px;
+          min-height: 400px;
+          background-color: azure;
+        }
+        </style>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+        <link rel="stylesheet" href="home.css">
+</head>
+<body>
+    
+    <section class="view-all-container">
+        <header class="view-all-header">
+          <h2 class="view-all-title"><i class="fas fa-file-alt"></i> History</h2>
+          
+        </header>
+    <section >
+        <output class="documents-grid" id="all-documents-grid">
+            <!-- Documents will be inserted here by JavaScript -->
+          </output>
+    </section>
+    <script type="module" src="history.js"></script>
+</body>
 </html>

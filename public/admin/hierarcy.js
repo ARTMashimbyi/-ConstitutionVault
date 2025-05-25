@@ -1,986 +1,770 @@
-// ─── API BASE ─────────────────────────────────────────────────────────────
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+import { 
+  getFirestore, 
+  collection, 
+  getDocs, 
+  addDoc, 
+  doc, 
+  setDoc
+} from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 
-  const hostname = window.location.hostname;
-  const API_BASE =
-    hostname === "localhost" || hostname.startsWith("127.0.0.1")
-      ? "http://localhost:4000/api"
-      : "https://constitutionvaultapi-acatgth5g9ekg5fv.southafricanorth-01.azurewebsites.net";
-  
+// Firebase configuration
+const firebaseConfig = {
+    apiKey: "AIzaSyAU_w_Oxi6noX_A1Ma4XZDfpIY-jkoPN-c",
+    authDomain: "constitutionvault-1b5d1.firebaseapp.com",
+    projectId: "constitutionvault-1b5d1",
+    storageBucket: "constitutionvault-1b5d1.firebasestorage.app",
+    messagingSenderId: "616111688261",
+    appId: "1:616111688261:web:97cc0a35c8035c0814312c",
+    measurementId: "G-YJEYZ85T3S"
+};
 
-let isLoading = false;
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
+// Structure to store our hierarchical data
+let archiveData = {
+    root: {
+        name: "Root",
+        type: "directory",
+        path: "/",
+        children: []
+    }
+};
 
+// Current path for navigation
+let currentPath = "/";
+let currentPathSegments = [];
 
-function setLoading(loading, message = 'Refreshing…') {
-  isLoading = loading;
-  let banner = document.getElementById('statusBanner');
-  if (!banner) {
-    banner = document.createElement('div');
-    banner.id = 'statusBanner';
-    banner.className = 'status-banner';
-    document.querySelector('.main-content').prepend(banner);
-  }
-  if (loading) {
-    banner.textContent = message;
-    banner.className = 'status-banner info';
-    banner.style.display = 'block';
-    document.querySelectorAll('button').forEach(btn => btn.disabled = true);
-  } else {
-    banner.style.display = 'none';
-    document.querySelectorAll('button').forEach(btn => btn.disabled = false);
-  }
-}
-
-
-let bannerTimeout = null;
-
-/**
- * Displays a banner message at the top of your main‐content.
- * type can be 'info', 'success' or 'error'
- */
-function showStatus(message, type = 'info') {
-  let banner = document.getElementById('statusBanner');
-  if (!banner) {
-    banner = document.createElement('div');
-    banner.id        = 'statusBanner';
-    banner.className = 'status-banner';
-    document.querySelector('.main-content').prepend(banner);
-  }
-  banner.textContent   = message;
-  banner.className     = `status-banner ${type}`;
-  banner.style.display = 'block';
-
-  // Clear any previous timeout to prevent overlap
-  if (bannerTimeout) clearTimeout(bannerTimeout);
-
-  // Hide after 1.5 seconds for all message types
-  bannerTimeout = setTimeout(() => {
-    banner.style.display = 'none';
-    bannerTimeout = null; // Clean up
-  }, 150);
-}
-
-
-
-
-// Structure to store our hierarchical data; will be filled from the API
-let archiveData = {};
-
-// Current path for navigation (always starts at “/” for Root)
-let currentPath = '/';
-
-let allFiles = []
-
-/**
- * Fetches all folders and files from your Express API, seeds archiveData,
- * then kicks off the UI rendering.
- */
+// Function to load data from Firestore
 async function loadDataFromFirestore() {
-  try {
-    console.log('⏳  Fetching directories from API…');
-    const dirRes = await fetch(`${API_BASE}/directories`);
-    if (!dirRes.ok) {
-      throw new Error(`Failed to fetch directories: ${dirRes.status}`);
-    }
-    let directories = await dirRes.json();
-    console.log('✅  Raw directories:', directories);
-
-    // Normalize all incoming paths so findDirectoryByPath will work
-    directories = directories.map(d => ({
-      ...d,
-      path: normalizePath(d.path)
-    }));
-    console.log('✅  Normalized directories:', directories);
-
-    // --- Add ROOT first ---
-    const rootDir = directories.find(d => d.path === '/');
-    if (!rootDir) throw new Error('Root folder not returned by API');
-    addDirectoryToHierarchy(rootDir.id, rootDir);
-
-    // --- Add all other directories in order of depth (shallowest to deepest) ---
-    directories
-      .filter(d => d.path !== '/')
-      .sort((a, b) =>
-        a.path.split('/').length - b.path.split('/').length
-      )
-      .forEach(d => addDirectoryToHierarchy(d.id, d));
-
-    console.log('✅  archiveData after directories:', archiveData);
-
-    // --- Now do files ---
-    console.log('⏳  Fetching files...');
-    const fileRes = await fetch(`${API_BASE}/files`);
-    if (!fileRes.ok) {
-      throw new Error(`Failed to fetch files: ${fileRes.status}`);
-    }
-    const files = await fileRes.json();
-    allFiles = files; // <-- Assign to global for grid update!
-    files.forEach(f => addDocumentToHierarchy(f.id, f));
-    console.log('✅  archiveData after files:', archiveData);
-
-    // --- Finally spin up the UI ---
-    initializeUI();
-  } catch (err) {
-    console.error('🔥 loadDataFromFirestore error:', err);
-    showStatus('❌ Failed to load data', 'error');
-  }
-}
-
-// (Optional debug)
-// console.log('archiveData:', JSON.stringify(archiveData, null, 2));
-
- 
-
-/**
- * Inserts a directory node into our in-memory hierarchy.
- *
- * @param {string} id            Firestore document ID for this directory
- * @param {object} directoryData The data from GET /api/directories
- *   { name, path, description? }
- */
-function addDirectoryToHierarchy(id, directoryData) {
-  const dirPath = normalizePath(directoryData.path);
-
-  // Root directory ("/") is special: only one root
-  if (dirPath === '/') {
-    const existing = archiveData[id] || { children: [] };
-    archiveData[id] = {
-      id,
-      firestoreId: id,
-      name: directoryData.name || existing.name || 'Root',
-      type: 'directory',
-      path: '/',
-      children: existing.children,
-      description: directoryData.description || existing.description || ''
-    };
-    return;
-  }
-
-  // Find parent by normalized path
-  const idx = dirPath.lastIndexOf('/');
-  const parentPath = idx === 0 ? '/' : dirPath.slice(0, idx);
-  const parentDir = findDirectoryByPath(parentPath);
-
-  if (!parentDir) {
-    console.warn(`Parent folder "${parentPath}" not found for "${dirPath}"`);
-    return;
-  }
-
-  // Add or update this node, keeping any children already present
-  const existing = archiveData[id] || { children: [] };
-  archiveData[id] = {
-    id,
-    firestoreId: id,
-    name: directoryData.name || existing.name || 'Unnamed',
-    type: 'directory',
-    path: dirPath,
-    children: existing.children,
-    description: directoryData.description || existing.description || ''
-  };
-
-  // Link this directory into its parent's children array by ID
-  parentDir.children = parentDir.children || [];
-  if (!parentDir.children.includes(id)) {
-    parentDir.children.push(id);
-  }
-}
-
-
-
-/**
- * Normalize incoming path so it has exactly one leading slash,
- * no trailing slash (unless it’s just "/"), and drops any "/Root" prefix.
- */
-function normalizePath(raw) {
-  let p = raw || '/';
-
-  // Remove duplicate slashes everywhere
-  p = p.replace(/\/+/g, '/');
-
-  // Ensure leading slash
-  if (!p.startsWith('/')) p = '/' + p;
-
-  // Remove exact "/Root" or "/Root/" prefix (but not "/Rooted")
-  if (p === '/Root' || p === '/Root/') p = '/';
-  else if (p.startsWith('/Root/')) p = p.slice(5); // "/Root/abc" -> "/abc"
-
-  // Remove trailing slash (but keep "/" alone)
-  if (p.length > 1 && p.endsWith('/')) p = p.slice(0, -1);
-
-  // After slice, ensure still at least "/"
-  if (p === '') p = '/';
-
-  return p;
-}
-
-
-
-/**
- * Adds a file into our in-memory hierarchy under its directory.
- *
- * @param {string} id            Firestore document ID
- * @param {object} documentData  The metadata you got from GET /api/files or getFileById
- */
-function addDocumentToHierarchy(id, documentData) {
-  // ── 1) Normalize the directory path (foo, /Foo/, FOO/ → "/Foo")
-  const dirPath = normalizePath(documentData.directory);
-
-  // ── 2) Lookup its parent directory
-  const parent = findDirectoryByPath(dirPath);
-  if (!parent) {
-    console.warn(`Parent folder "${dirPath}" not found for file ${id}`);
-    return;
-  }
-  parent.children = parent.children || [];
-
-  // ── 3) Build or update the file node (preserving any existing fields)
-  const existing = archiveData[id] || {};
-
-  // Construct and normalize the full file path
-  const rawFilePath = dirPath === '/'
-    ? `/${documentData.title}`
-    : `${dirPath}/${documentData.title}`;
-  const filePath = normalizePath(rawFilePath);
-
-  const fileNode = {
-    id,
-    firestoreId:  id,
-    name:         documentData.title       || existing.name,
-    type:         'file',
-    fileType:     documentData.fileType    || existing.fileType || 'document',
-    path:         filePath,
-    size:         documentData.fileSize    || existing.size     || 'Unknown',
-    lastModified: documentData.uploadedAt  || existing.lastModified,
-    metadata:     documentData
-  };
-
-  archiveData[id] = fileNode;
-
-  // ── 4) Link it under its parent if not already present
-  if (!parent.children.includes(id)) {
-    parent.children.push(id);
-  }
-}
-
-
-/**
- * Create or update a directory via your Express API.
- * If directoryData.id is present, does PATCH /api/directories/:id,
- * otherwise does POST /api/directories.
- *
- * @param {Object} directoryData
- *   - id?           Firestore ID when updating
- *   - name          directory name
- *   - path          full path string
- *   - description?  optional description
- *   - children?     optional children array (only needed when updating)
- * @returns {Promise<string>}
- *   The Firestore ID of the created or updated directory
- */
-async function saveDirectory(directoryData) {
-  let { id, name, path, description = "", children } = directoryData;
-
-  // ── Normalize the path so we never send "/Root/foo/" or "foo" to the API
-  path = normalizePath(path);
-
-  // ── Determine URL and HTTP method
-  const url    = id
-    ? `${API_BASE}/directories/${encodeURIComponent(id)}`
-    : `${API_BASE}/directories`;
-  const method = id ? "PATCH" : "POST";
-
-  // ── Build payload (omit id)
-  const payload = { name, path, description };
-  if (children) payload.children = children;
-
-  try {
-    const res = await fetch(url, {
-      method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
-
-    if (!res.ok) {
-      let errMsg = res.statusText;
-      try {
-        const errJson = await res.json();
-        errMsg = errJson.error || errMsg;
-      } catch (_) {}
-      throw new Error(`${method} failed: ${res.status} ${errMsg}`);
-    }
-
-    // On POST you'll get { id: "<new-id>" }; on PATCH you might or might not
-    const json       = await res.json();
-    const returnedId = json.id || id;
-    console.log(
-      `Directory ${method === "POST" ? "created" : "updated"} with ID:`,
-      returnedId
-    );
-    return returnedId;
-
-  } catch (err) {
-    console.error("Error saving directory:", err);
-    throw err;
-  }
-}
-
-
-// debug: catch any click inside the tree container
-const treeEl = document.getElementById('root-directory');
-if (treeEl) {
-  treeEl.addEventListener('click', e => {
-    const path = e.target.closest('[data-path]')?.dataset.path;
-    console.log('⚡ Tree click:', e.target, '→ path:', path);
-  });
-}
-
-
-function removeOldDeleteButtons() {
-  document.querySelectorAll('.delete-dir-btn').forEach(btn => btn.remove());
-}
-
-/**
- * Initializes all UI event handlers and renders the initial view.
- */
-function initializeUI() {
-  // ── Grab modal, form, and buttons from the DOM ──
-  const newDirBtn    = document.getElementById('new-dir-btn');
-  const newDirModal  = document.getElementById('new-dir-modal');
-  const cancelDirBtn = document.getElementById('cancel-dir-btn');
-  const newDirForm   = document.getElementById('new-dir-form');
-
-  // ── 1) Build the directory tree and initial panels ──
-  buildDirectoryTree();
-  updatePathNavigation();
-  updateContentGrid();
-
-  // ── 2) “New Directory” button opens the <dialog> ──
-  if (newDirBtn && newDirModal) {
-    newDirBtn.addEventListener('click', () => newDirModal.showModal());
-  }
-
-  // ── 3) Cancel button closes the dialog ──
-  if (cancelDirBtn && newDirModal) {
-    cancelDirBtn.addEventListener('click', () => newDirModal.close());
-  }
-
-  // ── 4) Form submission creates & persists the new folder ──
-  if (newDirForm && newDirModal) {
-    newDirForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const name        = document.getElementById('dir-name').value.trim();
-      const description = document.getElementById('dir-description').value.trim();
-      const parentPath  = getCurrentPath();
-      const path        = parentPath === '/' ? `/${name}` : `${parentPath}/${name}`;
-      const newDir      = { name, path, children: [], description };
-      try {
-        setLoading(true, 'Creating directory...');
-        newDirBtn.disabled = true;
-        await saveDirectory(newDir);
-        newDirModal.close();
-        newDirForm.reset();
-        await loadDataFromFirestore(); // FULLY reload all data
-        navigateToPath(path);
-        showStatus('✅ Directory created', 'success');
-      } catch {
-        showStatus('❌ Failed to create directory', 'error');
-      } finally {
-        setLoading(false);
-        newDirBtn.disabled = false;
-      }
-    });
-  }
-
-  // ── 5) Handle "Upload Files" button click ──
-  const uploadBtn           = document.getElementById('upload-btn');
-  const emptyStateUploadBtn = document.querySelector('.empty-state button');
-  const goToUpload = () => {
-    const dir = getCurrentPath();
-    window.location.href = `admin-add.html?directory=${encodeURIComponent(dir)}`;
-  };
-  uploadBtn?.addEventListener('click', goToUpload);
-  emptyStateUploadBtn?.addEventListener('click', goToUpload);
-
-  // ── 6) Inject "Delete Folder" button into the same btn-group ──
-const btnGroup = document.querySelector('.btn-group');
-if (btnGroup) {
-  // Remove previous delete buttons to avoid duplicates
-  removeOldDeleteButtons();
-
-  const deleteBtn = document.createElement('button');
-  deleteBtn.className   = 'btn delete-dir-btn';
-  deleteBtn.textContent = 'Delete Folder';
-
-  deleteBtn.addEventListener('click', async () => {
-    const dir = findDirectoryByPath(getCurrentPath());
-    if (!dir || dir.path === '/') {
-      return showStatus("❌ You can’t delete the Root folder.", "error");
-    }
-    if (!confirm(`Delete "${dir.name}" and all its contents?`)) return;
-  
     try {
-      setLoading(true, 'Deleting folder...');
-      deleteBtn.disabled = true;
-  
-      // 1. Delete on the backend
-      const response = await fetch(`${API_BASE}/directories/${dir.id}`, { method: 'DELETE' });
-      if (!response.ok) throw new Error('Delete failed on server');
-  
-      // 2. FORCE full page reload so UI always reflects backend
-      window.location.reload();
-  
-      // (The code below won't run after reload, so you can remove it)
-      // await loadDataFromFirestore();
-      // navigateToPath('/');
-      // showStatus('✅ Folder deleted', 'success');
-    } catch (e) {
-      showStatus('❌ Failed to delete folder', 'error');
-      console.error('Delete folder error:', e);
-    } finally {
-      setLoading(false);
-      deleteBtn.disabled = false;
+        // First, let's load directories
+        const directoriesSnapshot = await getDocs(collection(db, "directories"));
+        
+        // Build directory structure first
+        directoriesSnapshot.forEach(dirDoc => {
+            const dirData = dirDoc.data();
+            addDirectoryToHierarchy(dirDoc.id, dirData);
+        });
+        
+        // Then load documents
+        const querySnapshot = await getDocs(collection(db, "constitutionalDocuments"));
+        
+        // Process documents and add them to the hierarchy
+        querySnapshot.forEach(doc => {
+            const data = doc.data();
+            addDocumentToHierarchy(doc.id, data);
+        });
+        
+        // Initialize the UI after loading data
+        initializeUI();
+    } catch (error) {
+        console.error("Error loading data from Firestore:", error);
     }
-  });
-  
-  btnGroup.append(deleteBtn);
 }
 
-
-  // ── 7) Per-directory search within the grid ──
-  const searchInput = document.querySelector('.search-bar input');
-  searchInput?.addEventListener('input', () => {
-    const term = searchInput.value.toLowerCase();
-    document.querySelectorAll('.item-card').forEach(card => {
-      const name = card.querySelector('.item-name').textContent.toLowerCase();
-      card.style.display = name.includes(term) ? 'grid' : 'none';
-    });
-  });
-}
-
-
-/**
- * Ensures a nested path of folders exists, creating any missing ones via the API.
- * @param {string} directoryPath  e.g. "/foo/bar/baz"
- * @returns {Promise<string>}     The normalized path (same as input)
- */
-async function createDirectoryStructure(directoryPath) {
-  // 1) normalize once up‐front
-  const targetPath = normalizePath(directoryPath);
-  const segments   = targetPath.split('/').filter(Boolean);
-
-  // 2) start at root
-  const rootDir = findDirectoryByPath('/');
-  if (!rootDir) throw new Error('Root directory not found in memory');
-  let currentId = rootDir.id;
-  let accumPath = '';
-
-  // 3) walk each segment, creating via saveDirectory(...) if missing
-  for (const segment of segments) {
-    accumPath += '/' + segment;
-    const path = normalizePath(accumPath);
-
-    // ensure children array
-    archiveData[currentId].children ||= [];
-
-    // do we already have a child at this path?
-    let childId = archiveData[currentId].children.find(id => {
-      const node = archiveData[id];
-      return node &&
-             node.type === 'directory' &&
-             normalizePath(node.path) === path;
-    });
-
-    if (!childId) {
-      // create it on the server
-      const newDirData = {
-        name:        segment,
-        path:        path,
-        description: '',
-        children:    []
-      };
-      const firestoreId = await saveDirectory(newDirData);
-
-      // record it in memory
-      archiveData[firestoreId] = {
-        id:          firestoreId,
-        firestoreId: firestoreId,
-        name:        segment,
-        type:        'directory',
-        path:        path,
-        description: '',
-        children:    []
-      };
-      archiveData[currentId].children.push(firestoreId);
-      childId = firestoreId;
-    }
-
-    // descend
-    currentId = childId;
-  }
-
-  return targetPath;
-}
-
-
-/**
- * Builds the sidebar directory tree with collapsible nodes,
- * using buildDirectoryItem(...) so each header gets its click listener.
- */
-function buildDirectoryTree() {
-  const rootUl = document.getElementById('root-directory');
-  if (!rootUl) {
-    console.error('#root-directory UL not found');
-    return;
-  }
-  rootUl.innerHTML = '';  // wipe out old tree
-
-  const rootDir = findDirectoryByPath('/');
-  if (!rootDir) {
-    console.error('Root ("/") missing from archiveData');
-    return;
-  }
-
-  // Recurse helper
-  function recurse(parentUl, dir) {
-    const id = dir.firestoreId || dir.id;
-    buildDirectoryItem(parentUl, dir, id);
-  }
-
-  // Kick it off
-  recurse(rootUl, rootDir);
-}
-
-
-// Handler for any folder-link click
-function onTreeClick(e) {
-  const link = e.target.closest('a.directory-link');
-  if (!link) return;
-  e.preventDefault();
-  const path = link.dataset.path;
-  if (!path) {
-    console.warn('Tree link missing data-path:', link);
-    return;
-  }
-  console.log('🌳 clicked folder link:', path);
-  navigateToPath(path); // Already normalizes path
-}
-
-
-
-/**
- * Creates a <li> + <div class="directory"> item (with toggle) and appends it to parentUl.
- * @param {HTMLUListElement} parentUl
- * @param {Object} directory     One entry from archiveData
- * @param {string} directoryId   Its key in archiveData
- */
-function buildDirectoryItem(parentUl, directory, directoryId) {
-  // ── Debug: confirm we got the right inputs
-  console.log('Built tree item:', directory.name, '→', directory.path);
-
-  // Determine whether this node has nested folders
-  const hasChildren = Array.isArray(directory.children) &&
-    directory.children.some(id => archiveData[id]?.type === 'directory');
-
-  // Build the <li> wrapper and the header bar
-  const li     = document.createElement('li');
-  const header = document.createElement('div');
-  header.className  = 'directory';
-  header.dataset.id = directoryId;
-
-  // Normalize and store the path (trimmed, stripping any "/Root")
-  const path = normalizePath(directory.path);
-  header.dataset.path = path;
-
-  // ── Immediately attach a click listener to this header
-  header.addEventListener('click', e => {
-    e.stopPropagation();
-    console.log('👉 clicked header:', path);
-
-    // 1) navigate into exactly this folder
-    navigateToPath(path);
-
-    // 2) expand all parent levels in the sidebar
-    expandDirectoryPath(path);
-
-    // 3) highlight the active node
-    document.querySelectorAll('.directory').forEach(d => d.classList.remove('active'));
-    header.classList.add('active');
-  });
-
-  // The toggle arrow (or a spacer if no children)
-  const toggle = document.createElement('span');
-  if (hasChildren) {
-    toggle.className   = 'directory-toggle';
-    toggle.textContent = '▶';
-    toggle.addEventListener('click', e => {
-      e.stopPropagation();
-      const sub = li.querySelector('ul.directory-children');
-      if (!sub) return;
-      const show = sub.style.display !== 'block';
-      sub.style.display  = show ? 'block' : 'none';
-      toggle.textContent = show ? '▼' : '▶';
-    });
-  } else {
-    toggle.className   = 'directory-spacer';
-    toggle.textContent = '';
-  }
-
-  // Folder icon and name
-  const icon = document.createElement('span');
-  icon.className   = 'directory-icon';
-  icon.textContent = '📁';
-
-  const name = document.createElement('span');
-  name.className   = 'directory-name';
-  name.textContent = directory.name;
-
-  header.append(toggle, icon, name);
-  li.appendChild(header);
-
-  // If there are sub-folders, build them recursively
-  if (hasChildren) {
-    const childrenUl = document.createElement('ul');
-    childrenUl.className     = 'directory-children';
-    childrenUl.style.display = 'none';
-    directory.children.forEach(childId => {
-      const child = archiveData[childId];
-      if (child?.type === 'directory') {
-        buildDirectoryItem(childrenUl, child, childId);
-      }
-    });
-    li.appendChild(childrenUl);
-  }
-
-  parentUl.appendChild(li);
-}
-
-
-
-/**
- * Navigate to a given folder path.
- * Rebuilds the UI to reflect that directory.
- *
- * @param {string} path  e.g. "/foo/bar"
- */
-function navigateToPath(path) {
-  // 1) Canonicalize the path
-  const normalized = normalizePath(path);
-
-  // 2) Check if the directory exists; if not, fallback to root
-  const dir = findDirectoryByPath(normalized);
-  if (!dir) {
-    showStatus(`❌ Directory not found: ${normalized}`, 'error');
-    // Optionally, navigate to root as a fallback
-    currentPath = '/';
-  } else {
-    currentPath = normalized;
-  }
-
-  // 3) Rebuild the breadcrumb navigation
-  updatePathNavigation();
-
-  // 4) Re-render the grid of folders/files
-  updateContentGrid();
-
-  // 5) Expand that path in the sidebar tree (if sidebar exists)
-  if (typeof expandDirectoryPath === "function") {
-    expandDirectoryPath(currentPath);
-  }
-}
-
-
-
-
-/**
- * Expands all directory nodes in the sidebar tree
- * so that the given path is visible/open.
- *
- * @param {string} targetPath  e.g. "/foo/bar"
- */
-function expandDirectoryPath(targetPath) {
-  // 1) canonicalize the incoming path
-  const normalizedTarget = normalizePath(targetPath);
-  if (normalizedTarget === '/') return;
-
-  // 2) walk each segment of "/foo/bar" → ["foo","bar"]
-  const segments = normalizedTarget.slice(1).split('/');
-  let accumPath = '';
-
-  segments.forEach(segment => {
-    accumPath += '/' + segment;
-    const pathToOpen = normalizePath(accumPath);
-
-    // 3) find the directory label that matches this exact normalized path
-    const dirLabel = document.querySelector(
-      `.directory[data-path="${pathToOpen}"]`
-    );
-    if (!dirLabel) return;
-
-    // 4) expand its <ul> of children
-    const parentLi  = dirLabel.closest('li');
-    const childrenUl = parentLi?.querySelector('ul.directory-children');
-    if (childrenUl) {
-      childrenUl.style.display = 'block';
-      // update the toggle arrow if present
-      const toggleIcon = dirLabel.querySelector('.directory-toggle');
-      if (toggleIcon) toggleIcon.textContent = '▼';
-    }
-  });
-}
-
-
-/**
- * Returns the true current path from the app state.
- */
-function getCurrentPath() {
-  return currentPath;
-}
-
-
-
-
-/**
- * Rebuilds the breadcrumb nav based on currentPath.
- * Ensures each <a> has a proper data-path for moveFiles.js.
- */
-function updatePathNavigation() {
-  const nav = document.getElementById("path-navigation");
-  let ol = nav.querySelector("ol");
-  if (!ol) {
-    ol = document.createElement("ol");
-    nav.appendChild(ol);
-  }
-  ol.innerHTML = ""; // Clear old breadcrumbs
-
-  // Split currentPath into segments
-  const path = currentPath;
-  const segments = path === "/" ? [] : path.slice(1).split("/");
-
-  // Always add root first
-  let accumulated = "";
-  const rootLi = document.createElement("li");
-  const rootA  = document.createElement("a");
-  rootA.textContent = "Root";
-  rootA.href = "#";
-  rootA.setAttribute("data-path", "/");
-  rootA.addEventListener("click", () => navigateToPath("/"));
-  rootLi.appendChild(rootA);
-  ol.appendChild(rootLi);
-
-  // If at root, we're done
-  if (segments.length === 0) return;
-
-  // Add each path segment as a breadcrumb
-  accumulated = "";
-  segments.forEach((seg, idx) => {
-    accumulated += "/" + seg;
-    const dirObj = findDirectoryByPath(accumulated);
-    const displayName = dirObj ? dirObj.name : seg;
-    const li = document.createElement("li");
-    if (idx === segments.length - 1) {
-      // Last crumb: not a link
-      const span = document.createElement("span");
-      span.textContent = displayName;
-      span.setAttribute("data-path", accumulated); // So moveFiles.js can read it!
-      li.appendChild(span);
-    } else {
-      const a = document.createElement("a");
-      a.textContent = displayName;
-      a.href = "#";
-      a.setAttribute("data-path", accumulated);
-      a.addEventListener("click", () => navigateToPath(accumulated));
-      li.appendChild(a);
-    }
-    ol.appendChild(li);
-  });
-}
-
-
-
-/**
- * Update the content grid based on the current breadcrumb path.
- */
-function updateContentGrid() {
-  const contentGrid = document.getElementById('content-grid');
-  const emptyState  = document.getElementById('empty-state');
-  contentGrid.innerHTML = '';
-
-  // 1) Figure out where we are
-  const path       = getCurrentPath();
-  const currentDir = findDirectoryByPath(path);
-
-  // Debug: only now that currentDir exists
-  console.log('Rendering grid for path:', path, '→', currentDir);
-
-  let hasItems = false;
-
-  // 2) If there are children, show them (directories and any files added as children)
-  if (currentDir && currentDir.children?.length) {
-    emptyState.style.display  = 'none';
-    contentGrid.style.display = 'grid';
-
-    currentDir.children.forEach(childId => {
-      const child = archiveData[childId];
-      if (!child) return;
-
-      // Choose an icon HTML snippet
-      let iconHTML;
-      if (child.type === 'directory') {
-        iconHTML = `<div class="item-icon"><span class="folder-icon">📁</span></div>`;
-      } else {
-        switch ((child.fileType || '').toLowerCase()) {
-          case 'document': iconHTML = `<div class="item-icon">📄</div>`; break;
-          case 'pdf':      iconHTML = `<div class="item-icon">📄</div>`; break;
-          case 'video':    iconHTML = `<div class="item-icon">🎬</div>`; break;
-          case 'image':    iconHTML = `<div class="item-icon">🖼️</div>`; break;
-          case 'audio':    iconHTML = `<div class="item-icon">🔊</div>`; break;
-          default:         iconHTML = `<div class="item-icon">📝</div>`;
-        }
-      }
-
-      // Build the card
-      const itemCard = document.createElement('div');
-      itemCard.className = 'item-card' + (child.type === 'directory' ? ' folder' : '');
-
-      // folders get normalized data-path, files get data-id
-      if (child.type === 'directory') {
-        itemCard.dataset.path = normalizePath(child.path);
-      } else {
-        itemCard.dataset.id = childId;
-      }
-
-      itemCard.innerHTML = `
-        ${iconHTML}
-        <div class="item-details">
-          <div class="item-name">${child.name}</div>
-          <div class="item-meta">
-            ${child.type === 'directory'
-              ? 'Directory'
-              : `${child.fileType?.toUpperCase() || 'FILE'} · ${child.size || ''}`
+// Function to add a directory to the hierarchical structure
+function addDirectoryToHierarchy(id, directoryData) {
+    // Get the directory path
+    const dirPath = directoryData.path || "/";
+    
+    // Split the path into segments
+    const pathSegments = dirPath.split('/').filter(segment => segment !== '');
+    
+    let currentNode = archiveData.root;
+    let currentPath = "";
+    
+    // Create parent directories if they don't exist
+    for (let i = 0; i < pathSegments.length; i++) {
+        const segment = pathSegments[i];
+        currentPath += `/${segment}`;
+        
+        // Check if this is the target directory or a parent
+        const isTargetDir = i === pathSegments.length - 1;
+        const segmentId = isTargetDir ? id : segment.toLowerCase().replace(/\s+/g, '_');
+        
+        let found = false;
+        if (currentNode.children) {
+            for (const existingChildId of currentNode.children) {
+                if (archiveData[existingChildId] && 
+                    archiveData[existingChildId].path === currentPath) {
+                    found = true;
+                    currentNode = archiveData[existingChildId];
+                    break;
+                }
             }
-          </div>
-        </div>
-      `;
-
-      // Click behavior for each item
-      itemCard.addEventListener('click', () => {
-        if (child.type === 'directory') {
-          navigateToPath(normalizePath(child.path));
         } else {
-          window.location.href = `../delete/preview.html?id=${childId}`;
-          localStorage.setItem('selectedID', childId);
+            currentNode.children = [];
         }
-      });
-
-      contentGrid.appendChild(itemCard);
-      hasItems = true;
-    });
-  }
-
-  // 3) ALWAYS show all files whose directory matches the current path (even if not in children)
-  if (typeof allFiles !== "undefined" && Array.isArray(allFiles)) {
-    allFiles.forEach(file => {
-      if (normalizePath(file.directory) === normalizePath(path)) {
-        // If not already rendered (not in children)
-        if (!currentDir || !currentDir.children || !currentDir.children.includes(file.id)) {
-          // Build the card for this file
-          let iconHTML;
-          switch ((file.fileType || '').toLowerCase()) {
-            case 'document': iconHTML = `<div class="item-icon">📄</div>`; break;
-            case 'pdf':      iconHTML = `<div class="item-icon">📄</div>`; break;
-            case 'video':    iconHTML = `<div class="item-icon">🎬</div>`; break;
-            case 'image':    iconHTML = `<div class="item-icon">🖼️</div>`; break;
-            case 'audio':    iconHTML = `<div class="item-icon">🔊</div>`; break;
-            default:         iconHTML = `<div class="item-icon">📝</div>`;
-          }
-          const itemCard = document.createElement('div');
-          itemCard.className = 'item-card';
-          itemCard.dataset.id = file.id;
-          itemCard.innerHTML = `
-            ${iconHTML}
-            <div class="item-details">
-              <div class="item-name">${file.title || file.name}</div>
-              <div class="item-meta">
-                ${file.fileType?.toUpperCase() || 'FILE'} · ${file.size || ''}
-              </div>
-            </div>
-          `;
-          itemCard.addEventListener('click', () => {
-            window.location.href = `../delete/preview.html?id=${file.id}`;
-            localStorage.setItem('selectedID', file.id);
-          });
-          contentGrid.appendChild(itemCard);
-          hasItems = true;
+        
+        if (!found) {
+            // Create directory node
+            archiveData[segmentId] = {
+                name: directoryData.name || segment,
+                type: "directory",
+                path: currentPath,
+                children: [],
+                firestoreId: isTargetDir ? id : null,
+                description: directoryData.description || ""
+            };
+            
+            currentNode.children.push(segmentId);
+            currentNode = archiveData[segmentId];
         }
-      }
-    });
-  }
-
-  // 4) Show empty state if no items
-  if (!hasItems) {
-    contentGrid.style.display = 'none';
-    emptyState.style.display  = 'block';
-  }
+    }
 }
 
+// Function to add a document to the hierarchical structure
+function addDocumentToHierarchy(id, documentData) {
+    // Get directory path from the document
+    const directoryPath = documentData.directory || "/";
+    
+    // Split the path into segments
+    const pathSegments = directoryPath.split('/').filter(segment => segment !== '');
+    
+    // Start from root
+    let currentNode = archiveData.root;
+    let currentPath = "";
+    
+    // Create directory structure if it doesn't exist
+    for (let i = 0; i < pathSegments.length; i++) {
+        const segment = pathSegments[i];
+        currentPath += `/${segment}`;
+        
+        // Check if this segment already exists in the current node
+        let foundChild = null;
+        
+        if (currentNode.children) {
+            for (const existingChildId of currentNode.children) {
+                if (archiveData[existingChildId] && 
+                    archiveData[existingChildId].path === currentPath) {
+                    foundChild = existingChildId;
+                    break;
+                }
+            }
+        } else {
+            currentNode.children = [];
+        }
+        
+        // If this directory doesn't exist yet, create it and save to Firestore
+        if (!foundChild) {
+            const childId = segment.toLowerCase().replace(/\s+/g, '_') + '_' + Date.now();
+            
+            // Create directory in memory
+            archiveData[childId] = {
+                name: segment,
+                type: "directory",
+                path: currentPath,
+                children: [],
+                description: ""
+            };
+            
+            // Add to parent's children
+            currentNode.children.push(childId);
+            
+            // COMMENTED OUT: Save to Firestore functionality
+            /*
+            saveDirectoryToFirestore(childId, archiveData[childId])
+                .then(firestoreId => {
+                    // Update with Firestore ID
+                    archiveData[childId].firestoreId = firestoreId;
+                })
+                .catch(error => console.error("Error saving directory:", error));
+            */
+            
+            // Update current node reference
+            currentNode = archiveData[childId];
+        } else {
+            // Move to existing child
+            currentNode = archiveData[foundChild];
+        }
+    }
+    
+    // Add the document itself to the last directory
+    const fileId = `file_${id}`;
+    
+    // Calculate file size (placeholder since we don't have actual file size)
+    const fileSize = documentData.fileSize || "Unknown";
+    
+    // Create file object
+    archiveData[fileId] = {
+        name: documentData.title,
+        type: "file",
+        fileType: documentData.fileType || "document",
+        path: `${currentPath}/${documentData.title.toLowerCase().replace(/\s+/g, '_')}`,
+        size: fileSize,
+        lastModified: documentData.uploadedAt || new Date().toISOString(),
+        metadata: {
+            title: documentData.title,
+            year: documentData.date ? new Date(documentData.date).getFullYear().toString() : "",
+            description: documentData.description || "",
+            author: documentData.author || "Unknown",
+            continent: documentData.continent || "",
+            country: documentData.country || "",
+            institution: documentData.institution || "",
+            keywords: documentData.keywords || [],
+            category: documentData.category || "",
+            uploadedAt: documentData.uploadedAt
+        },
+        firestoreId: id  // Store the Firestore document ID for reference
+    };
+    
+    // Add file to the directory's children
+    if (!currentNode.children) {
+        currentNode.children = [];
+    }
+    currentNode.children.push(fileId);
+}
 
+// Function to save a directory to Firestore - COMMENTED OUT
+async function saveDirectoryToFirestore(id, directoryData) {
+    /* COMMENTED OUT: Firestore directory saving functionality
+    try {
+        // Create a clean copy for Firestore (omitting children array which can be rebuilt)
+        const dirForFirestore = {
+            name: directoryData.name,
+            path: directoryData.path,
+            description: directoryData.description || "",
+            createdAt: new Date().toISOString()
+        };
+        
+        // Add to Firestore
+        const docRef = await addDoc(collection(db, "directories"), dirForFirestore);
+        console.log("Directory saved with ID:", docRef.id);
+        return docRef.id;
+    } catch (error) {
+        console.error("Error saving directory:", error);
+        throw error;
+    }
+    */
+    
+    // Instead, just return a dummy ID without adding to Firestore
+    console.log("Directory NOT saved to Firestore (functionality disabled)");
+    return 'local_dir_' + Date.now();
+}
 
+// Initialize UI elements
+function initializeUI() {
+    buildDirectoryTree();
+    updatePathNavigation();
+    updateContentGrid();
+    
+    // Handle "New Directory" button click
+    const newDirBtn = document.getElementById('new-dir-btn');
+    const newDirModal = document.getElementById('new-dir-modal');
+    const cancelDirBtn = document.getElementById('cancel-dir-btn');
+    const newDirForm = document.getElementById('new-dir-form');
 
+    if (newDirBtn) {
+        newDirBtn.addEventListener('click', function() {
+            newDirModal.style.display = 'flex';
+        });
+    }
 
-// ─── Helper: look up a directory object by its normalized path ───────────────
+    if (cancelDirBtn) {
+        cancelDirBtn.addEventListener('click', function() {
+            newDirModal.style.display = 'none';
+        });
+    }
+
+    if (newDirForm) {
+        newDirForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const dirName = document.getElementById('dir-name').value;
+            const dirDescription = document.getElementById('dir-description').value;
+            
+            // Generate a temporary ID for the new directory
+            const tempId = dirName.toLowerCase().replace(/\s+/g, '_') + '_' + Date.now();
+            
+            // Create new directory object
+            const newDir = {
+                name: dirName,
+                type: 'directory',
+                path: currentPath === '/' ? `/${dirName}` : `${currentPath}/${dirName}`,
+                children: [],
+                description: dirDescription
+            };
+            
+            try {
+                // COMMENTED OUT: Save directory to Firestore
+                // const firestoreId = await saveDirectoryToFirestore(tempId, newDir);
+                
+                // Instead, just use a local ID
+                const localId = 'local_dir_' + Date.now();
+                
+                // Update with local ID
+                newDir.firestoreId = localId;
+                
+                // Add to archive data
+                archiveData[localId] = newDir;
+                
+                // Find parent directory and add new dir to its children
+                const parentDir = findDirectoryByPath(currentPath);
+                if (parentDir) {
+                    if (!parentDir.children) {
+                        parentDir.children = [];
+                    }
+                    parentDir.children.push(localId);
+                }
+                
+                // Close modal
+                newDirModal.style.display = 'none';
+                
+                // Refresh directory tree and content
+                buildDirectoryTree();
+                updateContentGrid();
+                
+                // Reset form
+                document.getElementById('dir-name').value = '';
+                document.getElementById('dir-description').value = '';
+                
+                console.log("Directory created locally but NOT saved to Firestore");
+                
+            } catch (error) {
+                console.error("Error creating directory:", error);
+                alert("Failed to create directory. Please try again.");
+            }
+        });
+    }
+
+    // Handle "Upload Files" button click
+    const uploadBtn = document.getElementById('upload-btn');
+    const emptyStateUploadBtn = document.querySelector('.empty-state .btn');
+    
+    if (uploadBtn) {
+        uploadBtn.addEventListener('click', function () {
+            const directoryPath = currentPath === '/' ? '/' : currentPath;
+            window.location.href = `admin-add.html?directory=${encodeURIComponent(directoryPath)}`;
+        });
+    }
+    
+    if (emptyStateUploadBtn) {
+        emptyStateUploadBtn.addEventListener('click', function() {
+            const directoryPath = currentPath === '/' ? '/' : currentPath;
+            window.location.href = `admin-add.html?directory=${encodeURIComponent(directoryPath)}`;
+        });
+    }
+    
+    // Set up search functionality
+    const searchInput = document.querySelector('.search-bar input');
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            
+            // Simple filtering for items in the current view
+            const contentItems = document.querySelectorAll('.item-card');
+            contentItems.forEach(item => {
+                const itemName = item.querySelector('.item-name').textContent.toLowerCase();
+                if (itemName.includes(searchTerm)) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+    }
+    
+    // Set up directory creation form
+    const createDirForm = document.getElementById('create-directory-form');
+    if (createDirForm) {
+        createDirForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const directoryPath = document.getElementById('directory-path').value;
+            try {
+                await createDirectoryStructure(directoryPath);
+                
+                // Reset the form
+                document.getElementById('directory-path').value = '';
+                
+                // Rebuild the UI
+                buildDirectoryTree();
+                updateContentGrid();
+                
+                alert("Directory structure created successfully! (Note: Not saved to Firestore)");
+            } catch (error) {
+                console.error("Error creating directory structure:", error);
+                alert("Error creating directory structure. Please try again.");
+            }
+        });
+    }
+    
+    // Auto-fill directory path in admin-add.html if opened from hierarchy
+    const urlParams = new URLSearchParams(window.location.search);
+    const directoryParam = urlParams.get('directory');
+    if (directoryParam) {
+        // If we're on the admin-add page and directory param is present
+        const directoryInput = document.getElementById('directory');
+        if (directoryInput) {
+            directoryInput.value = directoryParam;
+        }
+    }
+}
+
+// Function to create a directory structure from path string - MODIFIED TO NOT SAVE TO FIRESTORE
+async function createDirectoryStructure(directoryPath) {
+    // Split the path into segments
+    const pathSegments = directoryPath.split('/').filter(segment => segment !== '');
+    
+    // Start from root
+    let currentNode = archiveData.root;
+    let currentPath = "";
+    
+    // Create directory structure
+    for (let i = 0; i < pathSegments.length; i++) {
+        const segment = pathSegments[i];
+        currentPath += `/${segment}`;
+        
+        // Check if this segment already exists in the current node
+        let found = false;
+        let existingChildId = null;
+        
+        if (currentNode.children) {
+            for (const childId of currentNode.children) {
+                const child = archiveData[childId];
+                if (child && child.path === currentPath) {
+                    found = true;
+                    existingChildId = childId;
+                    break;
+                }
+            }
+        } else {
+            currentNode.children = [];
+        }
+        
+        // If this directory doesn't exist yet, create it
+        if (!found) {
+            const tempId = segment.toLowerCase().replace(/\s+/g, '_') + '_' + Date.now();
+            
+            // Create directory object
+            const newDir = {
+                name: segment,
+                type: "directory",
+                path: currentPath,
+                children: [],
+                description: ""
+            };
+            
+            try {
+                // COMMENTED OUT: Save to Firestore
+                // const firestoreId = await saveDirectoryToFirestore(tempId, newDir);
+                
+                // Instead, use a local ID
+                const localId = 'local_dir_' + Date.now();
+                
+                // Update with local ID
+                newDir.firestoreId = localId;
+                
+                // Add to archive data
+                archiveData[localId] = newDir;
+                currentNode.children.push(localId);
+                
+                // Move to next level
+                currentNode = archiveData[localId];
+                
+                console.log("Directory created in structure locally but NOT saved to Firestore");
+                
+            } catch (error) {
+                console.error("Error creating directory in structure:", error);
+                throw error;
+            }
+        } else {
+            // Move to existing directory
+            currentNode = archiveData[existingChildId];
+        }
+    }
+    
+    return currentPath;
+}
+
+// UPDATED: Function to build directory tree with collapsible functionality
+function buildDirectoryTree() {
+    const rootUl = document.getElementById('root-directory');
+    rootUl.innerHTML = '';
+    
+    // Add root directory
+    const rootLi = document.createElement('li');
+    rootLi.innerHTML = `
+        <div class="directory active" data-path="/">
+            <span class="directory-toggle">▼</span>
+            <span class="directory-icon">📁</span>
+            <span class="directory-name">Root</span>
+        </div>
+    `;
+    rootUl.appendChild(rootLi);
+    
+    // Add first level directories
+    const rootChildren = archiveData.root.children;
+    if (rootChildren && rootChildren.length > 0) {
+        const childrenUl = document.createElement('ul');
+        childrenUl.className = 'directory-children';
+        rootLi.appendChild(childrenUl);
+        
+        rootChildren.forEach(childId => {
+            const child = archiveData[childId];
+            if (child && child.type === 'directory') {
+                buildDirectoryItem(childrenUl, child, childId);
+            }
+        });
+    }
+    
+    // Add click event listeners to directory toggles
+    document.querySelectorAll('.directory-toggle').forEach(toggle => {
+        toggle.addEventListener('click', function(e) {
+            e.stopPropagation(); // Prevent directory selection
+            
+            const li = this.closest('li');
+            const childrenUl = li.querySelector('ul');
+            
+            if (childrenUl) {
+                // Toggle visibility
+                if (childrenUl.style.display === 'none') {
+                    childrenUl.style.display = 'block';
+                    this.textContent = '▼'; // Down arrow
+                } else {
+                    childrenUl.style.display = 'none';
+                    this.textContent = '▶'; // Right arrow
+                }
+            }
+        });
+    });
+    
+    // Add click event listeners to directories
+    document.querySelectorAll('.directory').forEach(dir => {
+        dir.addEventListener('click', function() {
+            const path = this.getAttribute('data-path');
+            navigateToPath(path);
+            
+            // Update active directory
+            document.querySelectorAll('.directory').forEach(d => d.classList.remove('active'));
+            this.classList.add('active');
+        });
+    });
+}
+
+// New function to build a directory item with its children
+function buildDirectoryItem(parentUl, directory, directoryId) {
+    const hasChildren = directory.children && directory.children.length > 0 && 
+                       directory.children.some(childId => archiveData[childId] && archiveData[childId].type === 'directory');
+    
+    const dirLi = document.createElement('li');
+    dirLi.innerHTML = `
+        <div class="directory" data-path="${directory.path}">
+            ${hasChildren ? 
+                '<span class="directory-toggle">▶</span>' : 
+                '<span class="directory-spacer"></span>'}
+            <span class="directory-icon">📁</span>
+            <span class="directory-name">${directory.name}</span>
+        </div>
+    `;
+    parentUl.appendChild(dirLi);
+    
+    // Add children if any
+    if (hasChildren) {
+        const childrenUl = document.createElement('ul');
+        childrenUl.className = 'directory-children';
+        childrenUl.style.display = 'none'; // Start collapsed
+        dirLi.appendChild(childrenUl);
+        
+        // Add each child directory (but not files)
+        directory.children.forEach(childId => {
+            const child = archiveData[childId];
+            if (child && child.type === 'directory') {
+                buildDirectoryItem(childrenUl, child, childId);
+            }
+        });
+    }
+}
+
+// Function to navigate to a specific path
+function navigateToPath(path) {
+    currentPath = path;
+    currentPathSegments = path.split('/').filter(segment => segment !== '');
+    
+    // Update path navigation
+    updatePathNavigation();
+    
+    // Update content grid
+    updateContentGrid();
+    
+    // Update expanded state in directory tree
+    expandDirectoryPath(path);
+}
+
+// New function to expand directories along a path
+function expandDirectoryPath(path) {
+    if (path === '/') return;
+    
+    const pathSegments = path.split('/').filter(segment => segment !== '');
+    let currentPath = '';
+    
+    // Expand each segment in the path
+    for (let i = 0; i < pathSegments.length; i++) {
+        currentPath += '/' + pathSegments[i];
+        
+        // Find the directory element with this path
+        const dirElement = document.querySelector(`.directory[data-path="${currentPath}"]`);
+        if (dirElement) {
+            // Find parent li and its child ul
+            const parentLi = dirElement.closest('li');
+            const childrenUl = parentLi.querySelector('ul');
+            
+            // Expand if it has children
+            if (childrenUl) {
+                childrenUl.style.display = 'block';
+                const toggle = dirElement.querySelector('.directory-toggle');
+                if (toggle) {
+                    toggle.textContent = '▼'; // Down arrow
+                }
+            }
+        }
+    }
+}
+
+// Update the path navigation breadcrumb
+function updatePathNavigation() {
+    const pathNav = document.getElementById('path-navigation');
+    pathNav.innerHTML = '<a href="#" data-path="/">Root</a>';
+    
+    let currentBuildPath = '';
+    currentPathSegments.forEach((segment, index) => {
+        currentBuildPath += '/' + segment;
+        pathNav.innerHTML += '<span>/</span>';
+        
+        // Find the proper name for this path segment
+        let displayName = segment;
+        Object.keys(archiveData).forEach(key => {
+            if (archiveData[key].path === currentBuildPath) {
+                displayName = archiveData[key].name;
+            }
+        });
+        
+        if (index === currentPathSegments.length - 1) {
+            // Last segment (current directory)
+            pathNav.innerHTML += `<span>${displayName}</span>`;
+        } else {
+            // Navigable segment
+            pathNav.innerHTML += `<a href="#" data-path="${currentBuildPath}">${displayName}</a>`;
+        }
+    });
+    
+    // Add click event listeners to path links
+    document.querySelectorAll('#path-navigation a').forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const path = this.getAttribute('data-path');
+            navigateToPath(path);
+            
+            // Update active directory in sidebar
+            document.querySelectorAll('.directory').forEach(dir => {
+                if (dir.getAttribute('data-path') === path) {
+                    document.querySelectorAll('.directory').forEach(d => d.classList.remove('active'));
+                    dir.classList.add('active');
+                }
+            });
+        });
+    });
+}
+
+// Update the content grid based on current path
+function updateContentGrid() {
+    const contentGrid = document.getElementById('content-grid');
+    const emptyState = document.getElementById('empty-state');
+    contentGrid.innerHTML = '';
+    
+    // Find current directory
+    let currentDir = findDirectoryByPath(currentPath);
+    
+    if (currentDir && currentDir.children && currentDir.children.length > 0) {
+        emptyState.style.display = 'none';
+        contentGrid.style.display = 'grid';
+        
+        // Add all child items (directories and files)
+        currentDir.children.forEach(childId => {
+            const child = archiveData[childId];
+            if (child) {
+                let icon = '';
+                if (child.type === 'directory') {
+                    icon = '<div class="item-icon"><span class="folder-icon">📁</span></div>';
+                } else if (child.fileType === 'document' || child.fileType === 'pdf') {
+                    icon = '<div class="item-icon"><span class="document-icon">📄</span></div>';
+                } else if (child.fileType === 'video') {
+                    icon = '<div class="item-icon"><span class="video-icon">🎬</span></div>';
+                } else if (child.fileType === 'image') {
+                    icon = '<div class="item-icon"><span class="image-icon">🖼️</span></div>';
+                } else if (child.fileType === 'audio') {
+                    icon = '<div class="item-icon"><span class="audio-icon">🔊</span></div>';
+                } else {
+                    icon = '<div class="item-icon"><span class="file-icon">📝</span></div>';
+                }
+                
+                const itemCard = document.createElement('div');
+                itemCard.className = 'item-card';
+                itemCard.setAttribute('data-id', childId);
+                itemCard.innerHTML = `
+                    ${icon}
+                    <div class="item-details">
+                        <div class="item-name">${child.name}</div>
+                        <div class="item-meta">
+                            ${child.type === 'file' ? `${child.fileType.toUpperCase()} · ${child.size}` : 'Directory'}
+                        </div>
+                    </div>
+                `;
+                contentGrid.appendChild(itemCard);
+                
+                // Add click event
+                itemCard.addEventListener('click', function() {
+                    const id = this.getAttribute('data-id');
+                    const item = archiveData[id];
+                    
+                    if (item.type === 'directory') {
+                        navigateToPath(item.path);
+                    } else {
+                        // Navigate to file view page or show details
+                        if (item.firestoreId) {
+                            window.location.href = `../delete/preview.html?id=${item.firestoreId}`;
+                            localStorage.setItem('selectedID', item.firestoreId);
+                        } else {
+                            alert(`Viewing file: ${item.name}`);
+                        }
+                    }
+                });
+            }
+        });
+    } else {
+        // Show empty state
+        contentGrid.style.display = 'none';
+        emptyState.style.display = 'block';
+    }
+}
+
+// Helper function to find a directory by path
 function findDirectoryByPath(path) {
-  const target = normalizePath(path);
-  return (
-    Object.values(archiveData).find(
-      dir => dir.type === 'directory' && dir.path === target
-    ) || null
-  );
+    let result = null;
+    Object.keys(archiveData).forEach(key => {
+        if (archiveData[key].path === path && archiveData[key].type === 'directory') {
+            result = archiveData[key];
+        }
+    });
+    return result;
 }
 
-
-
-// ─── Initialize the application by loading data via your API ─────────────
-document.addEventListener('DOMContentLoaded', () => {
-  // Kick off the data load and UI render
-  loadDataFromFirestore().catch(err => {
-    console.error('Initialization error:', err);
-    showStatus('❌ Failed to initialize application', 'error');
-  });
-
-  // Setup logout functionality
-  document.querySelector('.logout-btn')?.addEventListener('click', () => {
-    window.location.href = './home_page/admin_home.html';
-  });
+// Initialize the application by loading data from Firestore
+document.addEventListener('DOMContentLoaded', function() {
+    loadDataFromFirestore();
+    
+    // Setup logout functionality
+    const logoutBtn = document.querySelector('.logout-btn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', function() {
+            /*if (confirm('Are you sure you want to logout?')) {
+                // Redirect to login page or perform logout actions
+                window.location.href = './home_page/admin_home.html';
+            }*/
+                window.location.href = './home_page/admin_home.html';
+        });
+    }
 });
-
-
-  
- // ─── Only export for Node (tests, server‐side), never in the browser ──────
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = {
-    API_BASE,
-    archiveData,
-    currentPath,
-    showStatus,
-    loadDataFromFirestore,
-    initializeUI,
-    createDirectoryStructure,
-    saveDirectory,
-    buildDirectoryTree,
-    buildDirectoryItem,
-    updatePathNavigation,
-    getCurrentPath,
-    updateContentGrid,
-    expandDirectoryPath,
-    navigateToPath,
-    findDirectoryByPath,
-    addDirectoryToHierarchy,
-    addDocumentToHierarchy
-  };
-}
-
-
-
-
-
-

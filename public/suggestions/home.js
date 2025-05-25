@@ -1,90 +1,94 @@
-// public/suggestions/home.js
-
-// ——————————————————————————————————————————
-// 1) API base URL & shared helpers
-// ——————————————————————————————————————————
-
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
 import {
-  API_BASE,
-  getUserInteractions,
-  toggleFavorite,
-  recordView,
-  recordShare
-} from '../shared/utils.js';
+  getFirestore, collection, doc, getDoc, getDocs, setDoc, updateDoc, onSnapshot,
+  arrayUnion, arrayRemove, increment
+} from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+
+// Firebase config
+const firebaseConfig = {
+  apiKey: "AIzaSyAU_w_Oxi6noX_A1Ma4XZDfpIY-jkoPN-c",
+  authDomain: "constitutionvault-1b5d1.firebaseapp.com",
+  projectId: "constitutionvault-1b5d1",
+  storageBucket: "constitutionvault-1b5d1.appspot.com",
+  messagingSenderId: "616111688261",
+  appId: "1:616111688261:web:97cc0a35c8035c0814312c",
+  measurementId: "G-YJEYZ85T3S"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+export let loadedDocuments = [];
+let userInteractions = {};
+let currentDoc = null;
+const currentUserId = localStorage.getItem("currentUserId") || null;
+const currentDocId = localStorage.getItem("currentDoc") || null;
+const settings = JSON.parse(localStorage.getItem("userSettings") || "{}");
+console.log("settings", settings);
 
 
+if (!currentUserId) {
+  Notification.show("Please login to view documents.");
+  window.location.href = "../user%20signup/index.html";
+}
 
-// ——————————————————————————————————————————
-// 2) App state
-// ——————————————————————————————————————————
-export let loadedDocuments    = [];
-let userInteractions          = { clicks: [], viewed: [], isFavorite: [], shared: [] };
-let currentDoc                = null;
-const currentUserId           = localStorage.getItem("currentUserId");
-const currentDocId            = localStorage.getItem("currentDoc");
-const settings                = JSON.parse(localStorage.getItem("userSettings") || "{}");
-
-// ——————————————————————————————————————————
-// 3) Bootstrapping
-// ——————————————————————————————————————————
-document.addEventListener("DOMContentLoaded", async () => {
+document.addEventListener('DOMContentLoaded', async () => {
   await initApp();
   logOut();
 });
-
-
 
 async function initApp() {
   try {
     setupSearchBtn();
     await loadAllDocuments();
-    // Only load interactions if a user is logged in
-    if (currentUserId) {
-      userInteractions = await getUserInteractions(currentUserId);
-      updateStats();
-    }
-  } catch (err) {
-    console.error("Initialization error:", err);
+    await loadUserInteractions(currentUserId);
+  } catch (error) {
+    console.error("Initialization error:", error);
     showError("Failed to load documents");
   }
 }
 
-// ——————————————————————————————————————————
-// 4) Load all docs from your API
-// ——————————————————————————————————————————
 export async function loadAllDocuments() {
-  try {
-    const res  = await fetch(`${API_BASE}/files`);
-    if (!res.ok) throw new Error(res.statusText);
-    const docs = await res.json();
-    loadedDocuments = docs.map(d => ({
-      ...d,
-      isNew: isDocumentNew(d.uploadDate)
+  const collectionRef = collection(db, "constitutionalDocuments");
+  onSnapshot(collectionRef, (snapshot) => {
+    loadedDocuments = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+      isNew: isDocumentNew(doc.data().uploadDate)
     }));
     applyFilters();
     renderAllSections();
-  } catch (err) {
-    console.error("Error loading documents:", err);
-    showError("Failed to load documents");
+  });
+}
+
+async function loadUserInteractions(userId) {
+  const userRef = doc(db, "users", userId);
+  const userSnap = await getDoc(userRef);
+  if (userSnap.exists()) {
+    userInteractions = userSnap.data().userInteractions || {
+      clicks: {},
+      viewed: [],
+      isFavorite: [],
+      shared: []
+    };
+    updateStats();
+  } else {
+    console.error("User document does not exist.");
   }
 }
 
-// ——————————————————————————————————————————
-// 5) “New” badge helper
-// ——————————————————————————————————————————
 function isDocumentNew(uploadDate) {
   if (!uploadDate) return false;
-  const then    = new Date(uploadDate).getTime();
-  const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
-  return then > weekAgo;
+  const uploadTime = new Date(uploadDate).getTime();
+  const weekAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
+  return uploadTime > weekAgo;
 }
-
 
 function createDocCard(doc) {
   const card = document.createElement('article');
   card.className = 'document-card';
 
-  // NEW badge
   if (doc.isNew) {
     const badge = document.createElement('mark');
     badge.className = 'doc-badge';
@@ -92,42 +96,46 @@ function createDocCard(doc) {
     card.appendChild(badge);
   }
 
-  // Preview
   const fig = document.createElement('figure');
   let previewEl;
+
   switch (doc.fileType) {
-    case 'image':
-      previewEl = document.createElement('img');
+    case "image":
+      previewEl = document.createElement("img");
       previewEl.src = doc.downloadURL;
       previewEl.alt = doc.title || 'Image preview';
-      previewEl.loading = 'lazy';
       break;
-    case 'audio':
-      previewEl = document.createElement('audio');
+    case "audio":
+      previewEl = document.createElement("audio");
       previewEl.controls = true;
       previewEl.src = doc.downloadURL;
       break;
-    case 'video':
-      previewEl = document.createElement('video');
+    case "video":
+      previewEl = document.createElement("video");
       previewEl.controls = true;
       previewEl.src = doc.downloadURL;
       break;
+    case "document":
     default:
-      if (doc.downloadURL?.endsWith('.pdf')) {
-        previewEl = document.createElement('embed');
+      if (doc.downloadURL && doc.downloadURL.endsWith(".pdf")) {
+        previewEl = document.createElement("embed");
         previewEl.src = `${doc.downloadURL}#page=1&view=FitH`;
-        previewEl.type = 'application/pdf';
-        previewEl.width = '100%';
-        previewEl.height = '400px';
+        previewEl.type = "application/pdf";
+        previewEl.width = "100%";
+        previewEl.height = "400px";
       } else {
-        previewEl = document.createElement('p');
-        previewEl.textContent = 'Preview not available for this file type.';
+        previewEl = document.createElement("p");
+        previewEl.textContent = "Preview not available for this file type.";
       }
+      break;
   }
-  fig.appendChild(previewEl);
+
+  if (previewEl && (previewEl.tagName === 'IMG' || previewEl.tagName === 'IFRAME')) {
+    previewEl.loading = "lazy";
+  }
+  if (previewEl) fig.appendChild(previewEl);
   card.appendChild(fig);
 
-  // Metadata + actions
   card.innerHTML += `
     <h3>${doc.title || 'Untitled Document'}</h3>
     <menu class="doc-meta">
@@ -137,67 +145,63 @@ function createDocCard(doc) {
     </menu>
     ${doc.institution ? `<p>${doc.institution}</p>` : ''}
     <menu class="doc-actions">
-      <li><button class="action-btn view-btn"><i class="fas fa-eye"></i> View</button></li>
-      <li><button class="action-btn fav-btn ${doc.isFavorite ? 'active' : ''}"
-                 aria-label="${doc.isFavorite ? 'Remove from favorites' : 'Add to favorites'}">
-            <i class="fas fa-star"></i>
-          </button></li>
-      <li><button class="action-btn share-btn"><i class="fas fa-share-alt"></i></button></li>
+      <li><button class="action-btn view-btn"><i class="fas fa-eye"></i> View All</button></li>
+      <li>
+        <button class="action-btn fav-btn ${doc.isFavorite ? 'active' : ''}" 
+                aria-label="${doc.isFavorite ? 'Remove from favorites' : 'Add to favorites'}">
+          <i class="fas fa-star"></i>
+        </button>
+      </li>
+      <li>
+        <button class="action-btn share-btn" aria-label="Share document"><i class="fas fa-share-alt"></i></button>
+      </li>
     </menu>
   `;
 
-  // Favorite toggle
-  card.querySelector('.fav-btn').addEventListener('click', async e => {
+  card.querySelector('.fav-btn').addEventListener('click', async (e) => {
     e.stopPropagation();
-    userInteractions = await toggleFavorite(currentUserId, doc.id, !doc.isFavorite);
-    renderAllSections();
+    await toggleFavorite(doc.id, !doc.isFavorite);
   });
 
-  // View inline
-  card.querySelector('.view-btn').addEventListener('click', async e => {
+  card.querySelector('.view-btn').addEventListener('click', async (e) => {
     e.stopPropagation();
-    userInteractions = await recordView(currentUserId, doc.id);
-    updateStats();
-    openDocumentInline(doc);
+    await incrementViewCount(doc.id);
+    await ViewCount(doc.id);
+    openDocument(doc);
   });
 
-  // Share
-  card.querySelector('.share-btn').addEventListener('click', async e => {
-    e.stopPropagation();
+  card.querySelector('.share-btn').addEventListener('click', async (e) => {
+    e.preventDefault();
     const shareData = {
       title: doc.title || 'Untitled',
-      text:  doc.description || 'Check this out!',
-      url:   doc.downloadURL
+      text: doc.description || 'Check this out!',
+      url: `${window.location.origin}/delete/viewer.html?id=${doc.id}` || '#'
     };
     if (navigator.share) {
-      await navigator.share(shareData).catch(console.error);
+      try {
+        await navigator.share(shareData);
+        await incrementShareCount(doc.id);
+        updateStats();
+      } catch (error) {
+        console.error('Error sharing document:', error);
+      }
     } else {
-      await navigator.clipboard.writeText(shareData.url);
+      try {
+        await navigator.clipboard.writeText(shareData.url);
+      } catch (error) {
+        console.error('Error sharing document:', error);
+      }
     }
-    userInteractions = await recordShare(currentUserId, doc.id);
-    updateStats();
   });
 
   return card;
 }
 
-
-
-// ——————————————————————————————————————————
-// Rendering helpers
-// ——————————————————————————————————————————
-
-/**
- * Render a list of document cards into the given container.
- * @param {string} sectionSelector - CSS selector for the container
- * @param {Array<Object>} docs - Array of document objects
- */
 function renderDocuments(sectionSelector, docs) {
   const container = document.querySelector(sectionSelector);
   if (!container) return;
-
-  container.innerHTML = "";
-  if (!docs?.length) {
+  container.innerHTML = '';
+  if (!docs || docs.length === 0) {
     container.innerHTML = `
       <article class="empty-state">
         <i class="fas fa-folder-open"></i>
@@ -206,167 +210,127 @@ function renderDocuments(sectionSelector, docs) {
     `;
     return;
   }
-
   docs.forEach(doc => container.appendChild(createDocCard(doc)));
 }
 
-/**
- * Render the “All Files” grid using whatever is
- * returned by applyFilters()
- */
 function renderAllDocuments() {
-  const filtered = applyFilters();
-  renderDocuments("#all-documents-grid", filtered);
+  renderDocuments('#all-documents-grid', applyFilters());
 }
 
-/**
- * Render suggestions, recently viewed, favorites, and all documents.
- */
 async function renderAllSections() {
-  // 1) Refresh user interactions if we have a user
-  if (currentUserId) {
-    userInteractions = await getUserInteractions(currentUserId);
-  }
-
-  // 2) Mark favorites on loadedDocuments
+  await loadUserInteractions(currentUserId);
   loadedDocuments.forEach(doc => {
     doc.isFavorite = userInteractions.isFavorite?.includes(doc.id);
   });
 
-  // 3) Suggestions (top 5 by click count)
-  const suggested = [...loadedDocuments]
-    .sort((a, b) => (b.clicks || 0) - (a.clicks || 0))
-    .slice(0, 5);
-  renderDocuments(".suggestions", suggested);
+  const preference = await preferences();
+  const isEmpty = Object.values(preference).every(
+    prefCategory => Object.keys(prefCategory).length === 0
+  );
+  const suggested = isEmpty
+    ? popularSuggestions()
+    : suggestionsByPreference(preference, loadedDocuments, currentDocId);
 
-  // 4) Recently Viewed (last 5 in reverse-chronological order)
-  if (currentUserId) {
-    const recentIds = (userInteractions.viewed || []).slice(-5).reverse();
-    const recentDocs = loadedDocuments.filter(d => recentIds.includes(d.id));
-    renderDocuments(".recently-viewed", recentDocs);
-  }
-
-  // 5) Favorites
-  const favorites = loadedDocuments.filter(doc => doc.isFavorite);
-  renderDocuments(".favorites", favorites);
-
-  // 6) All Files grid (first page of filtered results)
+  renderDocuments('.suggestions', suggested);
+  renderDocuments('.favorites', loadedDocuments.filter(doc => doc.isFavorite));
   renderAllDocuments();
-
-  // 7) Update the stat cards
   updateStats();
 }
 
-// ——————————————————————————————————————————
-// 7) Filtering logic based on userSettings
-// ——————————————————————————————————————————
 function applyFilters() {
-  // Use the pre-parsed settings object
-  const userSettings = settings;
+  const userSettings = JSON.parse(localStorage.getItem("userSettings") || "{}");
+  console.log("userSettings", userSettings);
+  console.log("loadedDocuments", loadedDocuments);
 
-  // If no settings or no loaded docs, skip filtering
-  if (!Array.isArray(loadedDocuments) || !userSettings || !Object.keys(userSettings).length) {
-    return loadedDocuments;
+  if (!Array.isArray(loadedDocuments)) {
+    console.warn("loadedDocuments is not defined or not an array.");
+    return [];
   }
+   
+  let filtered;
+  if(userSettings){
+    filtered = loadedDocuments.filter(doc => {
+      const normalize = str => str?.toLowerCase().trim();
+      const authorMatch = !Array.isArray(userSettings.author) || 
+        userSettings.author
+        .map(normalize)
+        .includes(normalize(doc.author));
 
-  return loadedDocuments.filter(doc => {
-    const normalize = str => str?.toLowerCase().trim() || "";
+      const categoryMatch = !Array.isArray(userSettings.category) || 
+        userSettings.category.map(normalize).includes(normalize(doc.category));
 
-    // Author filter
-    const authorList = Array.isArray(userSettings.author) ? userSettings.author : [];
-    const authorMatch = !authorList.length ||
-      authorList.map(normalize).includes(normalize(doc.author));
+      const institutionMatch = !Array.isArray(userSettings.institution) || 
+        userSettings.institution.map(normalize).includes(normalize(doc.institution));
 
-    // Category filter
-    const categoryList = Array.isArray(userSettings.category) ? userSettings.category : [];
-    const categoryMatch = !categoryList.length ||
-      categoryList.map(normalize).includes(normalize(doc.category));
+      let keywordsMatch = true;
 
-    // Institution filter
-    const institutionList = Array.isArray(userSettings.institution) ? userSettings.institution : [];
-    const institutionMatch = !institutionList.length ||
-      institutionList.map(normalize).includes(normalize(doc.institution));
-
-    // Keywords filter
-    let keywordsMatch = true;
-    if (Array.isArray(userSettings.keywords) && userSettings.keywords.length) {
+      if (Array.isArray(userSettings.keywords)) {
       const wanted = userSettings.keywords
-        .map(k => k.trim().toLowerCase())
-        .filter(k => k);
-      if (Array.isArray(doc.keywords) && doc.keywords.length) {
-        keywordsMatch = doc.keywords.some(kw =>
-          wanted.includes(kw.toLowerCase())
-        );
-      } else {
-        keywordsMatch = false;
-      }
-    }
+          .map(k => k.trim().toLowerCase())
+          .filter(k => k); // remove empty strings
 
-    return authorMatch && categoryMatch && institutionMatch && keywordsMatch;
-  });
+          if (Array.isArray(doc.keywords)) {
+            keywordsMatch = doc.keywords.some(kw =>
+            wanted.includes(kw.toLowerCase())
+          );
+      } else {
+          keywordsMatch = false;
+        }   
+      }
+
+
+      const match = authorMatch && categoryMatch && institutionMatch;
+
+      console.log(authorMatch, categoryMatch, institutionMatch, keywordsMatch);
+
+      return match;
+    });
+  }
+  console.log("filtered", filtered);
+  
+  return filtered;
+
 }
 
-
-// ——————————————————————————————————————————
-// 8) Error display helper
-// ——————————————————————————————————————————
 function showError(message) {
-  const errorContainer = document.getElementById("error-container");
+  const errorContainer = document.getElementById('error-container');
   if (errorContainer) {
     errorContainer.textContent = message;
-    errorContainer.style.display = "block";
+    errorContainer.style.display = 'block';
   }
 }
 
-// ——————————————————————————————————————————
-// 9) Update dashboard stats
-// ——————————————————————————————————————————
 function updateStats() {
-  const totalDocs   = loadedDocuments.length;
-  const totalViews  = userInteractions.viewed?.length    || 0;
-  const totalFav    = userInteractions.isFavorite?.length || 0;
-  const totalShares = userInteractions.shared?.length    || 0;
-
-  document.querySelectorAll(".stat-card").forEach(card => {
-    const label = card.querySelector(".stat-label")?.textContent;
-    const value = card.querySelector(".stat-value");
+  const totalDocs = loadedDocuments.length;
+  const totalViews = userInteractions.viewed?.length || 0;
+  const totalFav = userInteractions.isFavorite?.length || 0;
+  const totalShares = userInteractions.shared?.length || 0;
+  document.querySelectorAll('.stat-card').forEach(card => {
+    const label = card.querySelector('.stat-label')?.textContent;
+    const value = card.querySelector('.stat-value');
     if (!value) return;
-
     switch (label) {
-      case "Total Documents":
-        value.textContent = totalDocs;
-        break;
-      case "Viewed":
-        value.textContent = totalViews;
-        break;
-      case "Favorites":
-        value.textContent = totalFav;
-        break;
-      case "Shared":
-        value.textContent = totalShares;
-        break;
+      case 'Total Documents': value.textContent = totalDocs; break;
+      case 'Viewed': value.textContent = totalViews; break;
+      case 'Favorites': value.textContent = totalFav; break;
+      case 'Shared': value.textContent = totalShares; break;
     }
   });
 }
 
-// ——————————————————————————————————————————
-// 10) Button wiring & navigation
-// ——————————————————————————————————————————
 function setupSearchBtn() {
   const searchBtn = document.querySelector('.search-btn');
   if (searchBtn) {
     searchBtn.addEventListener('click', () => {
-      // go to the full search interface
-      window.location.href = "../user-interface/user-search.html";
+      window.location.href = "../user-interface/user-filtered.html";
     });
   }
 }
 
 function logOut() {
-  const logOutBtn = document.querySelector('a[href="#"] .fa-sign-out-alt')
-                       ?.parentElement;
+  const logOutBtn = document.querySelector('a[href="#"] .fa-sign-out-alt')?.parentElement;
   if (logOutBtn) {
-    logOutBtn.addEventListener('click', e => {
+    logOutBtn.addEventListener('click', (e) => {
       e.preventDefault();
       localStorage.clear();
       window.location.href = "../index.html";
@@ -374,51 +338,37 @@ function logOut() {
   }
 }
 
-// ——————————————————————————————————————————
-// 11) Open in inline modal viewer
-// ——————————————————————————————————————————
 function openDocument(doc) {
-  openDocumentInline(doc);
+  currentDoc = doc.id;
+  localStorage.setItem("currentDoc", currentDoc);
+  window.location.href = doc.downloadURL || "#";
 }
 
-// ——————————————————————————————————————————
-// 12) Fallback “popular” suggestions
-// ——————————————————————————————————————————
 function popularSuggestions() {
   return loadedDocuments
-    .filter(d => d.id)
+    .filter(doc => doc.id)
     .sort((a, b) => (b.clicks || 0) - (a.clicks || 0))
     .slice(0, 5);
 }
 
-// ——————————————————————————————————————————
-// 13) Build preference counts from loadedDocuments + userInteractions
-// ——————————————————————————————————————————
 async function preferences() {
-  const viewedIds = userInteractions.viewed || [];
-  const preference = {
-    category: {}, author: {}, institution: {},
-    fileType: {}, keywords: {}
-  };
-
-  viewedIds.forEach(id => {
-    const d = loadedDocuments.find(doc => doc.id === id);
-    if (!d) return;
+  const myhistory = userInteractions.viewed || [];
+  const getHistory = myhistory.map(docId => getDoc(doc(db, "constitutionalDocuments", docId)));
+  const docSnap = await Promise.all(getHistory);
+  const preference = { category: {}, author: {}, institution: {}, fileType: {}, keywords: {} };
+  docSnap.forEach(doc => {
+    if (!doc.exists()) return;
+    const data = doc.data();
     ['category', 'author', 'institution', 'fileType'].forEach(key => {
-      const val = d[key];
-      if (val) preference[key][val] = (preference[key][val] || 0) + 1;
+      if (data[key]) preference[key][data[key]] = (preference[key][data[key]] || 0) + 1;
     });
-    (d.keywords || []).forEach(kw => {
-      preference.keywords[kw] = (preference.keywords[kw] || 0) + 1;
+    (data.keywords || []).forEach(keyword => {
+      preference.keywords[keyword] = (preference.keywords[keyword] || 0) + 1;
     });
   });
-
   return preference;
 }
 
-// ——————————————————————————————————————————
-// 14) Score & pick top suggestions by preference
-// ——————————————————————————————————————————
 function suggestionsByPreference(preference, allDocs, currentDocId) {
   return allDocs
     .filter(doc => doc.id !== currentDocId)
@@ -438,41 +388,85 @@ function suggestionsByPreference(preference, allDocs, currentDocId) {
     .map(item => item.doc);
 }
 
-// ——————————————————————————————————————————
-// 15) (OLD override removed)  
-// ——————————————————————————————————————————
-// All favorite–toggling now uses the `toggleFavorite` imported at the top of this file.
-
-
-/**
- * Record a “share” for both file and user, then update stats.
- * @param {string} docId
- */
-async function incrementShareCount(docId) {
+async function toggleFavorite(docId, shouldFavorite) {
   try {
-    userInteractions = await recordShare(currentUserId, docId);
+    const userRef = doc(db, "users", currentUserId);
+    const userSnap = await getDoc(userRef);
+    if (!userSnap.exists()) return;
+    await updateDoc(userRef, {
+      [`userInteractions.isFavorite`]: shouldFavorite ? arrayUnion(docId) : arrayRemove(docId)
+    });
+    await loadUserInteractions(currentUserId);
+    renderAllSections();
     updateStats();
   } catch (error) {
-    console.error("Error recording share:", error);
+    console.error("Error updating favorite:", error);
   }
 }
 
-/**
- * Fetch the latest share count for a file and update the UI.
- * @param {string} docId
- */
-export async function updateSharedStat(docId) {
+async function incrementShareCount(docId) {//shared update
   try {
-    const res = await fetch(
-      `${API_BASE}/files/${encodeURIComponent(docId)}`
-    );
-    if (!res.ok) throw new Error(res.statusText);
-    const file = await res.json();
-    document.getElementById("shared-count").textContent = file.shares || 0;
+    const userRef = doc(db, "users", currentUserId);
+    const userSnap = await getDoc(userRef);
+    if (!userSnap.exists()) {
+      await setDoc(userRef, {
+        userInteractions: { shared: [docId] }
+      }, { merge: true });
+    }
+    await updateDoc(userRef, {
+      [`userInteractions.shared`]: arrayUnion(docId)
+    }, { merge: true });
+    await loadUserInteractions(currentUserId);
+    updateStats();
   } catch (error) {
-    console.error("Error fetching shared stat:", error);
+    console.error("Error incrementing share count:", error);
   }
 }
 
-// Note: we no longer need a separate incrementViewCount helper,
-// since recordView(userId, docId) already bumps both file and user history.
+export async function updateSharedStat(docId) { //shared update on tracker
+  const docRef = doc(db, "constitutionalDocuments", docId);
+  const docSnap = await getDoc(docRef);
+  if (docSnap.exists()) {
+    const data = docSnap.data();
+    const sharedCount = data.shares || 0;
+    document.getElementById("shared-count").textContent = sharedCount;
+  }
+}
+
+export async function incrementViewCount(docId) {// incrementing view on doc and tracker field
+  try {
+    const docRef = doc(db, "constitutionalDocuments", docId);
+    const userRef = doc(db, "users", currentUserId);
+    const userSnap = await getDoc(userRef);
+    if (!userSnap.exists()) return;
+    await Promise.all([
+      updateDoc(docRef, {
+        clicks: increment(1),
+        lastViewed: new Date().toISOString()
+      }),
+      updateDoc(userRef, {
+        [`userInteractions.clicks.${docId}`]: increment(1),
+        [`userInteractions.viewed`]: arrayUnion(docId)
+      }, { merge: true })
+    ]);
+    await loadUserInteractions(currentUserId);
+    updateStats();
+  } catch (error) {
+    console.error("Error incrementing view count:", error);
+  }
+}
+
+export async function ViewCount(docId) { //user view tracking
+  try {
+    const userRef = doc(db, "user_history", currentUserId);
+    const userSnap = await getDoc(userRef);
+    if (!userSnap.exists()) {
+      await setDoc(userRef, { viewed: arrayUnion(docId) }, { merge: true });
+      return;
+    }
+    await updateDoc(userRef, { viewed: arrayRemove(docId) });
+    await updateDoc(userRef, { viewed: arrayUnion(docId) }, { merge: true });
+  } catch (error) {
+    console.error("Error incrementing view count:", error);
+  }
+}

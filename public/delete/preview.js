@@ -1,12 +1,6 @@
 // public/admin/preview.js
 
-
-  const hostname = window.location.hostname;
-const API_BASE =
-  hostname === "localhost" || hostname.startsWith("127.0.0.1")
-    ? "http://localhost:4000/api/files"
-    : "https://constitutionvaultapi-acatgth5g9ekg5fv.southafricanorth-01.azurewebsites.net";
-
+const API_BASE = "http://localhost:4000/api/files";
 
 document.addEventListener("DOMContentLoaded", () => {
   // 1) Grab all required elements
@@ -20,14 +14,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const editBtn    = document.querySelector(".btn-edit");
   const deleteBtn  = document.querySelector(".btn-delete");
   const errorEl    = document.querySelector(".error-message");
-  const backBtn    = document.getElementById("backButton");
-
-  // Wire up Back button
-  if (backBtn) {
-    backBtn.addEventListener("click", () => {
-      window.location.href = "../admin/hierarcy.html";
-    });
-  }
 
   // 2) Sanity-check
   for (const [el, sel] of [
@@ -52,13 +38,15 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
-  // 4) Fetch & render the single doc via API
-  fetch(`${API_BASE}/${encodeURIComponent(docId)}`)
+  // 4) Fetch & render
+  fetch(API_BASE)
     .then(res => {
       if (!res.ok) throw new Error(res.statusText);
       return res.json();
     })
-    .then(doc => {
+    .then(files => {
+      const doc = files.find(f => f.id === docId);
+      if (!doc) throw new Error("Document not found");
       render(doc);
       wireActions(doc);
     })
@@ -73,7 +61,7 @@ document.addEventListener("DOMContentLoaded", () => {
     titleEl.textContent   = doc.title       || "Untitled";
     authorEl.textContent  = doc.author      || "Unknown";
     dateEl.textContent    = formatDate(doc.date);
-    updatedEl.textContent = formatDate(doc.updatedAt || doc.uploadedAt);
+    updatedEl.textContent = formatDate(doc.uploadedAt);
     typeEl.textContent    = doc.fileType    || "—";
 
     if (textEl) {
@@ -107,6 +95,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (deleteBtn) {
       deleteBtn.addEventListener("click", () =>
+        // navigate to the delete-confirm page with the ID in the query string
         window.location.href = `../delete/deleteConfirm.html?id=${encodeURIComponent(doc.id)}`
       );
     }

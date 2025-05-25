@@ -1,159 +1,120 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Home</title>
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
-    />
-    <link rel="stylesheet" href="home.css" />
-  </head>
-  <body>
-    <header>
-      <h1><i class="fas fa-book-open"></i> Document Vault</h1>
-      <nav>
-        <button class="search-btn">
-          <i class="fas fa-search"></i>
-          <h4>Search</h4>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Home</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link rel="stylesheet" href="home.css" />
+</head>
+<body>
+  <header>
+    <h1><i class="fas fa-book-open"></i> Document Vault</h1>
+    <nav>
+      <button class="search-btn">
+        <i class="fas fa-search"></i>
+        <h4>Search</h4>
+      </button>
+      <menu class="user-menu">
+        <button class="user-btn">
+          <i class="fas fa-user-circle"></i> User <i class="fas fa-caret-down"></i>
         </button>
-        <menu class="user-menu">
-          <button class="user-btn">
-            <i class="fas fa-user-circle"></i> User
-            <i class="fas fa-caret-down"></i>
-          </button>
-          <menu class="dropdown-content">
-            <a href="../index.html"
-              ><i class="fas fa-sign-out-alt"></i> Logout</a
-            >
-          </menu>
+        <menu class="dropdown-content">
+          <a href="../index.html"><i class="fas fa-sign-out-alt"></i> Logout</a>
+          <!-- <a href="profile.html"><i class="fas fa-id-badge"></i> Profile</a> -->
         </menu>
-      </nav>
-    </header>
+      </menu>
+    </nav>
+  </header>
 
-    <!-- Error container -->
-    <output id="error-container" class="error" style="display: none"></output>
+  <main>
+    <article class="welcome-container">
+      <h1 class="welcome">Welcome to your Digital Archive</h1>
+      <p class="welcome-subtext">Access and preserve essential documents with ease.</p>
+    </article>
 
-    <main>
-      <article class="welcome-container">
-        <h1 class="welcome">Welcome to your Digital Archive</h1>
-        <p class="welcome-subtext">
-          Access and preserve essential documents with ease.
-        </p>
-      </article>
+    <section class="highlight">
+      “The constitution is the guide which I never will abandon.” — George Washington
+    </section>
 
-      <section class="highlight">
-        “The constitution is the guide which I never will abandon.” — George
-        Washington
+    <section class="statistics-section">
+      <header class="section-header">
+        <h2 class="section-title"><i class="fas fa-chart-pie"></i> Your Statistics</h2>
+      </header>
+      <section class="stats-container">
+        <article class="stat-card">
+          <i class="fas fa-eye stat-icon"></i>
+          <output class="stat-value">0</output>
+          <p class="stat-label">Viewed</p>
+        </article>
+        <article class="stat-card">
+          <i class="fas fa-star stat-icon"></i>
+          <output class="stat-value">0</output>
+          <p class="stat-label">Favorites</p>
+        </article>
+        <article class="stat-card">
+          <i class="fas fa-share-square stat-icon"></i>
+          <output class="stat-value">0</output>
+          <p class="stat-label">Shared</p>
+        </article>
       </section>
+    </section>
 
-      <section class="statistics-section">
-        <header class="section-header">
-          <h2 class="section-title">
-            <i class="fas fa-chart-pie"></i> Your Statistics
-          </h2>
-        </header>
-        <section class="stats-container">
-          <article class="stat-card">
-            <i class="fas fa-eye stat-icon"></i>
-            <output class="stat-value">0</output>
-            <p class="stat-label">Viewed</p>
-          </article>
-          <article class="stat-card">
-            <i class="fas fa-star stat-icon"></i>
-            <output class="stat-value">0</output>
-            <p class="stat-label">Favorites</p>
-          </article>
-          <article class="stat-card">
-            <i class="fas fa-share-square stat-icon"></i>
-            <output class="stat-value">0</output>
-            <p class="stat-label">Shared</p>
-          </article>
-        </section>
+    <section class="document-row">
+      <header class="section-header">
+        <h2 class="section-title"><i class="fas fa-magic"></i> Suggestions</h2>
+        <menu class="section-actions">
+          <button class="btn btn-primary" onclick="window.location.reload()"><i class="fas fa-sync-alt"></i> Refresh</button>
+        </menu>
+      </header>
+      <p class="section-description">Based on your reading history and preferences</p>
+      <output class="doc-scroll suggestions"></output>
+    </section>
+
+    <section class="document-row">
+      <header class="section-header">
+        <h2 class="section-title"><i class="fas fa-history"></i> Recently Viewed</h2>
+        <menu class="section-actions">
+          <a href="history.html"><button class="btn btn-outline">See All</button></a>
+        </menu>
+      </header>
+      <p class="section-description">Documents you've accessed recently</p>
+      <section>
+        <ul class="document-list" id="history">
+          <li class="document-item">Sample document</li>
+        </ul>
       </section>
+    </section>
 
-      <section class="document-row">
-        <header class="section-header">
-          <h2 class="section-title">
-            <i class="fas fa-magic"></i> Suggestions
-          </h2>
-          <menu class="section-actions">
-            <button class="btn btn-primary" onclick="window.location.reload()">
-              <i class="fas fa-sync-alt"></i> Refresh
-            </button>
-          </menu>
-        </header>
-        <p class="section-description">
-          Based on your reading history and preferences
-        </p>
-        <output class="doc-scroll suggestions"></output>
-      </section>
+    <section class="document-row">
+      <header class="section-header">
+        <h2 class="section-title"><i class="fas fa-star"></i> Favorites</h2>
+        <menu class="section-actions">
+          <button class="btn btn-primary" onclick="window.location.reload()"><i class="fas fa-sync-alt"></i> Refresh</button>
+        </menu>
+      </header>
+      <p class="section-description">Your most important documents</p>
+      <output class="doc-scroll favorites"></output>
+    </section>
 
-      <section class="document-row">
-        <header class="section-header">
-          <h2 class="section-title">
-            <i class="fas fa-history"></i> Recently Viewed
-          </h2>
-          <menu class="section-actions">
-            <a href="history.html">
-              <button class="btn btn-outline">See All</button>
-            </a>
-          </menu>
-        </header>
-        <p class="section-description">Documents you've accessed recently</p>
-        <!-- Rendered by home.js -->
-        <output class="doc-scroll recently-viewed"></output>
-      </section>
+    <section class="view-all-container">
+      <header class="view-all-header">
+        <h2 class="view-all-title"><i class="fas fa-file-alt"></i> All Documents</h2>
+        <menu class="view-all-controls">
+          <button class="btn btn-outline" onclick="window.location.reload()"><i class="fas fa-sync-alt"></i> Refresh</button>
+        </menu>
+      </header>
+      <output class="documents-grid" id="all-documents-grid"></output>
+    </section>
+  </main>
 
-      <section class="document-row">
-        <header class="section-header">
-          <h2 class="section-title"><i class="fas fa-star"></i> Favorites</h2>
-          <menu class="section-actions">
-            <button class="btn btn-primary" onclick="window.location.reload()">
-              <i class="fas fa-sync-alt"></i> Refresh
-            </button>
-          </menu>
-        </header>
-        <p class="section-description">Your most important documents</p>
-        <output class="doc-scroll favorites"></output>
-      </section>
+  <footer>
+    <p>&copy; 2025 ConstitutionVault</p>
+  </footer>
 
-      <section class="view-all-container">
-        <header class="view-all-header">
-          <h2 class="view-all-title">
-            <i class="fas fa-file-alt"></i> All Files
-          </h2>
-          <menu class="view-all-controls">
-            <a href="../user-interface/user-search.html">
-              <button class="btn btn-outline">
-                <i class="fas fa-list"></i> View All Files
-              </button>
-            </a>
-          </menu>
-        </header>
-        <output class="documents-grid" id="all-documents-grid"></output>
-      </section>
-    </main>
-
-    <!-- Inline Modal for Document Viewing -->
-    <dialog id="viewer-dialog">
-      <article>
-        <header class="modal-header">
-          <h3>Document Viewer</h3>
-          <button id="modal-close" class="btn btn-close">
-            <i class="fas fa-times"></i>
-          </button>
-        </header>
-        <section class="modal-body"></section>
-      </article>
-    </dialog>
-
-    <footer>
-      <p>&copy; 2025 ConstitutionVault</p>
-    </footer>
-
-    <script type="module" src="home.js"></script>
+  <script type="module" src="home.js"></script>
+  <script type="module" src="history_home.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  </body>
+
+</body>
 </html>
