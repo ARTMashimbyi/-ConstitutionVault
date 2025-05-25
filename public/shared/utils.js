@@ -1,18 +1,33 @@
 // public/shared/utils.js
 
-// Base URL for your API
-export const API_BASE = window.location.hostname.includes("azurewebsites.net")
-  ? "https://constitutionvaultapi-acatgth5g9ekg5fv.southafricanorth-01.azurewebsites.net/api"
-  : "http://localhost:4000/api";
+// Determine API root based on hostname
+const hostname = window.location.hostname;
+export const API_BASE =
+  hostname === "localhost" || hostname.startsWith("127.0.0.1")
+    ? "http://localhost:4000/api"
+    : "https://constitutionvaultapi-acatgth5g9ekg5fv.southafricanorth-01.azurewebsites.net";
+
+// Helper: centralize JSON fetch + error handling
+async function fetchJson(path, options = {}) {
+  const res = await fetch(`${API_BASE}${path}`, {
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    ...options,
+  });
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`API ${path} failed (${res.status}): ${body}`);
+  }
+  return res.json();
+}
 
 /**
  * Fetch the latest interactions for a given user.
  * @param {string} userId
+ * @returns {Promise<Object>}
  */
 export async function getUserInteractions(userId) {
-  const res = await fetch(`${API_BASE}/users/${encodeURIComponent(userId)}`);
-  if (!res.ok) throw new Error(`Failed to load interactions: ${res.statusText}`);
-  const data = await res.json();
+  const data = await fetchJson(`/users/${encodeURIComponent(userId)}`);
   return data.userInteractions || { clicks: {}, viewed: [], isFavorite: [], shared: [] };
 }
 
@@ -21,73 +36,56 @@ export async function getUserInteractions(userId) {
  * @param {string} userId
  * @param {string} docId
  * @param {boolean} makeFav
+ * @returns {Promise<Object>}
  */
 export async function toggleFavorite(userId, docId, makeFav) {
-  const res = await fetch(
-    `${API_BASE}/users/${encodeURIComponent(userId)}/favorite`,
+  const payload = { docId, favorite: makeFav };
+  const data = await fetchJson(
+    `/users/${encodeURIComponent(userId)}/favorite`,
     {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ docId, favorite: makeFav })
+      body: JSON.stringify(payload),
     }
   );
-  if (!res.ok) throw new Error(`Favorite update failed: ${res.statusText}`);
-  const { userInteractions } = await res.json();
-  return userInteractions;
+  return data.userInteractions;
 }
 
 /**
  * Record a “view” both on the file and on the user’s history.
  * @param {string} userId
  * @param {string} docId
+ * @returns {Promise<Object>}
  */
 export async function recordView(userId, docId) {
-  // 1) bump the file’s click counter
-  let res = await fetch(
-    `${API_BASE}/files/${encodeURIComponent(docId)}/view`,
-    { method: "PATCH" }
-  );
-  if (!res.ok) throw new Error(`File view update failed: ${res.statusText}`);
-
-  // 2) record the view in the user profile
-  res = await fetch(
-    `${API_BASE}/users/${encodeURIComponent(userId)}/view`,
+  // 1) bump the file’s view counter
+  await fetchJson(`/files/${encodeURIComponent(docId)}/view`, { method: "PATCH" });
+  // 2) record it on the user
+  const data = await fetchJson(
+    `/users/${encodeURIComponent(userId)}/view`,
     {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ docId })
+      body: JSON.stringify({ docId }),
     }
   );
-  if (!res.ok) throw new Error(`User view update failed: ${res.statusText}`);
-
-  const { userInteractions } = await res.json();
-  return userInteractions;
+  return data.userInteractions;
 }
 
 /**
  * Record a “share” both on the file and on the user’s profile.
  * @param {string} userId
  * @param {string} docId
+ * @returns {Promise<Object>}
  */
 export async function recordShare(userId, docId) {
   // 1) bump the file’s share counter
-  let res = await fetch(
-    `${API_BASE}/files/${encodeURIComponent(docId)}/share`,
-    { method: "PATCH" }
-  );
-  if (!res.ok) throw new Error(`File share update failed: ${res.statusText}`);
-
-  // 2) record the share in the user profile
-  res = await fetch(
-    `${API_BASE}/users/${encodeURIComponent(userId)}/share`,
+  await fetchJson(`/files/${encodeURIComponent(docId)}/share`, { method: "PATCH" });
+  // 2) record it on the user
+  const data = await fetchJson(
+    `/users/${encodeURIComponent(userId)}/share`,
     {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ docId })
+      body: JSON.stringify({ docId }),
     }
   );
-  if (!res.ok) throw new Error(`User share update failed: ${res.statusText}`);
-
-  const { userInteractions } = await res.json();
-  return userInteractions;
+  return data.userInteractions;
 }

@@ -3,13 +3,14 @@
 // ——————————————————————————————————————————
 // 1) API base URL & shared helpers
 // ——————————————————————————————————————————
+
 import {
   API_BASE,
   getUserInteractions,
   toggleFavorite,
   recordView,
   recordShare
-} from "../shared/utils.js";
+} from '../shared/utils.js';
 
 
 
@@ -30,6 +31,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   await initApp();
   logOut();
 });
+
+
 
 async function initApp() {
   try {

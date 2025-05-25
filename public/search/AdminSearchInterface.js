@@ -7,9 +7,11 @@ import { renderSortOptions }     from "./SortOptions.js";
 
 
 // 🌐 Use Azure or localhost automatically
-const API_BASE = window.location.hostname.includes("azurewebsites.net")
-  ? "https://constitutionvaultapi-acatgth5g9ekg5fv.southafricanorth-01.azurewebsites.net/api"
-  : "http://localhost:4000/api";
+const hostname = window.location.hostname;
+const API_BASE =
+  hostname === "localhost" || hostname.startsWith("127.0.0.1")
+    ? "http://localhost:4000/api"
+    : "https://constitutionvaultapi-acatgth5g9ekg5fv.southafricanorth-01.azurewebsites.net";
 
 
 /**
