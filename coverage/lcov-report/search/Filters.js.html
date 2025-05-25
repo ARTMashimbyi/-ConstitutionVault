@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">91.66% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>11/12</span>
+                <span class='fraction'>0/12</span>
             </div>
         
             
@@ -37,16 +37,16 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">50% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>1/2</span>
+                <span class='fraction'>0/2</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">91.66% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>11/12</span>
+                <span class='fraction'>0/12</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line high'></div>
+    <div class='status-line low'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -109,31 +109,31 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">7x</span>
-<span class="cline-any cline-yes">7x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">7x</span>
-<span class="cline-any cline-yes">7x</span>
-<span class="cline-any cline-yes">7x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">7x</span>
-<span class="cline-any cline-yes">7x</span>
-<span class="cline-any cline-yes">7x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">7x</span>
-<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">// public/search/Filters.js
 &nbsp;
@@ -144,18 +144,18 @@
  * @param {(filters: {type: string}) =&gt; void} onFilterChange
  * @returns {HTMLDivElement}
  */
-export function renderFilters(onFilterChange) {
-  const wrapper = document.createElement("div");
-  wrapper.className = "filters";
+export function <span class="fstat-no" title="function not covered" >renderFilters(</span>onFilterChange) {
+  const wrapper = <span class="cstat-no" title="statement not covered" >document.createElement("div");</span>
+<span class="cstat-no" title="statement not covered" >  wrapper.className = "filters";</span>
 &nbsp;
   // Type filter
-  const label = document.createElement("label");
-  label.htmlFor = "filter-type";
-  label.textContent = "Type:";
+  const label = <span class="cstat-no" title="statement not covered" >document.createElement("label");</span>
+<span class="cstat-no" title="statement not covered" >  label.htmlFor = "filter-type";</span>
+<span class="cstat-no" title="statement not covered" >  label.textContent = "Type:";</span>
 &nbsp;
-  const select = document.createElement("select");
-  select.id = "filter-type";
-  select.innerHTML = `
+  const select = <span class="cstat-no" title="statement not covered" >document.createElement("select");</span>
+<span class="cstat-no" title="statement not covered" >  select.id = "filter-type";</span>
+<span class="cstat-no" title="statement not covered" >  select.innerHTML = `</span>
     &lt;option value=""&gt;All&lt;/option&gt;
     &lt;option value="document"&gt;Document&lt;/option&gt;
     &lt;option value="text"&gt;Text&lt;/option&gt;
@@ -164,12 +164,12 @@ export function renderFilters(onFilterChange) {
     &lt;option value="audio"&gt;Audio&lt;/option&gt;
   `;
 &nbsp;
-  select.addEventListener("change", <span class="fstat-no" title="function not covered" >()</span> =&gt; {
+<span class="cstat-no" title="statement not covered" >  select.addEventListener("change", <span class="fstat-no" title="function not covered" >()</span> =&gt; {</span>
 <span class="cstat-no" title="statement not covered" >    onFilterChange({ type: select.value });</span>
   });
 &nbsp;
-  wrapper.append(label, select);
-  return wrapper;
+<span class="cstat-no" title="statement not covered" >  wrapper.append(label, select);</span>
+<span class="cstat-no" title="statement not covered" >  return wrapper;</span>
 }
 &nbsp;</pre></td></tr></table></pre>
 
@@ -178,7 +178,7 @@ export function renderFilters(onFilterChange) {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-05-23T23:01:35.464Z
+                at 2025-05-25T16:52:09.255Z
             </div>
         <script src="../prettify.js"></script>
         <script>
