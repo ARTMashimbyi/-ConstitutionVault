@@ -1,6 +1,8 @@
 // public/delete/delete.js
 
-const API_BASE = "http://localhost:4000/api/files";
+const API_BASE = window.location.hostname.includes("azurewebsites.net")
+  ? "https://constitutionvaultapi-acatgth5g9ekg5fv.southafricanorth-01.azurewebsites.net/api/files"
+  : "http://localhost:4000/api/files";
 
 document.addEventListener("DOMContentLoaded", () => {
   // 1) Read the document ID from the URL query string
@@ -47,7 +49,6 @@ document.addEventListener("DOMContentLoaded", () => {
       successIcn.style.display = "block";
       statusMsg.textContent     = "Deleted successfully!";
       setTimeout(() => {
-        // Adjust this path if your hierarchy page lives elsewhere
         window.location.href = "../admin/hierarcy.html";
       }, 1200);
 

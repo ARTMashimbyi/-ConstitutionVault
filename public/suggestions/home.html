@@ -24,23 +24,30 @@
             <i class="fas fa-caret-down"></i>
           </button>
           <menu class="dropdown-content">
-            <a href="#"><i class="fas fa-user"></i> Profile</a>
-            <a href="../user_settings/index.html"
-              ><i class="fas fa-cog"></i> Settings</a
+            <a href="../index.html"
+              ><i class="fas fa-sign-out-alt"></i> Logout</a
             >
-            <a href="#"><i class="fas fa-sign-out-alt"></i> Logout</a>
           </menu>
         </menu>
       </nav>
     </header>
 
+    <!-- Error container -->
+    <output id="error-container" class="error" style="display: none"></output>
+
     <main>
       <article class="welcome-container">
-        <h1 class="welcome">Welcome to your Digital archive</h1>
+        <h1 class="welcome">Welcome to your Digital Archive</h1>
         <p class="welcome-subtext">
           Access and preserve essential documents with ease.
         </p>
       </article>
+
+      <section class="highlight">
+        “The constitution is the guide which I never will abandon.” — George
+        Washington
+      </section>
+
       <section class="statistics-section">
         <header class="section-header">
           <h2 class="section-title">
@@ -66,17 +73,13 @@
         </section>
       </section>
 
-      <!-- <section class="recent-activity">
-            <h2 class="section-title"><i class="fas fa-clock"></i> Recent Activity</h2>
-        </section> -->
-
       <section class="document-row">
         <header class="section-header">
           <h2 class="section-title">
             <i class="fas fa-magic"></i> Suggestions
           </h2>
           <menu class="section-actions">
-            <button class="btn btn-primary">
+            <button class="btn btn-primary" onclick="window.location.reload()">
               <i class="fas fa-sync-alt"></i> Refresh
             </button>
           </menu>
@@ -84,7 +87,7 @@
         <p class="section-description">
           Based on your reading history and preferences
         </p>
-        <output class="doc-scroll suggestions"> </output>
+        <output class="doc-scroll suggestions"></output>
       </section>
 
       <section class="document-row">
@@ -94,53 +97,63 @@
           </h2>
           <menu class="section-actions">
             <a href="history.html">
-              <button class="btn btn-outline" id="history_btn">See All</button>
+              <button class="btn btn-outline">See All</button>
             </a>
           </menu>
         </header>
         <p class="section-description">Documents you've accessed recently</p>
-        <!--history will be shown here-->
-        <section>
-          <ul class="document-list" id="history">
-            <li class="document-item"></li>
-          </ul>
-        </section>
+        <!-- Rendered by home.js -->
+        <output class="doc-scroll recently-viewed"></output>
       </section>
 
       <section class="document-row">
         <header class="section-header">
           <h2 class="section-title"><i class="fas fa-star"></i> Favorites</h2>
           <menu class="section-actions">
-            <button class="btn btn-primary">
+            <button class="btn btn-primary" onclick="window.location.reload()">
               <i class="fas fa-sync-alt"></i> Refresh
             </button>
           </menu>
         </header>
         <p class="section-description">Your most important documents</p>
-        <output class="doc-scroll favorites"> </output>
+        <output class="doc-scroll favorites"></output>
       </section>
 
       <section class="view-all-container">
         <header class="view-all-header">
           <h2 class="view-all-title">
-            <i class="fas fa-file-alt"></i> All Documents
+            <i class="fas fa-file-alt"></i> All Files
           </h2>
           <menu class="view-all-controls">
-            <button class="btn btn-outline">
-              <i class="fas fa-sync-alt"></i> Refresh
-            </button>
-            <!-- <button class="btn btn-primary"><i class="fas fa-download"></i> Export List</button> -->
+            <a href="../user-interface/user-search.html">
+              <button class="btn btn-outline">
+                <i class="fas fa-list"></i> View All Files
+              </button>
+            </a>
           </menu>
         </header>
-
-        <output class="documents-grid" id="all-documents-grid"> </output>
+        <output class="documents-grid" id="all-documents-grid"></output>
       </section>
     </main>
+
+    <!-- Inline Modal for Document Viewing -->
+    <dialog id="viewer-dialog">
+      <article>
+        <header class="modal-header">
+          <h3>Document Viewer</h3>
+          <button id="modal-close" class="btn btn-close">
+            <i class="fas fa-times"></i>
+          </button>
+        </header>
+        <section class="modal-body"></section>
+      </article>
+    </dialog>
+
     <footer>
-      <p>&copy; 2025 ConstitutionVault</p>
+      <p>&copy; 2025 ConstitutionVault</p>
     </footer>
 
     <script type="module" src="home.js"></script>
-    <script type="module" src="history_home.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   </body>
 </html>

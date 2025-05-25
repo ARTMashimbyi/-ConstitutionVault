@@ -1,21 +1,17 @@
 // public/search/SearchInterface.js
 
-// public/search/SearchInterface.js
-
 import { renderSearchBar }     from "./SearchBar.js";
 import { renderSearchResults } from "./SearchResults.js";
 import { renderFilters }       from "./Filters.js";
 import { renderSortOptions }   from "./SortOptions.js";
-
-const API_BASE = window.location.hostname.includes("azurewebsites.net")
-  ? "https://constitutionvaultapi-acatgth5g9ekg5fv.southafricanorth-01.azurewebsites.net/api"
-  : "http://localhost:4000/api";
-
+import { API_BASE }            from "../shared/utils.js";
 
 export function initializeSearchInterface(containerId) {
   // Get settings once (set in settings page)
   const saved = JSON.parse(localStorage.getItem("userSettings") || "{}");
-  if (saved.themeClass === "dark-mode") document.body.classList.add("dark-mode");
+  if (saved.themeClass === "dark-mode") {
+    document.body.classList.add("dark-mode");
+  }
 
   // Parse helper (handles arrays or CSV)
   const parseList = s =>
@@ -31,9 +27,9 @@ export function initializeSearchInterface(containerId) {
   const wantedInstitutions = parseList(saved.institution);
   const wantedKeywords     = parseList(saved.keywords);
 
-  // Main state
+  // --------- FORCE DEFAULT TYPE TO "ALL" ON LOAD ----------
   let currentQuery = "";
-  let currentType  = saved.type && Array.isArray(saved.type) ? saved.type[0] : (saved.type || "");
+  let currentType  = ""; // always default to "All" on user-search.html
   let currentSort  = saved.sort     || "";
   let dateFrom     = saved.allTime  ? "" : (saved.dateFrom || "");
   let dateTo       = saved.allTime  ? "" : (saved.dateTo   || "");
@@ -66,7 +62,10 @@ export function initializeSearchInterface(containerId) {
     currentType = f.type;
     refresh();
   });
-  filtersUI.querySelector("#filter-type").value = currentType;
+  // --------- SET TYPE DROPDOWN TO "ALL" BY DEFAULT ---------
+  const typeDropdown = filtersUI.querySelector("#filter-type");
+  if (typeDropdown) typeDropdown.value = ""; // "" == All files
+  //----------------------------------------------------------
   wrapper.append(filtersUI);
 
   const sortUI = renderSortOptions(s => {
@@ -102,7 +101,7 @@ export function initializeSearchInterface(containerId) {
       }
 
       // Client‐side filter with the frozen filters from settings
-      const filtered = results.filter(item=>{
+      const filtered = results.filter(item => {
         if (wantedAuthors.length &&
             !(item.author && wantedAuthors.includes(item.author.toLowerCase())))
           return false;
@@ -126,9 +125,9 @@ export function initializeSearchInterface(containerId) {
       }
 
       // Truncate snippet
-      filtered.forEach(it=>{
+      filtered.forEach(it => {
         if (it.snippet && it.snippet.length > snippetLen) {
-          it.snippet = it.snippet.slice(0, snippetLen)+"…";
+          it.snippet = it.snippet.slice(0, snippetLen) + "…";
         }
       });
 

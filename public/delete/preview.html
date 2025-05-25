@@ -5,14 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Preview</title>
     <link rel="stylesheet" href="preview.css" />
-
-    <!-- Firebase compat libs (if you still need them elsewhere)-->
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-storage-compat.js"></script>
   </head>
 
   <body>
+    <!-- Back button at the top -->
+    <nav style="margin: 1rem 0">
+      <button id="backButton" class="btn-back" aria-label="Back to hierarchy">
+        ← Back to Admin Hierarchy
+      </button>
+    </nav>
+
     <article>
       <!-- Error placeholder (hidden until needed) -->
       <p class="error-message" style="display: none; color: red"></p>
