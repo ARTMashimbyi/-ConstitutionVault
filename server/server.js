@@ -20,8 +20,14 @@ const authRouter        = require('./routes/auth');
 
 const app = express();
 
+// Debugging middleware: log request origins
+app.use((req, res, next) => {
+  console.log('Request Origin:', req.headers.origin);
+  next();
+});
+
 // 2) Enable CORS for front-end origins (dev & deployed)
-app.use(cors({
+const corsOptions = {
   origin: [
     'http://127.0.0.1:3002',
     'http://localhost:3002',
@@ -30,7 +36,11 @@ app.use(cors({
     'https://delightful-pebble-09b2bca10.6.azurestaticapps.net'
   ],
   credentials: true,
-}));
+};
+app.use(cors(corsOptions));
+
+// Explicitly handle preflight OPTIONS requests for all routes
+app.options('*', cors(corsOptions));
 
 // 3) Parse JSON bodies
 app.use(express.json());

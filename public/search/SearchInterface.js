@@ -1,10 +1,8 @@
-// public/search/SearchInterface.js
-
-import { renderSearchBar }     from "./SearchBar.js";
+import { renderSearchBar } from "./SearchBar.js";
 import { renderSearchResults } from "./SearchResults.js";
-import { renderFilters }       from "./Filters.js";
-import { renderSortOptions }   from "./SortOptions.js";
-import { initializeApp }       from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+import { renderFilters } from "./Filters.js";
+import { renderSortOptions } from "./SortOptions.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
 import {
   getFirestore, collection, getDocs, query, orderBy
 } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
@@ -40,33 +38,34 @@ export function initializeSearchInterface(containerId) {
         : []);
 
   // Filters
-  const wantedAuthors      = parseList(saved.author);
-  const wantedCategories   = parseList(saved.category);
+  const wantedAuthors = parseList(saved.author);
+  const wantedCategories = parseList(saved.category);
   const wantedInstitutions = parseList(saved.institution);
-  const wantedKeywords     = parseList(saved.keywords);
+  const wantedKeywords = parseList(saved.keywords);
 
   // --------- FORCE DEFAULT TYPE TO "ALL" ON LOAD ----------
   let currentQuery = "";
-  let currentType  = ""; // default to "All" (empty string = all)
-  let currentSort  = saved.sort     || "";
-  let dateFrom     = saved.allTime  ? "" : (saved.dateFrom || "");
-  let dateTo       = saved.allTime  ? "" : (saved.dateTo   || "");
-  const snippetLen = parseInt(saved.snippetLength,10) || 100;
-  const gridCols   = parseInt(saved.columns,      10) || 2;
+  let currentType = ""; // default to "All" (empty string = all)
+  let currentSort = saved.sort || "";
+  let dateFrom = saved.allTime ? "" : (saved.dateFrom || "");
+  let dateTo = saved.allTime ? "" : (saved.dateTo || "");
+  const snippetLen = parseInt(saved.snippetLength, 10) || 100;
+  const gridCols = parseInt(saved.columns, 10) || 2;
 
   // UI containers
   const container = document.getElementById(containerId);
   if (!container) return console.error(`Missing #${containerId}`);
+
   const wrapper = document.createElement("section");
   wrapper.id = "search-interface";
-  wrapper.setAttribute("aria-label","Search Interface");
+  wrapper.setAttribute("aria-label", "Search Interface");
 
   // Results grid
   const resultsSection = document.createElement("section");
   resultsSection.id = "search-results";
-  resultsSection.style.display             = "grid";
+  resultsSection.style.display = "grid";
   resultsSection.style.gridTemplateColumns = `repeat(${gridCols},1fr)`;
-  resultsSection.style.gap                 = "1.5rem";
+  resultsSection.style.gap = "1.5rem";
 
   // Search bar
   const searchBar = renderSearchBar(q => {
@@ -80,10 +79,9 @@ export function initializeSearchInterface(containerId) {
     currentType = f.type;
     refresh();
   });
-  // --------- SET TYPE DROPDOWN TO "ALL" BY DEFAULT ---------
+  // Set type dropdown to "All" by default
   const typeDropdown = filtersUI.querySelector("#filter-type");
-  if (typeDropdown) typeDropdown.value = ""; // "" == All files
-  //----------------------------------------------------------
+  if (typeDropdown) typeDropdown.value = ""; // "" means all types
   wrapper.append(filtersUI);
 
   const sortUI = renderSortOptions(s => {
@@ -96,13 +94,13 @@ export function initializeSearchInterface(containerId) {
   wrapper.append(resultsSection);
   container.appendChild(wrapper);
 
-  // --- Only ever use saved filters, never allow changes here ---
+  // --- Only use saved filters; no changes allowed here ---
 
   async function refresh() {
     resultsSection.innerHTML = "<p>🔄 Loading…</p>";
     try {
       // 1. Load all documents from Firestore
-      let docsQuery = collection(db, "constitutionalDocuments");
+      const docsQuery = collection(db, "constitutionalDocuments");
       let allDocs = [];
       const q = currentSort
         ? query(docsQuery, orderBy(currentSort))
@@ -113,7 +111,7 @@ export function initializeSearchInterface(containerId) {
       });
 
       // 2. Apply search/filter logic
-      let filtered = allDocs.filter(item => {
+      const filtered = allDocs.filter(item => {
         // Query (title or text search)
         if (currentQuery) {
           const text = (
@@ -164,7 +162,7 @@ export function initializeSearchInterface(containerId) {
       });
 
       renderSearchResults(resultsSection, filtered);
-    } catch(err) {
+    } catch (err) {
       console.error(err);
       resultsSection.innerHTML = "<p>❌ Something went wrong.</p>";
     }
