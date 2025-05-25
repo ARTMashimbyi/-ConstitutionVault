@@ -76,9 +76,11 @@ document.addEventListener('DOMContentLoaded', async function() {
             recentDocsList.innerHTML = `
                 <li class="document-item">
                     <p class="doc-icon">📄</p>
+                    <p class="doc-icon">📄</p>
                     <article class="doc-info">
                         <h3 class="doc-title">No documents yet</h3>
                         <aside class="doc-meta">
+                            <p>Use the upload section to add documents</p>
                             <p>Use the upload section to add documents</p>
                         </aside>
                     </article>
@@ -102,6 +104,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 const docItem = document.createElement('li');
                 docItem.className = 'document-item';
                 docItem.innerHTML = `
+                    <p class="doc-icon">${icon}</p>
                     <p class="doc-icon">${icon}</p>
                     <article class="doc-info">
                         <h3 class="doc-title">${title}</h3>
@@ -130,9 +133,11 @@ document.addEventListener('DOMContentLoaded', async function() {
         recentDocsList.innerHTML = `
             <li class="document-item">
                 <p class="doc-icon">❌</p>
+                <p class="doc-icon">❌</p>
                 <article class="doc-info">
                     <h3 class="doc-title">Error loading documents</h3>
                     <aside class="doc-meta">
+                        <p>Check console for details</p>
                         <p>Check console for details</p>
                     </aside>
                 </article>
