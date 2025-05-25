@@ -3,6 +3,11 @@
 import { renderSearchBar }     from "./SearchBar.js";
 import { renderSearchResults } from "./SearchResults.js";
 
+// 🌐 Use Azure or localhost automatically
+const API_BASE = window.location.hostname.includes("azurewebsites.net")
+  ? "https://constitutionvaultapi-acatgth5g9ekg5fv.southafricanorth-01.azurewebsites.net/api"
+  : "http://localhost:4000/api";
+
 /**
  * Mounts a search UI into `containerId`, filtering by both text and
  * saved user settings (author, category, institution, keywords).
@@ -28,7 +33,7 @@ export function initializeUserFilteredSearch(containerId) {
   (async () => {
     resultsSection.innerHTML = "🔄 Loading…";
     try {
-      const res = await fetch("http://localhost:4000/api/files");
+      const res = await fetch(`${API_BASE}/files`);
       if (!res.ok) throw new Error("Failed to load documents");
       allDocs = await res.json();
       // Initial empty search
@@ -47,29 +52,44 @@ export function initializeUserFilteredSearch(containerId) {
     const lower = query.trim().toLowerCase();
     const userSettings = JSON.parse(localStorage.getItem("userSettings") || "{}");
 
+    // Convert settings fields to arrays (support multi-select)
+    function toArray(val) {
+      if (!val) return [];
+      if (Array.isArray(val)) return val;
+      if (typeof val === "string") return [val];
+      return [];
+    }
+    const authors      = toArray(userSettings.author).map(s => s.toLowerCase());
+    const categories   = toArray(userSettings.category).map(s => s.toLowerCase());
+    const institutions = toArray(userSettings.institution).map(s => s.toLowerCase());
+    const keywords     = toArray(userSettings.keywords).map(s => s.toLowerCase());
+
     const hits = allDocs.filter(item => {
       // Text match
       const textMatch =
         !lower ||
-        item.title?.toLowerCase().includes(lower) ||
-        item.description?.toLowerCase().includes(lower);
+        (item.title && item.title.toLowerCase().includes(lower)) ||
+        (item.description && item.description.toLowerCase().includes(lower));
 
-      // User‐setting matches
-      const authorMatch      = !userSettings.author      || item.author === userSettings.author;
-      const categoryMatch    = !userSettings.category    || item.category === userSettings.category;
-      const institutionMatch = !userSettings.institution || item.institution === userSettings.institution;
+      // Array-based matches: must match *at least one* if any selected, else pass
+      const authorMatch =
+        authors.length === 0 ||
+        (item.author && authors.includes(item.author.toLowerCase()));
 
-      // Keywords match
+      const categoryMatch =
+        categories.length === 0 ||
+        (item.category && categories.includes(item.category.toLowerCase()));
+
+      const institutionMatch =
+        institutions.length === 0 ||
+        (item.institution && institutions.includes(item.institution.toLowerCase()));
+
+      // Keywords: must match at least one keyword
       let keywordsMatch = true;
-      if (userSettings.keywords) {
-        const wanted = userSettings.keywords
-          .split(",")
-          .map(k => k.trim().toLowerCase())
-          .filter(k => k);
+      if (keywords.length > 0) {
         if (Array.isArray(item.keywords)) {
-          keywordsMatch = wanted.some(w =>
-            item.keywords.some(kw => kw.toLowerCase() === w)
-          );
+          const itemKeywords = item.keywords.map(k => k.toLowerCase());
+          keywordsMatch = keywords.some(kw => itemKeywords.includes(kw));
         } else {
           keywordsMatch = false;
         }

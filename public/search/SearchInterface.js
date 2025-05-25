@@ -7,7 +7,10 @@ import { renderSearchResults } from "./SearchResults.js";
 import { renderFilters }       from "./Filters.js";
 import { renderSortOptions }   from "./SortOptions.js";
 
-const API_BASE = "http://localhost:4000";
+const API_BASE = window.location.hostname.includes("azurewebsites.net")
+  ? "https://constitutionvaultapi-acatgth5g9ekg5fv.southafricanorth-01.azurewebsites.net/api"
+  : "http://localhost:4000/api";
+
 
 export function initializeSearchInterface(containerId) {
   // Get settings once (set in settings page)
@@ -90,7 +93,7 @@ export function initializeSearchInterface(containerId) {
 
     resultsSection.innerHTML = "<p>🔄 Loading…</p>";
     try {
-      const res = await fetch(`${API_BASE}/api/search?${queryParams}`);
+      const res = await fetch(`${API_BASE}/search?${queryParams}`);
       const { results = [], message, error } = await res.json();
 
       if (error) {

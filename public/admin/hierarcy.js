@@ -1,5 +1,7 @@
 // ─── API BASE ─────────────────────────────────────────────────────────────
-const API_BASE = 'http://localhost:4000/api';
+const API_BASE = window.location.hostname.includes("azurewebsites.net")
+  ? "https://constitutionvaultapi-acatgth5g9ekg5fv.southafricanorth-01.azurewebsites.net/api"
+  : "http://localhost:4000/api";
 
 
 let isLoading = false;

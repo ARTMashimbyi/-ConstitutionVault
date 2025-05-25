@@ -1,5 +1,10 @@
 // public/admin/admin-add.js
 
+const API_BASE = window.location.hostname.includes("azurewebsites.net")
+  ? "https://constitutionvaultapi-acatgth5g9ekg5fv.southafricanorth-01.azurewebsites.net/api"
+  : "http://localhost:4000/api";
+
+
 // Grab all the form fields & containers
 const uploadForm       = document.getElementById("uploadForm");
 const uploadStatus     = document.getElementById("uploadStatus");
@@ -108,7 +113,8 @@ uploadForm.addEventListener("submit", async e => {
       payload.append("file", formData.get("file"));
     }
 
-    const res = await fetch("http://localhost:4000/api/files", {
+    // <-- UPDATED to use API_BASE!
+    const res = await fetch(`${API_BASE}/files`, {
       method: "POST",
       body: payload
     });
@@ -138,8 +144,6 @@ function showSuccess(msg) {
   uploadStatus.textContent   = `✅ ${msg}`;
   uploadStatus.style.display = "block";
 }
-
-
 
 if (typeof module !== 'undefined' && module.exports) {
   // Export for tests

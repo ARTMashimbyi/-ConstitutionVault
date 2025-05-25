@@ -5,6 +5,13 @@ import { renderSearchResults }   from "./SearchResults.js";
 import { renderFilters }         from "./Filters.js";
 import { renderSortOptions }     from "./SortOptions.js";
 
+
+// 🌐 Use Azure or localhost automatically
+const API_BASE = window.location.hostname.includes("azurewebsites.net")
+  ? "https://constitutionvaultapi-acatgth5g9ekg5fv.southafricanorth-01.azurewebsites.net/api"
+  : "http://localhost:4000/api";
+
+
 /**
  * Initializes the admin search UI in the element with the given ID.
  * @param {string} containerId 
@@ -44,7 +51,7 @@ export function initializeAdminSearchInterface(containerId) {
   (async () => {
     resultsContainer.innerHTML = "🔄 Loading…";
     try {
-      const res = await fetch("http://localhost:4000/api/files");
+      const res = await fetch(`${API_BASE}/files`);
       if (!res.ok) throw new Error("Failed to load documents");
       allDocs = await res.json();
       await refreshResults();

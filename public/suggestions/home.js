@@ -1,30 +1,6 @@
-
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
-import { getFirestore, collection, query, orderBy, limit, getDocs, updateDoc, increment,setDoc, doc, onSnapshot, arrayUnion, arrayRemove,getDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
-const firebaseConfig = {
-    apiKey: "AIzaSyAU_w_Oxi6noX_A1Ma4XZDfpIY-jkoPN-c",
-    authDomain: "constitutionvault-1b5d1.firebaseapp.com",
-    projectId: "constitutionvault-1b5d1",
-    storageBucket: "constitutionvault-1b5d1.appspot.com",
-    messagingSenderId: "616111688261",
-    appId: "1:616111688261:web:97cc0a35c8035c0814312c",
-    measurementId: "G-YJEYZ85T3S"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-let loadedDocuments = [];
-let userInteractions = {};
-let currentDoc = null;
-
-const currentUserId = localStorage.getItem("currentUserId") || null;//retrieve uid from local storage(sign in)
-console.log("Current User ID:", currentUserId);
-
-
-if(!currentUserId){
-    alert("Please login to view documents.");
-    window.location.href = "../user%20signup/index.html";
+if (!currentUserId) {
+  alert("Please login to view documents.");
+  window.location.href = "../admin sign in/admin_sign_in.html";
 }
 
 async function initApp() {

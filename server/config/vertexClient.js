@@ -1,16 +1,24 @@
 // server/config/vertexClient.js
 
-// Load environment variables
 require("dotenv").config();
+const fs = require("fs");
+const os = require("os");
 const path = require("path");
 
-// ✅ Resolve path to Vertex AI key from project root
-const credentialsPath = path.resolve(__dirname, "..", "..", process.env.GOOGLE_APPLICATION_CREDENTIALS_VERTEX);
-process.env.GOOGLE_APPLICATION_CREDENTIALS = credentialsPath;
+// Determine credentials for Vertex AI
+if (process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON) {
+  // In Azure: Write the JSON to a temp file and point GOOGLE_APPLICATION_CREDENTIALS there
+  const tempFilePath = path.join(os.tmpdir(), "vertex-service-account.json");
+  fs.writeFileSync(tempFilePath, process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON, "utf8");
+  process.env.GOOGLE_APPLICATION_CREDENTIALS = tempFilePath;
+} else if (process.env.GOOGLE_APPLICATION_CREDENTIALS_VERTEX) {
+  // Local dev: Path from .env (or fallback)
+  const credentialsPath = path.resolve(__dirname, "..", "..", process.env.GOOGLE_APPLICATION_CREDENTIALS_VERTEX);
+  process.env.GOOGLE_APPLICATION_CREDENTIALS = credentialsPath;
+}
 
+// Now import the client
 const { PredictionServiceClient } = require("@google-cloud/aiplatform").v1;
-
-// Instantiate Vertex AI Prediction client
 const client = new PredictionServiceClient();
 
 /**
