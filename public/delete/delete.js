@@ -1,11 +1,12 @@
 // public/delete/delete.js
 
 
-  const hostname = window.location.hostname;
+const hostname = window.location.hostname;
 const API_BASE =
   hostname === "localhost" || hostname.startsWith("127.0.0.1")
-    ? "http://localhost:4000/api/files"
-    : "https://constitutionvaultapi-acatgth5g9ekg5fv.southafricanorth-01.azurewebsites.net";
+    ? "http://localhost:4000/api"
+    : "https://constitutionvaultapi-acatgth5g9ekg5fv.southafricanorth-01.azurewebsites.net/api";
+
 
 
 document.addEventListener("DOMContentLoaded", () => {
