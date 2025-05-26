@@ -1,5 +1,3 @@
-
-
 // ==========================
 // Import Firebase modules
 // ==========================
@@ -29,14 +27,14 @@ const firebaseConfig = {
 // ==========================
 // API base (local or Azure)
 // ==========================
-
 const hostname = window.location.hostname;
 const API_BASE =
   hostname === "localhost" || hostname.startsWith("127.0.0.1")
     ? "http://localhost:4000/api"
     : "https://constitutionvaultapi-acatgth5g9ekg5fv.southafricanorth-01.azurewebsites.net/api";
 
-
+// Just to verify you’re hitting the right backend:
+console.log("→ Using API_BASE:", API_BASE);
 
 // ==========================
 // Initialize Firebase
@@ -46,34 +44,29 @@ const analytics = getAnalytics(app);
 const auth = getAuth();
 const provider = new GoogleAuthProvider();
 
-console.log("→ Using API_BASE:", API_BASE);
-console.log("Signed in UID:", user.uid);
-
-
 // ==========================
 // DOM Elements
 // ==========================
-const signInButton = document.getElementById("signInButton");
-const signOutButton = document.getElementById("signOutButton");
-const message = document.getElementById("message");
-const adminLink = document.querySelector(".admin-in");
-const userButton = document.querySelector(".loggedIn");
+const signInButton   = document.getElementById("signInButton");
+const signOutButton  = document.getElementById("signOutButton");
+const message        = document.getElementById("message");
+const adminLink      = document.querySelector(".admin-in");
+const userButton     = document.querySelector(".loggedIn");
 const loadingSpinner = document.querySelector(".loading-spinner");
-const portalOptions = document.getElementById("portal-options");
-const adminOption = document.getElementById("admin-option");
-const userOption = document.getElementById("user-option");
-const userModal = document.getElementById("modal-users");
+const portalOptions  = document.getElementById("portal-options");
+const adminOption    = document.getElementById("admin-option");
+const userOption     = document.getElementById("user-option");
 
 let redirectTimer;
 
-/**
- * Sign in with Google
- */
+// ==========================
+// Sign in with Google
+// ==========================
 const userSignIn = async () => {
   loadingSpinner.style.display = "block";
   try {
     await signInWithPopup(auth, provider);
-    // The rest is handled by onAuthStateChanged
+    // auth state change will handle the rest
   } catch (error) {
     console.error("Sign-in error:", error);
     loadingSpinner.style.display = "none";
@@ -81,33 +74,28 @@ const userSignIn = async () => {
   }
 };
 
-/**
- * Sign out function
- */
+// ==========================
+// Sign out
+// ==========================
 const userSignOut = async () => {
   try {
     await signOut(auth);
     M.toast({ html: "You have signed out successfully", classes: "green" });
     clearTimeout(redirectTimer);
-
-    // Reset UI elements
     portalOptions.style.display = "none";
-    adminOption.style.display = "none";
-    userOption.style.display = "none";
+    adminOption.style.display  = "none";
+    userOption.style.display   = "none";
   } catch (error) {
     console.error("Sign-out error:", error);
     M.toast({ html: "Sign-out failed. Please try again.", classes: "red" });
   }
 };
 
-/**
- * Check if user has admin privileges using backend API and ID token (SECURE!)
- * @param {Object} user - The Firebase user object
- * @returns {Promise<boolean>}
- */
+// ==========================
+// Check admin status via your backend
+// ==========================
 async function checkAdmin(user) {
   try {
-    // Get Firebase ID token for the user (secure, can't spoof)
     const idToken = await user.getIdToken();
     const res = await fetch(`${API_BASE}/auth/admin-status`, {
       method: "POST",
@@ -123,22 +111,21 @@ async function checkAdmin(user) {
   }
 }
 
-/**
- * Direct user to appropriate portal based on role
- * @param {boolean} isAdmin - Whether the user is an admin
- */
+// ==========================
+// Show the correct portal cards
+// ==========================
 function handleUserAccess(isAdmin) {
   portalOptions.style.display = "block";
   if (isAdmin) {
-    // Admin users: show both options
+    // Admin users see both
     adminOption.style.display = "block";
-    userOption.style.display = "block";
-    adminLink.style.display = "block";
+    userOption.style.display  = "block";
+    adminLink.style.display   = "block";
   } else {
-    // Regular users: only show user option, auto-redirect after 2s
+    // Normal users only see user, and auto-redirect
     adminOption.style.display = "none";
-    userOption.style.display = "block";
-    adminLink.style.display = "none";
+    userOption.style.display  = "block";
+    adminLink.style.display   = "none";
     redirectTimer = setTimeout(() => {
       window.location.href = "../suggestions/home.html";
     }, 2000);
@@ -150,56 +137,56 @@ function handleUserAccess(isAdmin) {
   }
 }
 
-// Event listeners
-signInButton.addEventListener("click", userSignIn);
-signOutButton.addEventListener("click", userSignOut);
+// ==========================
+// Wire up your buttons
+// ==========================
+if (signInButton)  signInButton.addEventListener("click", userSignIn);
+if (signOutButton) signOutButton.addEventListener("click", userSignOut);
 
-// Initialize Materialize components and modal behavior
-document.addEventListener("DOMContentLoaded", function () {
-  const modals = document.querySelectorAll(".modal");
-  M.Modal.init(modals);
-
-  const tooltips = document.querySelectorAll(".tooltipped");
-  M.Tooltip.init(tooltips);
-
-  // Open the user modal and redirect when clicked
-  userButton.addEventListener("click", () => {
-    // Fallback: just redirect after click
-    setTimeout(() => {
-      window.location.href = "../suggestions/home.html";
-    }, 1500);
-  });
+// Initialize Materialize modals on DOM ready
+document.addEventListener("DOMContentLoaded", () => {
+  M.Modal.init(document.querySelectorAll(".modal"));
+  M.Tooltip.init(document.querySelectorAll(".tooltipped"));
+  if (userButton) {
+    userButton.addEventListener("click", () => {
+      setTimeout(() => {
+        window.location.href = "../suggestions/home.html";
+      }, 1500);
+    });
+  }
 });
 
-// Authentication state observer
+// ==========================
+// Auth state observer
+// ==========================
 onAuthStateChanged(auth, async (user) => {
+  // Hide spinner once we know auth state
   loadingSpinner.style.display = "none";
 
+  // <-- Place your UID log here -->
   if (user) {
-    // User is signed in
-    signInButton.style.display = "none";
+    console.log("Signed in UID:", user.uid);
+  }
+
+  if (user) {
+    signInButton.style.display  = "none";
     signOutButton.style.display = "block";
-    message.style.display = "block";
-    userButton.style.display = "block";
+    message.style.display       = "block";
 
-    // Check admin status using API (with ID token)
     const isAdmin = await checkAdmin(user);
-
-    // Update UI
     handleUserAccess(isAdmin);
 
-    // Show welcome toast
     M.toast({
       html: `Welcome, ${user.displayName || "User"}!`,
       classes: "green",
     });
   } else {
-    // User is signed out
-    signInButton.style.display = "block";
+    // Signed out UI reset
+    signInButton.style.display  = "block";
     signOutButton.style.display = "none";
-    message.style.display = "none";
-    adminLink.style.display = "none";
-    userButton.style.display = "none";
+    message.style.display       = "none";
+    adminLink.style.display     = "none";
+    userButton.style.display    = "none";
     portalOptions.style.display = "none";
   }
 });
