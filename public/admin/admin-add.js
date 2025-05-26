@@ -1,84 +1,99 @@
 // public/admin/admin-add.js
 
-const hostname = window.location.hostname;
-const API_BASE =
-  hostname === "localhost" || hostname.startsWith("127.0.0.1")
-    ? "http://localhost:4000/api"
-    : "https://constitutionvaultapi-acatgth5g9ekg5fv.southafricanorth-01.azurewebsites.net/api";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+} from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+import {
+  getStorage,
+  ref as storageRef,
+  uploadBytesResumable,
+} from "https://www.gstatic.com/firebasejs/11.6.0/firebase-storage.js";
 
+// --- Firebase config ---
+const firebaseConfig = {
+  apiKey: "AIzaSyAU_w_Oxi6noX_A1Ma4XZDfpIY-jkoPN-c",
+  authDomain: "constitutionvault-1b5d1.firebaseapp.com",
+  projectId: "constitutionvault-1b5d1",
+  storageBucket: "constitutionvault-1b5d1.firebasestorage.app",
+  messagingSenderId: "616111688261",
+  appId: "1:616111688261:web:97cc0a35c8035c0814312c",
+  measurementId: "G-YJEYZ85T3S",
+};
 
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const storage = getStorage(app);
 
+// Grab form elements
+const uploadForm = document.getElementById("uploadForm");
+const uploadStatus = document.getElementById("uploadStatus");
+const directoryInput = document.getElementById("directory");
+const dateInput = document.getElementById("date");
+const fileTypeSelect = document.getElementById("fileType");
 
-// Grab all the form fields & containers
-const uploadForm       = document.getElementById("uploadForm");
-const uploadStatus     = document.getElementById("uploadStatus");
-const directoryInput   = document.getElementById("directory");
-const dateInput        = document.getElementById("date");
-const fileTypeSelect   = document.getElementById("fileType");
+const fileContainer = document.getElementById("fileContainer");
+const fileInput = document.getElementById("file");
+const textContainer = document.getElementById("textContainer");
+const textContent = document.getElementById("textContent");
 
-const fileContainer    = document.getElementById("fileContainer");
-const fileInput        = document.getElementById("file");
-const textContainer    = document.getElementById("textContainer");
-const textContent      = document.getElementById("textContent");
-
-const authorContainer   = document.getElementById("authorContainer");
+const authorContainer = document.getElementById("authorContainer");
 const categoryContainer = document.getElementById("categoryContainer");
 const keywordsContainer = document.getElementById("keywordsContainer");
 
 // Map fileType → accept attribute
 const fileTypeAccepts = {
   document: ".pdf,.doc,.docx,.txt,.rtf",
-  video:    ".mp4,.mov,.avi,.webm",
-  image:    ".jpg,.jpeg,.png,.gif,.svg",
-  audio:    ".mp3,.wav,.ogg,.m4a"
+  video: ".mp4,.mov,.avi,.webm",
+  image: ".jpg,.jpeg,.png,.gif,.svg",
+  audio: ".mp3,.wav,.ogg,.m4a",
 };
 
-// 1) Auto-fill today’s date
+// Autofill today’s date
 dateInput.value = new Date().toISOString().split("T")[0];
 
-// 2) On DOM ready: prefill directory from query and apply fileType logic
+// On DOM ready: prefill directory from query and handle fileType logic
 document.addEventListener("DOMContentLoaded", () => {
   const dirParam = new URLSearchParams(window.location.search).get("directory");
   if (dirParam) directoryInput.value = dirParam;
   handleFileTypeChange();
 });
 
-// 3) Show/hide fields when fileType changes
+// Show/hide fields on fileType change
 fileTypeSelect.addEventListener("change", handleFileTypeChange);
 
 function handleFileTypeChange() {
   const type = fileTypeSelect.value;
 
-  // Toggle between file input and text input
   const isText = type === "text";
-  fileContainer.hidden    = isText;
-  textContainer.hidden    = !isText;
-  fileInput.required      = !isText;
-  textContent.required    = isText;
+  fileContainer.hidden = isText;
+  textContainer.hidden = !isText;
+  fileInput.required = !isText;
+  textContent.required = isText;
 
-  // Apply accept filter to file input if applicable
   if (!isText && fileTypeAccepts[type]) {
     fileInput.setAttribute("accept", fileTypeAccepts[type]);
   } else {
     fileInput.removeAttribute("accept");
   }
 
-  // Show metadata only for text and document
   const showMeta = type === "text" || type === "document";
-  authorContainer.hidden   = !showMeta;
+  authorContainer.hidden = !showMeta;
   categoryContainer.hidden = !showMeta;
   keywordsContainer.hidden = !showMeta;
 }
 
-// 4) On submit → send to backend
-uploadForm.addEventListener("submit", async e => {
+// Upload handler
+uploadForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   uploadStatus.style.display = "none";
 
   const formData = new FormData(uploadForm);
   const fileType = formData.get("fileType");
 
-  // Basic validation
+  // Validation
   if (fileType === "text") {
     if (!formData.get("textContent")?.trim()) {
       return showError("Please enter text content.");
@@ -90,43 +105,60 @@ uploadForm.addEventListener("submit", async e => {
     }
   }
 
-  // Normalize directory
-  const dir = (formData.get("directory") || "/").trim().replace(/^\/|\/$/g, "");
+  // Normalize directory path
+  const dir = (formData.get("directory") || "").trim().replace(/^\/|\/$/g, "");
 
-  // Build metadata object
+  // Prepare metadata
   const metadata = {
-    fileType:    fileType,
-    title:       formData.get("title"),
-    date:        formData.get("date"),
+    fileType: fileType,
+    title: formData.get("title"),
+    date: formData.get("date"),
     institution: formData.get("institution"),
-    author:      formData.get("author"),
-    category:    formData.get("category"),
-    keywords:    (formData.get("keywords") || "")
-                  .split(",")
-                  .map(k => k.trim())
-                  .filter(k => k),
-    directory:   dir,
-    textContent: fileType === "text" ? formData.get("textContent") : ""
+    author: formData.get("author"),
+    category: formData.get("category"),
+    keywords: (formData.get("keywords") || "")
+      .split(",")
+      .map((k) => k.trim())
+      .filter(Boolean),
+    directory: dir,
+    textContent: fileType === "text" ? formData.get("textContent") : "",
+    clicks: 0,
+    uploadedAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    downloadURL: "",
+    storagePath: "",
   };
 
   try {
-    // Package and send form data
-    const payload = new FormData();
-    payload.append("metadata", JSON.stringify(metadata));
     if (fileType !== "text") {
-      payload.append("file", formData.get("file"));
+      // Upload file
+      const file = formData.get("file");
+      const filePath = `${dir ? dir + "/" : ""}${file.name}`;
+      const fileRef = storageRef(storage, filePath);
+
+      await new Promise((resolve, reject) => {
+        const uploadTask = uploadBytesResumable(fileRef, file);
+        uploadTask.on(
+          "state_changed",
+          null,
+          (error) => reject(error),
+          () => resolve()
+        );
+      });
+
+      // Build the correct public URL
+      const bucketName = firebaseConfig.storageBucket;
+      const encodedPath = encodeURIComponent(filePath);
+      metadata.downloadURL = `https://storage.googleapis.com/${bucketName}/${encodedPath}`;
+      metadata.storagePath = filePath;
+    } else {
+      // No file upload, so clear URLs
+      metadata.downloadURL = "";
+      metadata.storagePath = "";
     }
 
-    // <-- UPDATED to use API_BASE!
-    const res = await fetch(`${API_BASE}/files`, {
-      method: "POST",
-      body: payload
-    });
-
-    if (!res.ok) {
-      const err = await res.json().catch(() => null);
-      throw new Error(err?.error || res.statusText);
-    }
+    // Save metadata doc to 'constitutionalDocuments' collection
+    await addDoc(collection(db, "constitutionalDocuments"), metadata);
 
     showSuccess("Uploaded! Redirecting…");
     setTimeout(() => (window.location.href = "hierarcy.html"), 1200);
@@ -136,28 +168,27 @@ uploadForm.addEventListener("submit", async e => {
   }
 });
 
-// Status helpers
+// Helpers for status messages
 function showError(msg) {
-  uploadStatus.style.color   = "red";
-  uploadStatus.textContent   = `⚠️ ${msg}`;
+  uploadStatus.style.color = "red";
+  uploadStatus.textContent = `⚠️ ${msg}`;
   uploadStatus.style.display = "block";
 }
 
 function showSuccess(msg) {
-  uploadStatus.style.color   = "green";
-  uploadStatus.textContent   = `✅ ${msg}`;
+  uploadStatus.style.color = "green";
+  uploadStatus.textContent = `✅ ${msg}`;
   uploadStatus.style.display = "block";
 }
 
-if (typeof module !== 'undefined' && module.exports) {
-  // Export for tests
+// Export or expose
+if (typeof module !== "undefined" && module.exports) {
   module.exports = {
     showError,
     showSuccess,
-    handleFileTypeChange
+    handleFileTypeChange,
   };
 } else {
-  // Expose to window in browser
   window.showError = showError;
   window.showSuccess = showSuccess;
   window.handleFileTypeChange = handleFileTypeChange;

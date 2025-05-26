@@ -4,7 +4,7 @@
  * Renders a list of search results into the given container element.
  * Each result object may have:
  *   • title: string
- *   • url: string
+ *   • downloadURL: string       // public file URL (used instead of url)
  *   • fileType: "document"|"image"|"audio"|"video"
  *   • author?: string
  *   • institution?: string
@@ -24,22 +24,25 @@ export function renderSearchResults(container, results) {
   // 2) Handle no-results
   if (!Array.isArray(results) || results.length === 0) {
     const msg = document.createElement("p");
-    msg.className   = "no-results";
+    msg.className = "no-results";
     msg.textContent = "No results to display.";
     container.appendChild(msg);
     return;
   }
 
   // 3) Render each result
-  results.forEach(item => {
+  results.forEach((item) => {
     const article = document.createElement("article");
     article.className = "search-result";
 
+    // Use downloadURL instead of url, with fallback to empty string
+    const fileUrl = item.downloadURL || "";
+
     // 3.1 Title (as a link)
-    const h3   = document.createElement("h3");
+    const h3 = document.createElement("h3");
     const link = document.createElement("a");
-    link.href        = item.url;
-    link.textContent = item.title;
+    link.href = fileUrl || "#"; // fallback to '#' if no URL
+    link.textContent = item.title || "Untitled";
     h3.appendChild(link);
     article.appendChild(h3);
 
@@ -53,9 +56,9 @@ export function renderSearchResults(container, results) {
 
     // 3.3 Metadata (author, institution, category, keywords, date)
     const metaParts = [];
-    if (item.author)      metaParts.push(`By ${item.author}`);
+    if (item.author) metaParts.push(`By ${item.author}`);
     if (item.institution) metaParts.push(item.institution);
-    if (item.category)    metaParts.push(`Category: ${item.category}`);
+    if (item.category) metaParts.push(`Category: ${item.category}`);
     if (Array.isArray(item.keywords) && item.keywords.length) {
       metaParts.push(`Keywords: ${item.keywords.join(", ")}`);
     }
@@ -78,44 +81,46 @@ export function renderSearchResults(container, results) {
       article.appendChild(snipP);
     }
 
-    // 3.5 Media/document preview
-    const fig = document.createElement("figure");
-    let previewEl;
-    switch (item.fileType) {
-      case "image":
-        previewEl = document.createElement("img");
-        previewEl.src = item.url;
-        previewEl.alt = item.title;
-        break;
-      case "audio":
-        previewEl = document.createElement("audio");
-        previewEl.controls = true;
-        previewEl.src      = item.url;
-        break;
-      case "video":
-        previewEl = document.createElement("video");
-        previewEl.controls = true;
-        previewEl.src      = item.url;
-        break;
-      default: // "document"
-        previewEl = document.createElement("embed");
-        previewEl.src    = `${item.url}#page=1&view=FitH`;
-        previewEl.type   = "application/pdf";
-        previewEl.width  = "100%";
-        previewEl.height = "400px";
+    // 3.5 Media/document preview (only show if URL exists)
+    if (fileUrl) {
+      const fig = document.createElement("figure");
+      let previewEl;
+      switch (item.fileType) {
+        case "image":
+          previewEl = document.createElement("img");
+          previewEl.src = fileUrl;
+          previewEl.alt = item.title || "Image preview";
+          break;
+        case "audio":
+          previewEl = document.createElement("audio");
+          previewEl.controls = true;
+          previewEl.src = fileUrl;
+          break;
+        case "video":
+          previewEl = document.createElement("video");
+          previewEl.controls = true;
+          previewEl.src = fileUrl;
+          break;
+        default: // "document"
+          previewEl = document.createElement("embed");
+          previewEl.src = `${fileUrl}#page=1&view=FitH`;
+          previewEl.type = "application/pdf";
+          previewEl.width = "100%";
+          previewEl.height = "400px";
+      }
+      previewEl.loading = "lazy";
+      fig.appendChild(previewEl);
+      article.appendChild(fig);
     }
-    previewEl.loading = "lazy";
-    fig.appendChild(previewEl);
-    article.appendChild(fig);
 
     // 3.6 Single action: View in Full (same tab)
     const footer = document.createElement("footer");
     footer.className = "result-actions";
 
     const viewLink = document.createElement("a");
-    viewLink.href        = item.url;
+    viewLink.href = fileUrl || "#";
     viewLink.textContent = "View in Full";
-    viewLink.className   = "btn btn-primary";
+    viewLink.className = "btn btn-primary";
 
     footer.appendChild(viewLink);
     article.appendChild(footer);

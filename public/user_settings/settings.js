@@ -1,27 +1,46 @@
-// public/settings/settings.js
+// public/user_settings/settings.js
 
-import { API_BASE } from "../shared/utils.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  getDocs
+} from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+
+// Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyAU_w_Oxi6noX_A1Ma4XZDfpIY-jkoPN-c",
+  authDomain: "constitutionvault-1b5d1.firebaseapp.com",
+  projectId: "constitutionvault-1b5d1",
+  storageBucket: "constitutionvault-1b5d1.appspot.com",
+  messagingSenderId: "616111688261",
+  appId: "1:616111688261:web:97cc0a35c8035c0814312c",
+  measurementId: "G-YJEYZ85T3S"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
 window.addEventListener("DOMContentLoaded", async () => {
-  const body    = document.body;
-  const modes   = document.querySelectorAll(".mode-switcher button");
-  const form    = document.getElementById("filterForm");
-  const resetBtn= document.getElementById("resetButton");
+  const body = document.body;
+  const modes = document.querySelectorAll(".mode-switcher button");
+  const form = document.getElementById("filterForm");
+  const resetBtn = document.getElementById("resetButton");
   const backBtn = document.getElementById("backButton");
 
-  // Track last visited page
-  {
-    const ref = document.referrer;
-    let lastPage = "../user-interface/user-search.html";
-    if (ref.includes("home.html"))      lastPage = "../suggestions/home.html";
-    else if (ref.includes("history.html")) lastPage = "../suggestions/history.html";
-    localStorage.setItem("lastVisitedPage", lastPage);
-  }
+  // Store last visited page (from referrer)
+  const ref = document.referrer;
+  let lastPage = "../user-interface/user-search.html";
+  if (ref.includes("home.html")) lastPage = "../suggestions/home.html";
+  else if (ref.includes("history.html")) lastPage = "../suggestions/history.html";
+  localStorage.setItem("lastVisitedPage", lastPage);
 
-  // Theme
-  const saved     = JSON.parse(localStorage.getItem("userSettings") || "{}");
-  const themeClass= saved.themeClass || "";
+  const saved = JSON.parse(localStorage.getItem("userSettings") || "{}");
+  const themeClass = saved.themeClass || "";
+
   if (themeClass) body.classList.add(themeClass);
+
   modes.forEach(btn => {
     btn.classList.toggle("active", btn.dataset.mode === themeClass);
     btn.addEventListener("click", () => {
@@ -32,247 +51,213 @@ window.addEventListener("DOMContentLoaded", async () => {
     });
   });
 
-  // Filter state
-  const filterFields = ["author", "category", "keywords", "institution"];
-  const filterState  = {
-    author: [], category: [], keywords: [], institution: [], fileType: []
-  };
-
-  filterFields.forEach(f => {
-    if (saved[f]) {
-      filterState[f] = Array.isArray(saved[f]) ? saved[f] : [saved[f]];
+  // Function to fetch unique values from Firestore
+  async function fetchUniqueValues(field) {
+    try {
+      const querySnapshot = await getDocs(collection(db, "constitutionalDocuments"));
+      const values = new Set();
+      
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        if (data[field]) {
+          if (Array.isArray(data[field])) {
+            data[field].forEach(item => values.add(item));
+          } else {
+            values.add(data[field]);
+          }
+        }
+      });
+      
+      return Array.from(values).sort();
+    } catch (error) {
+      console.error("Error fetching unique values:", error);
+      return [];
     }
-  });
-  if (saved.type) {
-    filterState.fileType = Array.isArray(saved.type)
-      ? saved.type
-      : [saved.type];
   }
 
-  // ---- UI rendering functions ----
-  function renderDropdownOptions(field, containerId, values, selectedValues = []) {
+  // Function to populate dropdown options
+  async function populateDropdownOptions(field, containerId) {
     const container = document.getElementById(containerId);
-    container.innerHTML = "";
-
-    if (!values.length) {
-      container.innerHTML = `<div class="loading-indicator">No options</div>`;
+    if (!container) return;
+    
+    container.innerHTML = '<div class="loading-indicator">Loading...</div>';
+    
+    const values = await fetchUniqueValues(field);
+    
+    if (values.length === 0) {
+      container.innerHTML = '<div class="loading-indicator">No options available</div>';
       return;
     }
-
-    // Search input
-    const searchInput = document.createElement("input");
-    searchInput.type = "text";
-    searchInput.placeholder = `Search ${field}s...`;
-    searchInput.className = "filter-search";
-    searchInput.addEventListener("input", e => {
-      const term = e.target.value.toLowerCase();
-      container.querySelectorAll(".option-item").forEach(opt => {
-        opt.style.display =
-          opt.textContent.toLowerCase().includes(term) ? "" : "none";
-      });
-    });
-
-    // Select All toggle
-    const selectAllBtn = document.createElement("button");
-    selectAllBtn.type = "button";
-    selectAllBtn.className = "toggle-all";
-    selectAllBtn.textContent = "Select All";
-    selectAllBtn.addEventListener("click", () => {
-      const allChecked = Array.from(
-        container.querySelectorAll('input[type="checkbox"]')
-      ).every(cb => cb.checked);
-      container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
-        cb.checked = !allChecked;
-      });
-      updateFilterStateFromDOM(field, container);
-    });
-
-    // Header (search + select)
-    const header = document.createElement("menu");
-    header.style.display = "flex";
-    header.style.justifyContent = "space-between";
-    header.appendChild(searchInput);
-    header.appendChild(selectAllBtn);
-    container.appendChild(header);
-
-    // Options list
-    values.forEach(val => {
-      const option = document.createElement("menu");
-      option.className = "option-item";
-      const id   = `${field}-${val.replace(/\s+/g,"-").toLowerCase()}`;
-      const chk  = selectedValues.includes(val) ? "checked" : "";
+    
+    container.innerHTML = '';
+    
+    values.forEach(value => {
+      const option = document.createElement('div');
+      option.className = 'option-item';
+      
+      const checkboxId = `${field}-${value.replace(/\s+/g, '-').toLowerCase()}`;
+      
       option.innerHTML = `
         <label class="checkbox-container">
-          <input
-            type="checkbox"
-            id="${id}"
-            name="${field}"
-            value="${val}"
-            ${chk}
-          />
+          <input type="checkbox" id="${checkboxId}" name="${field}" value="${value}">
           <span class="checkmark"></span>
-          <span class="label-text">${val}</span>
+          <span class="label-text">${value}</span>
         </label>
       `;
+      
       container.appendChild(option);
-    });
-  }
-
-  function renderFileTypeOptions(values, selectedValues = [], restrictDocText = false) {
-    document.querySelectorAll('input[name="fileTypes"]').forEach(cb => {
-      if (restrictDocText) {
-        // only allow docs/text when author filter is active
-        const ok = cb.value === "document" || cb.value === "text";
-        cb.disabled = !ok;
-        cb.checked  = ok;
-      } else {
-        const ok = values.includes(cb.value);
-        cb.disabled = !ok;
-        cb.checked  = ok && selectedValues.includes(cb.value);
+      
+      // Check if this option was previously selected
+      if (saved[field] && (saved[field].includes(value) || saved[field] === value)) {
+        option.querySelector('input').checked = true;
       }
     });
-  }
-
-  function updateFilterStateFromDOM(field, container) {
-    filterState[field] = Array.from(
-      container.querySelectorAll('input[type="checkbox"]:checked')
-    ).map(cb => cb.value);
-    applyLogicAndPopulate();
-  }
-
-  function setUpAllListeners() {
-    filterFields.forEach(field => {
-      const c = document.getElementById(field + "Options");
-      if (!c) return;
-      c.querySelectorAll('input[type="checkbox"]').forEach(cb => {
-        cb.onchange = () => updateFilterStateFromDOM(field, c);
+    
+    // Setup search functionality
+    const searchInput = document.querySelector(`.filter-search[data-target="${containerId}"]`);
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => {
+        const searchTerm = e.target.value.toLowerCase();
+        Array.from(container.children).forEach(option => {
+          const text = option.textContent.toLowerCase();
+          option.style.display = text.includes(searchTerm) ? 'block' : 'none';
+        });
       });
-    });
-    document.querySelectorAll('input[name="fileTypes"]').forEach(cb => {
-      cb.onchange = () => {
-        filterState.fileType = Array.from(
-          document.querySelectorAll('input[name="fileTypes"]:checked')
-        ).map(x => x.value);
-        applyLogicAndPopulate();
-      };
-    });
-  }
-
-  // ---- Core logic & initial population ----
-  async function applyLogicAndPopulate() {
-    // if an author is selected, restrict to docs/text
-    const restrictDocText = filterState.author.length > 0;
-    if (restrictDocText) {
-      filterState.fileType = ["document", "text"];
     }
-
-    // build query params
-    const params = new URLSearchParams();
-    [...filterFields, "fileType"].forEach(f => {
-      if (filterState[f]?.length) {
-        params.append(
-          f === "fileType" ? f : f,
-          JSON.stringify(filterState[f])
-        );
-      }
-    });
-
-    // fetch dynamic options
-    const res  = await fetch(`${API_BASE}/filters/options?${params}`);
-    const data = await res.json();
-
-    // re-render UIs
-    renderDropdownOptions("author",      "authorOptions",      data.authors,      filterState.author);
-    renderDropdownOptions("category",    "categoryOptions",    data.categories,   filterState.category);
-    renderDropdownOptions("keywords",    "keywordOptions",      data.keywords,     filterState.keywords);
-    renderDropdownOptions("institution", "institutionOptions",  data.institutions, filterState.institution);
-    renderFileTypeOptions(data.fileTypes, filterState.fileType, restrictDocText);
-
-    setUpAllListeners();
-
-    // if nothing selected & no restriction, default to all fileTypes
-    if (!restrictDocText && !filterState.fileType.length) {
-      filterState.fileType = [...data.fileTypes];
-      renderFileTypeOptions(data.fileTypes, filterState.fileType, false);
+    
+    // Setup "Select All" functionality
+    const toggleAllBtn = document.querySelector(`.toggle-all[data-target="${containerId}"]`);
+    if (toggleAllBtn) {
+      toggleAllBtn.addEventListener('click', () => {
+        const checkboxes = container.querySelectorAll('input[type="checkbox"]');
+        const allChecked = Array.from(checkboxes).every(checkbox => checkbox.checked);
+        
+        checkboxes.forEach(checkbox => {
+          checkbox.checked = !allChecked;
+        });
+      });
     }
   }
 
-  // run it
-  await applyLogicAndPopulate();
+  // Populate all dropdowns
+  await Promise.all([
+    populateDropdownOptions('author', 'authorOptions'),
+    populateDropdownOptions('category', 'categoryOptions'),
+    populateDropdownOptions('keywords', 'keywordOptions'),
+    populateDropdownOptions('institution', 'institutionOptions')
+  ]);
 
-  // ---- Save & navigation ----
+  function setInput(id, value) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (el.type === "checkbox") {
+      el.checked = !!value;
+    } else {
+      el.value = value ?? "";
+    }
+  }
+
+  // Fill fields from saved settings
+  setInput("sort", saved.sort);
+  setInput("columns", saved.columns || "2");
+  setInput("pageSize", saved.pageSize || "20");
+  setInput("dateFrom", saved.dateFrom);
+  setInput("dateTo", saved.dateTo);
+  setInput("allTime", saved.allTime);
+  setInput("snippetLength", saved.snippetLength || "100");
+
+  // Set file type checkboxes
+  if (saved.type) {
+    const fileTypes = Array.isArray(saved.type) ? saved.type : [saved.type];
+    document.querySelectorAll('input[name="fileTypes"]').forEach(checkbox => {
+      checkbox.checked = fileTypes.includes(checkbox.value);
+    });
+  }
+
+  // Save Settings
   form.addEventListener("submit", e => {
     e.preventDefault();
-    // get theme
+
     const activeBtn = Array.from(modes).find(b => b.classList.contains("active"));
-    const theme     = activeBtn?.dataset.mode || "";
+    const themeClass = activeBtn?.dataset.mode || "";
+    const allTimeChecked = form.elements.allTime.checked;
 
-    // detect “all file types”
-    const totalTypes = (new Set(document.querySelectorAll('input[name="fileTypes"]')))
-      .size;
-    const typeSetting = 
-      !filterState.fileType.length ||
-      filterState.fileType.length === totalTypes
-        ? null
-        : filterState.fileType;
+    // Get selected authors
+    const authorCheckboxes = document.querySelectorAll('#authorOptions input[type="checkbox"]:checked');
+    const authors = Array.from(authorCheckboxes).map(cb => cb.value);
 
-    const allTime = form.elements.allTime.checked;
+    // Get selected categories
+    const categoryCheckboxes = document.querySelectorAll('#categoryOptions input[type="checkbox"]:checked');
+    const categories = Array.from(categoryCheckboxes).map(cb => cb.value);
+
+    // Get selected keywords
+    const keywordCheckboxes = document.querySelectorAll('#keywordOptions input[type="checkbox"]:checked');
+    const keywords = Array.from(keywordCheckboxes).map(cb => cb.value);
+
+    // Get selected institutions
+    const institutionCheckboxes = document.querySelectorAll('#institutionOptions input[type="checkbox"]:checked');
+    const institutions = Array.from(institutionCheckboxes).map(cb => cb.value);
+
+    // Get selected file types
+    const fileTypeCheckboxes = document.querySelectorAll('input[name="fileTypes"]:checked');
+    const fileTypes = Array.from(fileTypeCheckboxes).map(cb => cb.value);
+
     const newSettings = {
-      themeClass:    theme,
-      author:        filterState.author.length      ? filterState.author      : null,
-      category:      filterState.category.length    ? filterState.category    : null,
-      keywords:      filterState.keywords.length    ? filterState.keywords    : null,
-      institution:   filterState.institution.length ? filterState.institution : null,
-      type:          typeSetting,
-      sort:          form.elements.sort.value,
-      columns:       form.elements.columns.value,
-      pageSize:      form.elements.pageSize.value,
-      dateFrom:      allTime ? "" : form.elements.dateFrom.value,
-      dateTo:        allTime ? "" : form.elements.dateTo.value,
-      allTime:       allTime,
+      themeClass: themeClass,
+      author: authors.length > 0 ? authors : null,
+      category: categories.length > 0 ? categories : null,
+      keywords: keywords.length > 0 ? keywords : null,
+      institution: institutions.length > 0 ? institutions : null,
+      type: fileTypes.length > 0 ? (fileTypes.length === 5 ? null : fileTypes) : null,
+      sort: form.elements.sort.value,
+      columns: form.elements.columns.value,
+      pageSize: form.elements.pageSize.value,
+      dateFrom: allTimeChecked ? "" : form.elements.dateFrom.value,
+      dateTo: allTimeChecked ? "" : form.elements.dateTo.value,
+      allTime: allTimeChecked,
       snippetLength: form.elements.snippetLength.value
     };
 
     localStorage.setItem("userSettings", JSON.stringify(newSettings));
-
-    // success notification
-    const note = document.createElement("menu");
-    note.className = "notification success";
-    note.textContent = "Settings saved successfully!";
-    document.body.appendChild(note);
-
+    
+    // Show success notification
+    const notification = document.createElement('div');
+    notification.className = 'notification success';
+    notification.textContent = 'Settings saved successfully!';
+    document.body.appendChild(notification);
+    
     setTimeout(() => {
-      note.remove();
-      const back = localStorage.getItem("lastVisitedPage")
-                   || "../user-interface/user-search.html";
+      notification.remove();
+      const back = localStorage.getItem("lastVisitedPage") || "../user-interface/user-search.html";
       window.location.href = back;
     }, 1500);
   });
 
+  // Back button
   backBtn?.addEventListener("click", () => {
-    const back = localStorage.getItem("lastVisitedPage")
-                 || "../user-interface/user-search.html";
+    const back = localStorage.getItem("lastVisitedPage") || "../user-interface/user-search.html";
     window.location.href = back;
   });
 
+  // Reset button
   resetBtn.addEventListener("click", () => {
-    if (confirm("Reset all settings to default?")) {
+    if (confirm("Are you sure you want to reset all settings to default?")) {
       localStorage.removeItem("userSettings");
       window.location.reload();
     }
   });
 
-  // date inputs enable/disable
-  {
-    const allTimeCheckbox = document.getElementById("allTime");
-    const fromInput       = document.getElementById("dateFrom");
-    const toInput         = document.getElementById("dateTo");
-    function toggleDates() {
-      const d = allTimeCheckbox.checked;
-      fromInput.disabled = d;
-      toInput.disabled   = d;
-    }
-    allTimeCheckbox.addEventListener("change", toggleDates);
-    toggleDates();
+  // Toggle date inputs based on "All Time" checkbox
+  const allTimeCheckbox = document.getElementById("allTime");
+  const dateFromInput = document.getElementById("dateFrom");
+  const dateToInput = document.getElementById("dateTo");
+
+  function toggleDateInputs() {
+    const disabled = allTimeCheckbox.checked;
+    dateFromInput.disabled = disabled;
+    dateToInput.disabled = disabled;
   }
+
+  allTimeCheckbox.addEventListener('change', toggleDateInputs);
+  toggleDateInputs(); // Initialize state
 });

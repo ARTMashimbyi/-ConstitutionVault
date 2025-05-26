@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+    <style>
+:root {
+    --primary-color: #1565c0;
+    --secondary-color: #ff8f00;
+    --success-color: #2E7D32;
+    --bg-color: #f5f5f5;
+    --text-color: #424242;
+    --card-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    --card-hover-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    --animation-speed: 0.3s;
+    --overlay-color: rgba(18, 28, 62, 0.7);
+}
+
+body {
+    background-color: var(--bg-color);
+    background-image: url('/api/placeholder/1920/1080');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    font-family: 'Roboto', sans-serif;
+    display: flex;
+    min-height: 100vh;
+    flex-direction: column;
+    color: var(--text-color);
+    line-height: 1.6;
+    position: relative;
+    border: 5px solid white;
+    box-sizing: border-box;
+}
+
+/* Background overlay */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--overlay-color);
+    z-index: 0;
+}
+
+/* Ensure content appears above overlay */
+body > * {
+    position: relative;
+    z-index: 1;
+}
+
+main {
+    flex: 1 0 auto;
+    padding: 2rem 0;
+}
+
+.auth-container {
+    max-width: 600px;
+    margin: 3rem auto;
+    padding: 2.5rem;
+    border-radius: 12px;
+    box-shadow: var(--card-shadow);
+    background-color: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    text-align: center;
+    transition: transform var(--animation-speed) ease;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.auth-container:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--card-hover-shadow);
+}
+
+.logo-container {
+    margin-bottom: 2rem;
+}
+
+.logo {
+    max-width: 200px;
+    height: auto;
+    border-radius: 8px;
+}
+
+.auth-title {
+    color: var(--primary-color);
+    font-weight: 500;
+    margin-bottom: 2rem;
+    position: relative;
+}
+
+.auth-title:after {
+    content: "";
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 3px;
+    background-color: var(--secondary-color);
+}
+
+.auth-buttons {
+    margin: 2.5rem 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.btn-auth {
+    margin: 0.75rem;
+    padding: 0 2rem;
+    height: 50px;
+    line-height: 50px;
+    border-radius: 25px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 250px;
+    transition: all var(--animation-speed) ease;
+}
+
+#signInButton {
+    background-color: #4285F4;
+    position: relative;
+    color: #fff;
+    text-transform: none;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding-left: 1rem;
+    padding-right: 1.5rem;
+}
+
+#signInButton:hover {
+    background-color: #12b000;
+    box-shadow: 0 4px 8px rgba(66, 133, 244, 0.3);
+}
+
+.google-icon {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48' width='24px' height='24px'%3E%3Cpath fill='%23FFC107' d='M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z'/%3E%3Cpath fill='%23FF3D00' d='M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z'/%3E%3Cpath fill='%234CAF50' d='M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z'/%3E%3Cpath fill='%231976D2' d='M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    width: 24px;
+    height: 24px;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+#signOutButton {
+    background-color: #DB4437;
+}
+
+#signOutButton:hover {
+    background-color: #c53929;
+    box-shadow: 0 4px 8px rgba(219, 68, 55, 0.3);
+}
+
+.welcome-message {
+    font-size: 18px;
+    color: var(--success-color);
+    margin: 20px 0;
+    padding: 15px;
+    border-radius: 8px;
+    background-color: rgba(232, 245, 233, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.welcome-message i {
+    margin-right: 10px;
+}
+
+.portal-options {
+    margin-top: 2.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.portal-card {
+    padding: 1.5rem;
+    margin: 1rem;
+    border-radius: 12px;
+    transition: all var(--animation-speed) ease;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.portal-card:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--card-hover-shadow);
+}
+
+.admin-portal {
+    background-color: rgba(227, 242, 253, 0.9);
+    border-left: 5px solid var(--primary-color);
+}
+
+.user-portal {
+    background-color: rgba(255, 248, 225, 0.9);
+    border-left: 5px solid var(--secondary-color);
+}
+
+.portal-card i.medium {
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+.user-portal i.medium {
+    color: var(--secondary-color);
+}
+
+.portal-card h5 {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.portal-card p {
+    margin-bottom: 1.5rem;
+    color: #757575;
+}
+
+footer.page-footer {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+}
+
+progress.loading-spinner {
+    margin: 1.5rem auto;
+    display: none;
+    width: 70%;
+}
+
+.portal-link {
+    margin-top: auto;
+    font-weight: 500;
+    border-radius: 25px;
+    padding: 0 1.5rem;
+}
+
+.portal-link:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+/* Header styling with background image consideration */
+header {
+    position: relative;
+    z-index: 1;
+    padding: 1rem 0;
+}
+
+.app-name {
+    font-size: 32px;
+    font-weight: 900;
+    color: rgb(255, 255, 255);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    text-align: center;
+}
+
+/* Modal styling */
+dialog.modal {
+    border-radius: 12px;
+    max-width: 600px;
+    background-color: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+}
+
+.modal-content h4 {
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+}
+
+.modal-content p {
+    margin-bottom: 1.5rem;
+}
+
+.modal .btn-large {
+    border-radius: 25px;
+    margin: 0.5rem 0;
+    height: 48px;
+    line-height: 48px;
+}
+
+.modal-footer .btn-flat {
+    color: var(--primary-color);
+}
+
+/* Decorative elements */
+.decorative-circle {
+    position: absolute;
+    border-radius: 50%;
+    z-index: 0;
+    opacity: 0.5;
+}
+
+.circle-1 {
+    width: 250px;
+    height: 250px;
+    background: radial-gradient(circle, rgba(21, 101, 192, 0.3) 0%, rgba(21, 101, 192, 0) 70%);
+    top: -80px;
+    right: -80px;
+}
+
+.circle-2 {
+    width: 350px;
+    height: 350px;
+    background: radial-gradient(circle, rgba(255, 143, 0, 0.3) 0%, rgba(255, 143, 0, 0) 70%);
+    bottom: -120px;
+    left: -120px;
+}
+
+/* For smaller screens */
+@media only screen and (max-width: 600px) {
+    .auth-container {
+        margin: 1rem auto;
+        padding: 1.5rem;
+        width: 90%;
+    }
+    
+    .btn-auth {
+        width: 100%;
+        margin: 0.5rem 0;
+    }
+    
+    .portal-card {
+        margin: 0.5rem 0;
+    }
+    
+    #admin-option, #user-option {
+        width: 100%;
+    }
+    
+    .app-name {
+        font-size: 24px;
+    }
+}
+
+/* Brand Logo responsive adjustments */
+@media only screen and (max-width: 992px) {
+    nav .brand-logo {
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 1.5rem;
+    }
+}
+
+/* Modal button adjustments for mobile */
+@media only screen and (max-width: 600px) {
+    .modal .btn-large {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+}
+
+/* Animation for elements appearing */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.auth-title, .auth-buttons, .portal-card {
+    animation: fadeIn 0.5s ease-out forwards;
+}
+
+.auth-buttons {
+    animation-delay: 0.2s;
+}
+
+.portal-card {
+    animation-delay: 0.4s;
+}
+    </style>
+    <title>Constitution Vault - Authentication</title>
+  </head>
+  <body>
+    <header>
+      <nav class="blue darken-3">
+        <section class="nav-wrapper container">
+          <h1><a href="#" class="brand-logo">Constitution Vault</a></h1>
+          <ul id="nav-mobile" class="right hide-on-med-and-down">
+            <li class="admin-in" style="display: none">
+              <a
+                href="#"
+                class="white-text modal-trigger"
+                data-target="modal-admin"
+              >
+                <i class="material-icons left">admin_panel_settings</i>Admin
+              </a>
+            </li>
+            <li class="loggedIn" style="display: none">
+              <a
+                href="#"
+                class="white-text modal-trigger"
+                data-target="modal-users"
+              >
+                <i class="material-icons left">person</i>User
+              </a>
+            </li>
+          </ul>
+        </section>
+      </nav>
+    </header>
+
+    <main>
+      <section class="container auth-container">
+        <figure class="logo-container">
+          <img
+            src="/api/placeholder/200/100"
+            alt="Constitution Vault Logo"
+            class="logo"
+          />
+        </figure>
+
+        <h2 class="auth-title">Welcome to Constitution Vault</h2>
+
+        <section class="auth-buttons">
+          <button
+            id="signInButton"
+            class="btn-large waves-effect waves-light btn-auth"
+          >
+            <em class="google-icon"></em><strong>Sign In with Google</strong>
+          </button>
+
+          <button
+            id="signOutButton"
+            class="btn-large waves-effect waves-light btn-auth"
+            style="display: none"
+          >
+            <i class="material-icons left">logout</i><strong>Sign Out</strong>
+          </button>
+        </section>
+
+        <progress class="progress loading-spinner">
+          <meter class="indeterminate"></meter>
+        </progress>
+
+        <aside id="message" class="welcome-message" style="display: none">
+          <i class="material-icons">check_circle</i> <strong>You have successfully signed in!</strong>
+        </aside>
+
+        <section
+          id="portal-options"
+          class="portal-options row"
+          style="display: none"
+        >
+          <article id="admin-option" class="col s12 m6" style="display: none">
+            <section class="portal-card admin-portal z-depth-1">
+              <i class="material-icons medium">security</i>
+              <h3>Admin Portal</h3>
+              <p>Access administrative controls and settings</p>
+              <a
+                href="../admin/home_page/admin_home.html"
+                class="portal-link btn blue darken-2 waves-effect waves-light"
+              >
+                <i class="material-icons left">dashboard</i><strong>Enter Admin Portal</strong>
+              </a>
+            </section>
+          </article>
+
+          <article id="user-option" class="col s12" style="display: none">
+            <section class="portal-card user-portal z-depth-1">
+              <i class="material-icons medium">person</i>
+              <h3>User Portal</h3>
+              <p>Access your personal dashboard and resources</p>
+              <a
+                href="../suggestions/home.html"
+                class="portal-link btn amber darken-2 waves-effect waves-light"
+              >
+                <i class="material-icons left">view_list</i><strong>Enter User Portal</strong>
+              </a>
+            </section>
+          </article>
+        </section>
+      </section>
+    </main>
+
+    <!-- Admin Modal -->
+    <dialog id="modal-admin" class="modal">
+      <section class="modal-content">
+        <h4>
+          <i class="material-icons left">admin_panel_settings</i>Admin Access
+        </h4>
+        <p>Select which portal you would like to access:</p>
+        <section class="row">
+          <section class="col s12 m6">
+            <a
+              href="../admin/hierarcy.html"
+              class="btn-large blue darken-3 waves-effect waves-light"
+            >
+              <i class="material-icons left">security</i><strong>Admin Portal</strong>
+            </a>
+          </section>
+          <section class="col s12 m6">
+            <a
+              href="../suggestions/home.html"
+              class="btn-large amber darken-2 waves-effect waves-light"
+            >
+              <i class="material-icons left">person</i><strong>User Portal</strong>
+            </a>
+          </section>
+        </section>
+      </section>
+      <footer class="modal-footer">
+        <a href="#!" class="modal-close waves-effect waves-green btn-flat"
+          ><strong>Close</strong></a
+        >
+      </footer>
+    </dialog>
+
+    <!-- User Modal -->
+    <dialog id="modal-users" class="modal">
+      <section class="modal-content">
+        <h4><i class="material-icons left">person</i>User Portal</h4>
+        <p>Redirecting you to the user portal...</p>
+      </section>
+    </dialog>
+
+    <footer class="page-footer blue-grey darken-3">
+      <section class="container">
+        <section class="row">
+          <article class="col s12">
+            <h5 class="white-text">Constitution Vault</h5>
+            <p class="grey-text text-lighten-4">
+              Secure access to constitutional resources.
+            </p>
+          </article>
+        </section>
+      </section>
+      <section class="footer-copyright blue-grey darken-4">
+        <section class="container">© 2025 Constitution Vault</section>
+      </section>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script type="module">
+// Import Firebase modules
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
+import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-analytics.js";
+
+// Firebase configuration
+const firebaseConfig = {
+    apiKey: "AIzaSyAU_w_Oxi6noX_A1Ma4XZDfpIY-jkoPN-c",
+    authDomain: "constitutionvault-1b5d1.firebaseapp.com",
+    projectId: "constitutionvault-1b5d1",
+    storageBucket: "constitutionvault-1b5d1.firebasestorage.app",
+    messagingSenderId: "616111688261",
+    appId: "1:616111688261:web:97cc0a35c8035c0814312c",
+    measurementId: "G-YJEYZ85T3S"
+};    
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);        
+const auth = getAuth();
+const provider = new GoogleAuthProvider();
+const db = getFirestore(app);
+
+// DOM Elements
+const signInButton = document.getElementById('signInButton');
+const signOutButton = document.getElementById('signOutButton');
+const message = document.getElementById('message');
+const adminLink = document.querySelector('.admin-in');
+const userButton = document.querySelector('.loggedIn');
+const loadingSpinner = document.querySelector('.loading-spinner');
+const portalOptions = document.getElementById('portal-options');
+const adminOption = document.getElementById('admin-option');
+const userOption = document.getElementById('user-option');
+const userModal = document.getElementById('modal-users');
+
+// Global variables
+let adminStatus = false;
+let redirectTimer;
+
+/**
+ * Sign in with Google
+ */
+const userSignIn = async() => {
+    loadingSpinner.style.display = "block";
+    
+    try {
+        const result = await signInWithPopup(auth, provider);
+        const user = result.user;
+        // The rest of the authentication flow is handled by onAuthStateChanged
+    } catch (error) {
+        console.error("Sign-in error:", error);
+        loadingSpinner.style.display = "none";
+        M.toast({html: 'Sign-in failed. Please try again.', classes: 'red'});
+    }
+};
+
+/**
+ * Sign out function
+ */
+const userSignOut = async() => {
+    try {
+        await signOut(auth);
+        M.toast({html: 'You have signed out successfully', classes: 'green'});
+        
+        adminStatus = false;
+        clearTimeout(redirectTimer);
+        
+        // Reset UI elements
+        portalOptions.style.display = "none";
+        adminOption.style.display = "none";
+        userOption.style.display = "none";
+        
+    } catch (error) {
+        console.error("Sign-out error:", error);
+        M.toast({html: 'Sign-out failed. Please try again.', classes: 'red'});
+    }
+};
+
+/**
+ * Check if user has admin privileges
+ * @param {Object} user - The Firebase user object
+ * @returns {Promise<boolean>} - True if user is an admin, false otherwise
+ */
+async function checkAdmin(user) {
+    try {
+        const querySnapshot = await getDocs(collection(db, "Admin_users"));
+        adminStatus = false; // Reset admin status
+        
+        querySnapshot.forEach((docSnap) => {
+            const adminData = docSnap.data();
+            if (adminData.UID === user.uid) {
+                adminStatus = true;
+                console.log("Admin status verified");
+            }
+        });
+        
+        return adminStatus;
+    } catch (error) {
+        console.error("Error checking admin status:", error);
+        return false;
+    }
+}
+
+/**
+ * Direct user to appropriate portal based on role
+ * @param {boolean} isAdmin - Whether the user is an admin
+ */
+function handleUserAccess(isAdmin) {
+    portalOptions.style.display = "block";
+    
+    if (isAdmin) {
+        // For admin users, show both options
+        adminOption.style.display = "block";
+        userOption.style.display = "block";
+        adminLink.style.display = "block";
+    } else {
+        // For regular users, only show user option and auto-redirect
+        adminOption.style.display = "none";
+        userOption.style.display = "block";
+        
+        // Auto-redirect regular users to user portal after 2 seconds
+        redirectTimer = setTimeout(() => {
+            window.location.href = "../suggestions/home.html";
+        }, 2000);
+        
+        // Show a toast notification about redirection
+        M.toast({html: 'Redirecting to user portal...', classes: 'blue', displayLength: 2000});
+    }
+}
+
+// Event listeners
+signInButton.addEventListener('click', userSignIn);
+signOutButton.addEventListener('click', userSignOut);
+
+// Initialize Materialize components
+document.addEventListener('DOMContentLoaded', function() {
+    const modals = document.querySelectorAll('.modal');
+    M.Modal.init(modals);
+    
+    const tooltips = document.querySelectorAll('.tooltipped');
+    M.Tooltip.init(tooltips);
+    
+    // Open the user modal and redirect when clicked
+    const userModalInstance = M.Modal.getInstance(userModal);
+    userButton.addEventListener('click', () => {
+        userModalInstance.open();
+        setTimeout(() => {
+            window.location.href = "../suggestions/home.html";
+        }, 1500);
+    });
+});
+
+// Authentication state observer
+onAuthStateChanged(auth, async (user) => {
+    loadingSpinner.style.display = "none";
+    
+    if (user) {
+        // User is signed in
+        signInButton.style.display = "none";
+        signOutButton.style.display = "block";
+        message.style.display = "block";
+        userButton.style.display = "block";
+        
+        // Check if user is admin
+        const isAdmin = await checkAdmin(user);
+        
+        // Update UI based on user role
+        handleUserAccess(isAdmin);
+        
+        // Show welcome toast
+        M.toast({html: `Welcome, ${user.displayName || 'User'}!`, classes: 'green'});
+        
+    } else {
+        // User is signed out
+        signInButton.style.display = "block";
+        signOutButton.style.display = "none";
+        message.style.display = "none";
+        adminLink.style.display = "none";
+        userButton.style.display = "none";
+        portalOptions.style.display = "none";
+    }
+});
+    </script>
+  </body>
+</html>

@@ -1,73 +1,93 @@
-// public/delete/delete.js
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+import { getFirestore, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 
+document.addEventListener('DOMContentLoaded', async () => {
+    console.log('Delete confirmation page loaded (<> _ <>)');
 
-const hostname = window.location.hostname;
-const API_BASE =
-  hostname === "localhost" || hostname.startsWith("127.0.0.1")
-    ? "http://localhost:4000/api"
-    : "https://constitutionvaultapi-acatgth5g9ekg5fv.southafricanorth-01.azurewebsites.net/api";
+    const firebaseConfig = {
+        apiKey: "AIzaSyAU_w_Oxi6noX_A1Ma4XZDfpIY-jkoPN-c",
+        authDomain: "constitutionvault-1b5d1.firebaseapp.com",
+        projectId: "constitutionvault-1b5d1",
+        storageBucket: "constitutionvault-1b5d1.appspot.com",
+        messagingSenderId: "616111688261",
+        appId: "1:616111688261:web:97cc0a35c8035c0814312c",
+        measurementId: "G-YJEYZ85T3S"
+    };
 
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
+    // Get the document ID from localStorage
+    const docId = localStorage.getItem('deleteId');
+    console.log('Document ID to delete:', docId);
 
-document.addEventListener("DOMContentLoaded", () => {
-  // 1) Read the document ID from the URL query string
-  const params = new URLSearchParams(window.location.search);
-  const docId  = params.get("id");
+    // UI Elements
+    const statusMessage = document.querySelector('.status-message') || { textContent: '', style: {} };
+    const spinner = document.querySelector('.spinner') || { textContent: '', style: {} };
+    const successIcon = document.querySelector('.success-icon') || { textContent: '', style: {} };
+    const errorIcon = document.querySelector('.error-icon') || { textContent: '', style: {} };
+    const confirmBtn = document.querySelector('.confirm-btn') || { textContent: '', style: {} };
+    const cancelBtn = document.querySelector('.cancel-btn') || { textContent: '', style: {} };
+    const backBtn = document.querySelector('.back-btn') || { textContent: '', style: {} };
 
-  // 2) Grab UI elements
-  const statusMsg  = document.querySelector(".status-message");
-  const spinner    = document.querySelector(".spinner");
-  const successIcn = document.querySelector(".success-icon");
-  const errorIcn   = document.querySelector(".error-icon");
-  const confirmBtn = document.querySelector(".confirm-btn");
-  const cancelBtn  = document.querySelector(".cancel-btn");
-  const backBtn    = document.querySelector(".back-btn");
+    console.log('who in the hell is NULL!!(~_~)',{
+        confirmBtn,
+        cancelBtn,
+        backBtn,
+        spinner
+      });//who in the hell is NULL!!!!!(-_-)
 
-  // 3) Sanity‐checks
-  if (!confirmBtn || !cancelBtn) {
-    console.error("delete.js: Missing confirm or cancel buttons in deleteConfirm.html");
-    return;
-  }
-  if (!docId) {
-    statusMsg.textContent = "Error: No document ID provided.";
-    statusMsg.style.color = "red";
-    statusMsg.style.display = "block";
-    return;
-  }
+    confirmBtn.addEventListener('click', async () => {
+        deleteItem();   
+    });
 
-  // 4) Confirm button: call DELETE /api/files/:id
-  confirmBtn.addEventListener("click", async () => {
-    spinner.style.display = "block";
-    statusMsg.textContent  = "Deleting…";
-
-    try {
-      const res = await fetch(`${API_BASE}/${encodeURIComponent(docId)}`, {
-        method: "DELETE"
-      });
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body.error || res.statusText);
-      }
-
-      // 5) Show success, then redirect back to hierarchy
-      spinner.style.display    = "none";
-      successIcn.style.display = "block";
-      statusMsg.textContent     = "Deleted successfully!";
-      setTimeout(() => {
+    cancelBtn.addEventListener('click', () => {
         window.location.href = "../admin/hierarcy.html";
-      }, 1200);
+    });
 
-    } catch (err) {
-      console.error("Delete failed:", err);
-      spinner.style.display   = "none";
-      errorIcn.style.display  = "block";
-      statusMsg.textContent   = `Error: ${err.message}`;
-      backBtn.style.display   = "block";
+    async function deleteItem() {
+        // Show loading state
+        spinner.style.display = 'block';
+        statusMessage.textContent = 'Deleting document...';
+    
+        try {
+            if (!docId) {
+                errorElement.textContent = 'No document ID provided';
+                errorElement.style.display = 'block';
+                return;
+            }
+
+            // Delete document using modular Firebase v9 syntax
+            await deleteDoc(doc(db, "constitutionalDocuments", docId));
+        
+            // Show success state
+            spinner.style.display = 'none';
+            successIcon.style.display = 'block';
+            statusMessage.textContent = 'Document deleted successfully!';
+        
+            // Clear the stored ID
+            localStorage.removeItem('deleteId');
+        
+            // Redirect after 1.2 seconds
+            const delay = 1200;
+            setTimeout(() => {
+                window.location.href = "../admin/hierarcy.html";
+            }, delay);
+        
+        } catch (error) {
+            console.error("Error deleting document:", error);
+        
+            // Show error state
+            spinner.style.display = 'none';
+            errorIcon.style.display = 'block';
+            statusMessage.textContent = `Error: ${error.message}`;
+        
+            // Show back button
+            backBtn.style.display = 'block';
+        }   
     }
-  });
-
-  // 6) Cancel button goes back to hierarchy
-  cancelBtn.addEventListener("click", () => {
-    window.location.href = "../admin/hierarcy.html";
-  });
+// document.addEventListener('DOMContentLoaded', deleteItem);
 });
+
+//export { deleteItem };

@@ -1,124 +1,154 @@
-// public/admin/preview.js
+console.log('page load');
 
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+import { getFirestore, doc, collection, getDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 
-const hostname = window.location.hostname;
-const API_BASE =
-  hostname === "localhost" || hostname.startsWith("127.0.0.1")
-    ? "http://localhost:4000/api"
-    : "https://constitutionvaultapi-acatgth5g9ekg5fv.southafricanorth-01.azurewebsites.net/api";
+const firebaseConfig = {
+  apiKey: "AIzaSyAU_w_Oxi6noX_A1Ma4XZDfpIY-jkoPN-c",
+  authDomain: "constitutionvault-1b5d1.firebaseapp.com",
+  projectId: "constitutionvault-1b5d1",
+  storageBucket: "constitutionvault-1b5d1.firebasestorage.app",
+  messagingSenderId: "616111688261",
+  appId: "1:616111688261:web:97cc0a35c8035c0814312c",
+  measurementId: "G-YJEYZ85T3S"
+};
 
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-document.addEventListener("DOMContentLoaded", () => {
-  // 1) Grab all required elements
-  const titleEl    = document.querySelector(".title");
-  const authorEl   = document.querySelector(".author");
-  const dateEl     = document.querySelector(".publishDate");
-  const updatedEl  = document.querySelector(".updated");
-  const typeEl     = document.querySelector(".document");
-  const textEl     = document.querySelector(".text-content");
-  const readBtn    = document.querySelector(".btn-read");
-  const editBtn    = document.querySelector(".btn-edit");
-  const deleteBtn  = document.querySelector(".btn-delete");
-  const errorEl    = document.querySelector(".error-message");
-  const backBtn    = document.getElementById("backButton");
+// //DOM?
+const titleElement = document.querySelector('.title') || {textContent: '', style: {}};
+const authorElement = document.querySelector('.author') || {textContent: '', style: {}};
+const publishDateElement = document.querySelector('.publishDate') || {textContent: '', style: {}};
+const updatedElement = document.querySelector('.updated') || {textContent: '', style: {}};
+const documentTypeElement = document.querySelector('.document') || {textContent: '', style: {}};
+//const sizeElement = document.querySelector('.size');
+//const descriptionElement = document.querySelector('.description');
+const textContentElement = document.querySelector('.text-content') || {textContent: '', style: {}};
+//const loadingElement = document.querySelector('.loading');
+const errorElement = document.querySelector('.error-message') || {textContent: '', style: {}};
+const editButton = document.querySelector('.btn-edit') || {textContent: '', style: {}};
+const deleteButton = document.querySelector('.btn-delete') || {textContent: '', style: {}};
 
-  // Wire up Back button
-  if (backBtn) {
-    backBtn.addEventListener("click", () => {
-      window.location.href = "../admin/hierarcy.html";
+console.log('still okay^ ^');
+
+const urlParams = new URLSearchParams(window.location.search);
+const docId = urlParams.get('id');
+
+//const docID = localStorage.getItem('selectedID');
+//console.log('the ID is', docID);
+console.log("i am working, my ID: ", docId);//on console
+
+// //loading document?
+async function loadDocument() {
+    console.log(docId);
+    
+    try {
+        const docRef = doc(collection(db, 'constitutionalDocuments'), docId);
+        const docSnap = await getDoc(docRef);
+        
+        if (docSnap.exists) {
+            const docData = docSnap.data();
+            displayDocument(docData);
+            setupButtonActions(docId, docData);
+        } else {
+            throw new Error("Document not found");
+        }
+        //console.log(docRef);
+        
+    } catch (error) {
+        console.error(error);
+        errorElement.textContent = `Error: ${error.message}`;
+        errorElement.style.display = 'block';
+    }
+}
+
+function displayDocument(docData) {
+    if(!docData) return
+
+    titleElement.textContent = docData.title || 'Untitled Document';
+    authorElement.textContent = docData.author || 'Unknown Author';
+    publishDateElement.textContent = formatDate(docData.date) || 'Unknown Date';
+    updatedElement.textContent = formatDate(docData.uploadedAt) || 'Unknown';
+    documentTypeElement.textContent = docData.fileType || 'Unknown';
+    //sizeElement.textContent = formatFileSize(docData.fileSize) || 'Unknown';
+    //descriptionElement.textContent = docData.description || 'No description available';
+
+    if (docData.content) {
+        textContentElement.textContent = docData.content;
+    } else {
+        //textContentElement.style.display = 'none';
+    }
+
+    showContent();
+}
+
+// // Set up button event listeners
+function setupButtonActions(docId, docData) {
+    // Read button - open the actual file
+    // readButton.addEventListener('click', () => {
+    //     if (docData.fileUrl) {
+    //         window.open(docData.fileUrl, '_blank');
+    //     } else {
+    //         alert('No file URL available');
+    //     }
+    // });
+
+    
+    // View button - open the document viewer
+    const viewButton = document.querySelector('.btn-read');
+    if (viewButton) {
+        viewButton.addEventListener('click', () => {
+            window.location.href = `viewer.html?id=${docId}`;
+        });
+    }
+
+    // Edit button - redirect to edit page
+    if (editButton) {
+        editButton.addEventListener('click', () => {
+            window.location.href = `../edit/edit.html?id=${docId}`;
+        });
+    }
+
+    // Delete button
+    if (deleteButton) {
+        deleteButton.addEventListener('click', async () => {
+            try {
+                // await db.collection("constitutionalDocuments").doc(docId).delete();
+                // alert('Document deleted successfully');
+                localStorage.setItem('deleteId', docId);
+                window.location.href = 'deleteConfirm.html';
+            } catch (error) {
+                console.error("Error deleting document:", error);
+                alert('Error deleting document');
+            }
+        });
+    }
+}
+
+// // Helper functions
+function formatDate(dateString) {
+    if (!dateString) return 'Unknown';
+    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    return new Date(dateString).toLocaleDateString(undefined, options);
+}
+
+function showContent() {
+    document.querySelectorAll('article > section, article > menu').forEach(element => {
+        element.style.display = 'block';
     });
-  }
+}
+console.log('finally works, YAAY (T^T)');
 
-  // 2) Sanity-check
-  for (const [el, sel] of [
-    [titleEl,    ".title"],
-    [authorEl,   ".author"],
-    [dateEl,     ".publishDate"],
-    [updatedEl,  ".updated"],
-    [typeEl,     ".document"],
-    [errorEl,    ".error-message"]
-  ]) {
-    if (!el) {
-      console.error(`preview.js: missing element for selector '${sel}'`);
-      return;
-    }
-  }
+export {
+    loadDocument,
+    displayDocument,
+    setupButtonActions,
+    formatDate,
+    showContent
+};
 
-  // 3) Read the ID from the URL
-  const docId = new URLSearchParams(window.location.search).get("id");
-  if (!docId) {
-    errorEl.textContent = "No document ID in URL.";
-    errorEl.style.display = "block";
-    return;
-  }
 
-  // 4) Fetch & render the single doc via API
-  fetch(`${API_BASE}/${encodeURIComponent(docId)}`)
-    .then(res => {
-      if (!res.ok) throw new Error(res.statusText);
-      return res.json();
-    })
-    .then(doc => {
-      render(doc);
-      wireActions(doc);
-    })
-    .catch(err => {
-      console.error("Error loading document:", err);
-      errorEl.textContent = `Error: ${err.message}`;
-      errorEl.style.display = "block";
-    });
-
-  // 5) Populate fields
-  function render(doc) {
-    titleEl.textContent   = doc.title       || "Untitled";
-    authorEl.textContent  = doc.author      || "Unknown";
-    dateEl.textContent    = formatDate(doc.date);
-    updatedEl.textContent = formatDate(doc.updatedAt || doc.uploadedAt);
-    typeEl.textContent    = doc.fileType    || "—";
-
-    if (textEl) {
-      if (doc.textContent) {
-        textEl.textContent    = doc.textContent;
-        textEl.style.display  = "block";
-      } else {
-        textEl.style.display  = "none";
-      }
-    }
-
-    // Un-hide content sections
-    document
-      .querySelectorAll("article > section, article > menu")
-      .forEach(el => el.style.display = "block");
-  }
-
-  // 6) Wire up buttons
-  function wireActions(doc) {
-    if (readBtn && doc.downloadURL) {
-      readBtn.addEventListener("click", () =>
-        window.open(doc.downloadURL, "_blank")
-      );
-    }
-
-    if (editBtn) {
-      editBtn.addEventListener("click", () =>
-        window.location.href = `../edit/edit.html?id=${encodeURIComponent(doc.id)}`
-      );
-    }
-
-    if (deleteBtn) {
-      deleteBtn.addEventListener("click", () =>
-        window.location.href = `../delete/deleteConfirm.html?id=${encodeURIComponent(doc.id)}`
-      );
-    }
-  }
-
-  // 7) Date formatter
-  function formatDate(iso) {
-    if (!iso) return "—";
-    return new Date(iso).toLocaleDateString(undefined, {
-      year:  "numeric",
-      month: "long",
-      day:   "numeric"
-    });
-  }
-});
+// Initialize when DOM is loaded
+document.addEventListener('DOMContentLoaded', loadDocument);

@@ -10,12 +10,13 @@
     --overlay-color: rgba(18, 28, 62, 0.7);
 }
 
-/* =========================
-   Body & Overlay
-   ========================= */
 body {
     background-color: var(--bg-color);
+<<<<<<< HEAD:public/admin sign in/styles.css
+    background-image: url('../user signup/images/hand-file.jpg');
+=======
     background-image: url('../user-sign-up/images/hand-file.jpg'); /* adjust path as needed */
+>>>>>>> ad8c6aa4552212af0fcbb1d783250615ed861d70:public/admin-sign-in/styles.css
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -27,11 +28,9 @@ body {
     color: var(--text-color);
     line-height: 1.6;
     position: relative;
-    border: 5px solid white;
-    box-sizing: border-box;
 }
 
-/* Background overlay for dark effect */
+/* Background overlay */
 body::before {
     content: '';
     position: fixed;
@@ -42,14 +41,13 @@ body::before {
     background-color: var(--overlay-color);
     z-index: 0;
 }
+
+/* Ensure content appears above overlay */
 body > * {
     position: relative;
     z-index: 1;
 }
 
-/* =========================
-   Main Containers & Cards
-   ========================= */
 main {
     flex: 1 0 auto;
     padding: 2rem 0;
@@ -83,15 +81,13 @@ main {
     border-radius: 8px;
 }
 
-/* =========================
-   Auth Section & Buttons
-   ========================= */
 .auth-title {
     color: var(--primary-color);
     font-weight: 500;
     margin-bottom: 2rem;
     position: relative;
 }
+
 .auth-title:after {
     content: "";
     position: absolute;
@@ -127,24 +123,21 @@ main {
 
 #signInButton {
     background-color: #4285F4;
+    position: relative;
     color: #fff;
     text-transform: none;
     font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     gap: 12px;
     padding-left: 1rem;
     padding-right: 1.5rem;
 }
+
 #signInButton:hover {
     background-color: #12b000;
     box-shadow: 0 4px 8px rgba(66, 133, 244, 0.3);
-}
-
-#signOutButton {
-    background-color: #DB4437;
-}
-#signOutButton:hover {
-    background-color: #c53929;
-    box-shadow: 0 4px 8px rgba(219, 68, 55, 0.3);
 }
 
 .google-icon {
@@ -158,9 +151,15 @@ main {
     vertical-align: middle;
 }
 
-/* =========================
-   Welcome Message & Spinner
-   ========================= */
+#signOutButton {
+    background-color: #DB4437;
+}
+
+#signOutButton:hover {
+    background-color: #c53929;
+    box-shadow: 0 4px 8px rgba(219, 68, 55, 0.3);
+}
+
 .welcome-message {
     font-size: 18px;
     color: var(--success-color);
@@ -172,23 +171,18 @@ main {
     align-items: center;
     justify-content: center;
 }
-.welcome-message i { margin-right: 10px; }
 
-progress.loading-spinner {
-    margin: 1.5rem auto;
-    display: none;
-    width: 70%;
+.welcome-message i {
+    margin-right: 10px;
 }
 
-/* =========================
-   Portal Cards
-   ========================= */
 .portal-options {
     margin-top: 2.5rem;
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
 }
+
 .portal-card {
     padding: 1.5rem;
     margin: 1rem;
@@ -199,38 +193,72 @@ progress.loading-spinner {
     flex-direction: column;
     justify-content: space-between;
 }
+
 .portal-card:hover {
     transform: translateY(-8px);
     box-shadow: var(--card-hover-shadow);
 }
+
 .admin-portal {
     background-color: rgba(227, 242, 253, 0.9);
     border-left: 5px solid var(--primary-color);
 }
+
 .user-portal {
     background-color: rgba(255, 248, 225, 0.9);
     border-left: 5px solid var(--secondary-color);
 }
-.portal-card i.medium { color: var(--primary-color); margin-bottom: 1rem; }
-.user-portal i.medium { color: var(--secondary-color); }
-.portal-card h5 { font-weight: 500; margin-bottom: 0.5rem; }
-.portal-card p { margin-bottom: 1.5rem; color: #757575; }
+
+.portal-card i.medium {
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+.user-portal i.medium {
+    color: var(--secondary-color);
+}
+
+.portal-card h5 {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.portal-card p {
+    margin-bottom: 1.5rem;
+    color: #757575;
+}
+
+footer.page-footer {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+}
+
+progress.loading-spinner {
+    margin: 1.5rem auto;
+    display: none;
+    width: 70%;
+}
+
 .portal-link {
     margin-top: auto;
     font-weight: 500;
     border-radius: 25px;
     padding: 0 1.5rem;
 }
-.portal-link:hover { box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
 
-/* =========================
-   Header, Footer, Modal
-   ========================= */
+.portal-link:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+/* Header styling with background image consideration */
 header {
     position: relative;
     z-index: 1;
     padding: 1rem 0;
 }
+
 .app-name {
     font-size: 32px;
     font-weight: 900;
@@ -238,13 +266,6 @@ header {
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
     text-align: center;
 }
-footer.page-footer {
-    margin-top: 2rem;
-    padding-top: 1.5rem;
-    background-color: rgba(0, 0, 0, 0.7);
-    color: white;
-}
-.modal-footer .btn-flat { color: var(--primary-color); }
 
 /* Modal styling */
 dialog.modal {
@@ -253,13 +274,18 @@ dialog.modal {
     background-color: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(10px);
 }
+
 .modal-content h4 {
     color: var(--primary-color);
     margin-bottom: 1.5rem;
     display: flex;
     align-items: center;
 }
-.modal-content p { margin-bottom: 1.5rem; }
+
+.modal-content p {
+    margin-bottom: 1.5rem;
+}
+
 .modal .btn-large {
     border-radius: 25px;
     margin: 0.5rem 0;
@@ -267,13 +293,18 @@ dialog.modal {
     line-height: 48px;
 }
 
-/* Decorative elements (optional for backgrounds) */
+.modal-footer .btn-flat {
+    color: var(--primary-color);
+}
+
+/* Decorative elements */
 .decorative-circle {
     position: absolute;
     border-radius: 50%;
     z-index: 0;
     opacity: 0.5;
 }
+
 .circle-1 {
     width: 250px;
     height: 250px;
@@ -281,6 +312,7 @@ dialog.modal {
     top: -80px;
     right: -80px;
 }
+
 .circle-2 {
     width: 350px;
     height: 350px;
@@ -289,17 +321,33 @@ dialog.modal {
     left: -120px;
 }
 
-/* =========================
-   Responsive / Mobile
-   ========================= */
+/* For smaller screens */
 @media only screen and (max-width: 600px) {
-    .auth-container { margin: 1rem auto; padding: 1.5rem; width: 90%; }
-    .btn-auth { width: 100%; margin: 0.5rem 0; }
-    .portal-card { margin: 0.5rem 0; }
-    #admin-option, #user-option { width: 100%; }
-    .app-name { font-size: 24px; }
-    .modal .btn-large { width: 100%; margin-bottom: 10px; }
+    .auth-container {
+        margin: 1rem auto;
+        padding: 1.5rem;
+        width: 90%;
+    }
+    
+    .btn-auth {
+        width: 100%;
+        margin: 0.5rem 0;
+    }
+    
+    .portal-card {
+        margin: 0.5rem 0;
+    }
+    
+    #admin-option, #user-option {
+        width: 100%;
+    }
+    
+    .app-name {
+        font-size: 24px;
+    }
 }
+
+/* Brand Logo responsive adjustments */
 @media only screen and (max-width: 992px) {
     nav .brand-logo {
         left: 50%;
@@ -308,15 +356,34 @@ dialog.modal {
     }
 }
 
-/* =========================
-   Animation
-   ========================= */
+/* Modal button adjustments for mobile */
+@media only screen and (max-width: 600px) {
+    .modal .btn-large {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+}
+
+/* Animation for elements appearing */
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
 }
+
 .auth-title, .auth-buttons, .portal-card {
     animation: fadeIn 0.5s ease-out forwards;
 }
-.auth-buttons { animation-delay: 0.2s; }
-.portal-card { animation-delay: 0.4s; }
+
+.auth-buttons {
+    animation-delay: 0.2s;
+}
+
+.portal-card {
+    animation-delay: 0.4s;
+}
+
+/* Border styling */
+body {
+    border: 5px solid white;
+    box-sizing: border-box;
+}

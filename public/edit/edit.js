@@ -1,110 +1,136 @@
-// public/admin/edit.js
+//edit.js
 
-const hostname = window.location.hostname;
-const API_BASE =
-  hostname === "localhost" || hostname.startsWith("127.0.0.1")
-    ? "http://localhost:4000/api"
-    : "https://constitutionvaultapi-acatgth5g9ekg5fv.southafricanorth-01.azurewebsites.net/api";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+import {
+  getFirestore,
+  doc,
+  getDoc,
+  updateDoc,
+  collection
+} from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+
+// Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyAU_w_Oxi6noX_A1Ma4XZDfpIY-jkoPN-c",
+  authDomain: "constitutionvault-1b5d1.firebaseapp.com",
+  projectId: "constitutionvault-1b5d1",
+  storageBucket: "constitutionvault-1b5d1.firebasestorage.app",
+  messagingSenderId: "616111688261",
+  appId: "1:616111688261:web:97cc0a35c8035c0814312c",
+  measurementId: "G-YJEYZ85T3S"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// Wait for DOM to load
+window.addEventListener("DOMContentLoaded", () => {
+  console.log("📄 DOM Loaded for Document Editor");
+
+  // Get document ID from URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const docId = urlParams.get('id');
+  console.log("Document ID from URL:", docId);
 
 
-document.addEventListener("DOMContentLoaded", () => {
-  // grab the ID from ?id=…
-  const params = new URLSearchParams(window.location.search);
-  const docId  = params.get("id");
+  const editForm = document.getElementById('editDocForm');
+  const titleInput = document.getElementById('docTitle');
+  const institutionInput = document.getElementById('docInstitution');
+  const authorInput = document.getElementById('docAuthor');
+  const categoryInput = document.getElementById('docCategory');
+  const keywordsInput = document.getElementById('docKeywords');
+  const dateInput = document.getElementById('docDate');
+  const statusMsg = document.getElementById('message');
+  const cancelButton = document.getElementById('cancelButton');
 
-  // form fields
-  const editForm          = document.getElementById("editDocForm");
-  const titleInput        = document.getElementById("docTitle");
-  const institutionInput  = document.getElementById("docInstitution");
-  const authorInput       = document.getElementById("docAuthor");
-  const categoryInput     = document.getElementById("docCategory");
-  const keywordsInput     = document.getElementById("docKeywords");
-  const dateInput         = document.getElementById("docDate");
-  const statusMsg         = document.getElementById("message");
-  const cancelButton      = document.getElementById("cancelButton");
-  const backButton        = document.getElementById("backButton"); // new: for extra back button
-
-  if (!docId) {
-    statusMsg.textContent = "Invalid document ID.";
-    statusMsg.style.color = "red";
-    return;
+  // Load document data
+  async function loadDocument() {
+    try {
+      const docRef = doc(collection(db, "constitutionalDocuments"), docId);
+      const docSnap = await getDoc(docRef);
+      console.log("📸 Document Snapshot:", docSnap);
+      
+      if (docSnap.exists()) {
+        const docData = docSnap.data();
+        console.log("📝 Document Data:", docData);
+        
+        // Populate form fields with existing data
+        titleInput.value = docData.title || '';
+        institutionInput.value = docData.institution || '';
+        authorInput.value = docData.author || '';
+        categoryInput.value = docData.category || '';
+        
+        // Format keywords array back to comma-separated string
+        if (docData.keywords && Array.isArray(docData.keywords)) {
+          keywordsInput.value = docData.keywords.join(', ');
+        }
+        
+        // Format date for input field (YYYY-MM-DD)
+        if (docData.date) {
+          const dateObj = new Date(docData.date);
+          const formattedDate = dateObj.toISOString().split('T')[0];
+          dateInput.value = formattedDate;
+        }
+      } else {
+        statusMsg.textContent = "Document not found.";
+        statusMsg.style.color = "red";
+      }
+    } catch (err) {
+      console.error("Error loading document:", err);
+      statusMsg.textContent = "Failed to load document.";
+      statusMsg.style.color = "red";
+    }
   }
 
-  // 1) Load existing data via your API (GET /api/files/:id)
-  fetch(`${API_BASE}/${encodeURIComponent(docId)}`)
-    .then(res => {
-      if (!res.ok) throw new Error(res.statusText);
-      return res.json();
-    })
-    .then(doc => {
-      if (!doc) throw new Error("Document not found");
-      // populate form
-      titleInput.value       = doc.title || "";
-      institutionInput.value = doc.institution || "";
-      authorInput.value      = doc.author || "";
-      categoryInput.value    = doc.category || "";
-      keywordsInput.value    = Array.isArray(doc.keywords)
-                                ? doc.keywords.join(", ")
-                                : "";
-      if (doc.date) {
-        dateInput.value = new Date(doc.date).toISOString().split("T")[0];
-      }
-    })
-    .catch(err => {
-      console.error("Error loading document:", err);
-      statusMsg.textContent = `Failed to load: ${err.message}`;
-      statusMsg.style.color = "red";
-    });
+ 
+  if (docId) {
+    loadDocument();
+  } else {
+    statusMsg.textContent = "Invalid document ID.";
+    statusMsg.style.color = "red";
+  }
 
-  // 2) Submit updates via PATCH to your API
-  editForm.addEventListener("submit", async e => {
+  
+  editForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    statusMsg.textContent = "";
-    const keywordsArray = keywordsInput.value
-      .split(",")
-      .map(k => k.trim())
-      .filter(k => k);
-
-    const payload = {
-      title:       titleInput.value,
-      institution: institutionInput.value,
-      author:      authorInput.value,
-      category:    categoryInput.value,
-      keywords:    keywordsArray,
-      date:        dateInput.value,
-      updatedAt:   new Date().toISOString()
-    };
-
+    
     try {
-      const res = await fetch(`${API_BASE}/${encodeURIComponent(docId)}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
+      const docRef = doc(collection(db, "constitutionalDocuments"), docId);
+      
+      
+      const keywordsString = keywordsInput.value;
+      const keywordsArray = keywordsString
+        ? keywordsString.split(',').map(keyword => keyword.trim())
+        : [];
+        
+      await updateDoc(docRef, {
+        title: titleInput.value,
+        institution: institutionInput.value,
+        author: authorInput.value,
+        category: categoryInput.value,
+        keywords: keywordsArray,
+        date: dateInput.value,
+        updatedAt: new Date().toISOString() 
       });
-      if (!res.ok) {
-        const errBody = await res.json().catch(() => ({}));
-        throw new Error(errBody.error || res.statusText);
-      }
-      statusMsg.textContent = "✅ Document updated!";
+      
+      statusMsg.textContent = "✅ Document updated successfully!";
       statusMsg.style.color = "green";
-
+      
+      
       setTimeout(() => {
-        window.location.href = `../admin/hierarcy.html`;
-      }, 1200);
+        window.location.href = `../admin/hierarcy.html?id=${docId}`;
+      }, 1500);
     } catch (err) {
-      console.error("Error updating:", err);
-      statusMsg.textContent = `❌ ${err.message}`;
+      console.error("Error updating document:", err);
+      statusMsg.textContent = "❌ Failed to update document.";
       statusMsg.style.color = "red";
     }
   });
-
-  // 3) Cancel and extra back button go back to hierarcy.html
-  cancelButton.addEventListener("click", () => {
-    window.location.href = `../admin/hierarcy.html`;
+  
+  
+  cancelButton.addEventListener('click', () => {
+    
+    window.location.href = `../admin/hierarcy.html?id=${docId}`;
   });
-  if (backButton) {
-    backButton.addEventListener("click", () => {
-      window.location.href = `../admin/hierarcy.html`;
-    });
-  }
 });

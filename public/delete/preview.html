@@ -1,68 +1,66 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Preview</title>
+
     <link rel="stylesheet" href="preview.css" />
-  </head>
-
-  <body>
-    <!-- Back button at the top -->
-    <nav style="margin: 1rem 0">
-      <button id="backButton" class="btn-back" aria-label="Back to hierarchy">
-        ← Back to Admin Hierarchy
-      </button>
-    </nav>
-
+    
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-storage-compat.js"></script>
+</head>
+<body>
     <article>
-      <!-- Error placeholder (hidden until needed) -->
-      <p class="error-message" style="display: none; color: red"></p>
+        <section>
+            <header>
+                <h1 class="title">Title: </h1>
+                <button class="btn-read">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+                        <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z"/>
+                        <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8zm8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"/>
+                    </svg>
+                    View
+                </button>
+            </header>
+            
+            <dl>
+                <dt >Author: </dt>
+                <dd class="author"></dd>
+                
+                <dt >Created: </dt>
+                <dd class="publishDate"></dd>
+                
+                <dt>Modified: </dt>
+                <dd class="updated"></dd>
+                
+                <dt>File Type: </dt>
+                <dd class="document"></dd>
+                
+                <dt>Institution: </dt>
+                <dd class="istitution"></dd>
 
-      <section>
-        <header>
-          <h1 class="title">Title</h1>
-          <button class="btn-read" aria-label="View document">
-            <!-- SVG icon omitted for brevity -->
-            View
-          </button>
-        </header>
-
-        <dl>
-          <dt>Author:</dt>
-          <dd class="author"></dd>
-
-          <dt>Created:</dt>
-          <dd class="publishDate"></dd>
-
-          <dt>Modified:</dt>
-          <dd class="updated"></dd>
-
-          <dt>File Type:</dt>
-          <dd class="document"></dd>
-
-          <dt>Institution:</dt>
-          <dd class="institution"></dd>
-        </dl>
-      </section>
-
-      <section class="text-section" style="display: none">
-        <h2>Text Content</h2>
-        <p class="text-content"></p>
-      </section>
-
-      <menu>
-        <li>
-          <button class="btn-edit" aria-label="Edit document">Edit</button>
-        </li>
-        <li>
-          <button class="btn-delete" aria-label="Delete document">
-            Delete
-          </button>
-        </li>
-      </menu>
+                
+            </dl>
+        
+        <menu>
+            <li><button class="btn-edit">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+                    <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5L13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175l-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"/>
+                </svg>
+                Edit
+            </button></li>
+            <li><button class="btn-delete">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+                    <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                    <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4L4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                </svg>
+                Delete
+            </button></li>
+        </menu>
     </article>
-
+    
     <script type="module" src="preview.js"></script>
-  </body>
+</body>
 </html>
