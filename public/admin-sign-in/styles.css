@@ -15,7 +15,7 @@
    ========================= */
 body {
     background-color: var(--bg-color);
-    background-image: url('../user signup/images/hand-file.jpg'); /* adjust path as needed */
+    background-image: url('../user-sign-up/images/hand-file.jpg'); /* adjust path as needed */
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
