@@ -1,14 +1,14 @@
 // server/server.js
 
 // 0) Load .env from the project root
-const path = require('path');
+const path       = require('path');
 require('dotenv').config({
   path: path.resolve(__dirname, '../.env')
 });
 
-const express     = require('express');
-const cors        = require('cors');
-const pathModule  = require('path');
+const express    = require('express');
+const cors       = require('cors');
+const pathModule = require('path');
 
 // 1) Routers
 const searchRouter      = require('./routes/search');
@@ -26,21 +26,35 @@ app.use((req, res, next) => {
   next();
 });
 
-// 2) Enable CORS for front-end origins (dev & deployed)
-const corsOptions = {
-  origin: [
-    'http://127.0.0.1:3002',
-    'http://localhost:3002',
-    'http://127.0.0.1:5500',
-    'http://localhost:5500',
-    'https://delightful-pebble-09b2bca10.6.azurestaticapps.net'
-  ],
-  credentials: true,
-};
-app.use(cors(corsOptions));
+// 2) Enable CORS for front-end origins
+//    You can list exact domains in `whitelist` or simply allow all (origin: true)
+const whitelist = [
+  'http://127.0.0.1:3002',
+  'http://localhost:3002',
+  'http://127.0.0.1:5500',
+  'http://localhost:5500',
+  'https://delightful-pebble-09b2bca10.6.azurestaticapps.net'
+];
 
-// Explicitly handle preflight OPTIONS requests for all routes
-app.options('*', cors(corsOptions));
+const corsOptions = {
+  origin: (origin, callback) => {
+    // allow requests with no origin (e.g. mobile apps or curl)
+    if (!origin) return callback(null, true);
+    if (whitelist.includes(origin)) {
+      return callback(null, true);
+    }
+    // To test unrestricted CORS, you can replace the above block with: callback(null, true);
+    callback(new Error(`CORS policy: origin ${origin} not allowed`));
+  },
+  methods: ['GET','POST','PUT','DELETE','OPTIONS'],
+  allowedHeaders: ['Content-Type','Authorization'],
+  credentials: true,
+  preflightContinue: false,
+  optionsSuccessStatus: 204
+};
+
+app.use(cors(corsOptions));     // apply CORS to all routes
+app.options('*', cors(corsOptions)); // explicitly handle preflight
 
 // 3) Parse JSON bodies
 app.use(express.json());
