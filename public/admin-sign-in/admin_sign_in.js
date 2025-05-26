@@ -47,6 +47,8 @@ const auth = getAuth();
 const provider = new GoogleAuthProvider();
 
 console.log("→ Using API_BASE:", API_BASE);
+console.log("Signed in UID:", user.uid);
+
 
 // ==========================
 // DOM Elements
