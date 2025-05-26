@@ -2,11 +2,10 @@
 
 // Determine API root based on hostname
 const hostname = window.location.hostname;
-const API_BASE =
+export const API_BASE =
   hostname === "localhost" || hostname.startsWith("127.0.0.1")
     ? "http://localhost:4000/api"
     : "https://constitutionvaultapi-acatgth5g9ekg5fv.southafricanorth-01.azurewebsites.net/api";
-
 
 // Helper: centralize JSON fetch + error handling
 async function fetchJson(path, options = {}) {
