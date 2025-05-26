@@ -1,3 +1,5 @@
+console.log("→ Using API_BASE:", API_BASE);
+
 // ==========================
 // Import Firebase modules
 // ==========================
