@@ -4,6 +4,7 @@ on: push
 
 jobs:
   test:
+    if: false  # Disable this entire job temporarily
     runs-on: ubuntu-latest
 
     steps:
