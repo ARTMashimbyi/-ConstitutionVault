@@ -11,38 +11,36 @@ import {
 } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-analytics.js";
 
+// Firestore imports
+import {
+  getFirestore,
+  collection,
+  query,
+  where,
+  getDocs,
+} from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+
 // ==========================
 // Firebase configuration
 // ==========================
 const firebaseConfig = {
-  apiKey: "AIzaSyAU_w_Oxi6noX_A1Ma4XZDfpIY-jkoPN-c",
-  authDomain: "constitutionvault-1b5d1.firebaseapp.com",
-  projectId: "constitutionvault-1b5d1",
-  storageBucket: "constitutionvault-1b5d1.firebasestorage.app",
+  apiKey:       "AIzaSyAU_w_Oxi6noX_A1Ma4XZDfpIY-jkoPN-c",
+  authDomain:   "constitutionvault-1b5d1.firebaseapp.com",
+  projectId:    "constitutionvault-1b5d1",
+  storageBucket:"constitutionvault-1b5d1.firebasestorage.app",
   messagingSenderId: "616111688261",
-  appId: "1:616111688261:web:97cc0a35c8035c0814312c",
-  measurementId: "G-YJEYZ85T3S",
+  appId:        "1:616111688261:web:97cc0a35c8035c0814312c",
+  measurementId:"G-YJEYZ85T3S",
 };
 
 // ==========================
-// API base (local or Azure)
+// Initialize Firebase & Firestore
 // ==========================
-const hostname = window.location.hostname;
-const API_BASE =
-  hostname === "localhost" || hostname.startsWith("127.0.0.1")
-    ? "http://localhost:4000/api"
-    : "https://constitutionvaultapi-acatgth5g9ekg5fv.southafricanorth-01.azurewebsites.net/api";
-
-// Just to verify you’re hitting the right backend:
-console.log("→ Using API_BASE:", API_BASE);
-
-// ==========================
-// Initialize Firebase
-// ==========================
-const app = initializeApp(firebaseConfig);
+const app       = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
-const auth = getAuth();
-const provider = new GoogleAuthProvider();
+const auth      = getAuth(app);
+const db        = getFirestore(app);
+const provider  = new GoogleAuthProvider();
 
 // ==========================
 // DOM Elements
@@ -62,22 +60,22 @@ let redirectTimer;
 // ==========================
 // Sign in with Google
 // ==========================
-const userSignIn = async () => {
+async function userSignIn() {
   loadingSpinner.style.display = "block";
   try {
     await signInWithPopup(auth, provider);
-    // auth state change will handle the rest
-  } catch (error) {
-    console.error("Sign-in error:", error);
+    // onAuthStateChanged will handle the rest
+  } catch (err) {
+    console.error("Sign-in error:", err);
     loadingSpinner.style.display = "none";
     M.toast({ html: "Sign-in failed. Please try again.", classes: "red" });
   }
-};
+}
 
 // ==========================
 // Sign out
 // ==========================
-const userSignOut = async () => {
+async function userSignOut() {
   try {
     await signOut(auth);
     M.toast({ html: "You have signed out successfully", classes: "green" });
@@ -85,44 +83,44 @@ const userSignOut = async () => {
     portalOptions.style.display = "none";
     adminOption.style.display  = "none";
     userOption.style.display   = "none";
-  } catch (error) {
-    console.error("Sign-out error:", error);
+  } catch (err) {
+    console.error("Sign-out error:", err);
     M.toast({ html: "Sign-out failed. Please try again.", classes: "red" });
   }
-};
+}
+
+// Expose for onclick in index.html if you need it:
+window.userSignIn  = userSignIn;
+window.userSignOut = userSignOut;
 
 // ==========================
-// Check admin status via your backend
+// Check admin status directly in Firestore
 // ==========================
 async function checkAdmin(user) {
   try {
-    const idToken = await user.getIdToken();
-    const res = await fetch(`${API_BASE}/auth/admin-status`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ idToken }),
-    });
-    if (!res.ok) return false;
-    const data = await res.json();
-    return data.isAdmin === true;
-  } catch (error) {
-    console.error("API error while checking admin status:", error);
+    const q = query(
+      collection(db, "Admin_users"),
+      where("UID", "==", user.uid)
+    );
+    const snap = await getDocs(q);
+    return !snap.empty;
+  } catch (err) {
+    console.error("Error checking admin in Firestore:", err);
     return false;
   }
 }
 
 // ==========================
-// Show the correct portal cards
+// Show Admin vs User portal cards
 // ==========================
 function handleUserAccess(isAdmin) {
   portalOptions.style.display = "block";
+
   if (isAdmin) {
-    // Admin users see both
     adminOption.style.display = "block";
     userOption.style.display  = "block";
     adminLink.style.display   = "block";
   } else {
-    // Normal users only see user, and auto-redirect
     adminOption.style.display = "none";
     userOption.style.display  = "block";
     adminLink.style.display   = "none";
@@ -138,12 +136,12 @@ function handleUserAccess(isAdmin) {
 }
 
 // ==========================
-// Wire up your buttons
+// Wire up buttons if they exist
 // ==========================
 if (signInButton)  signInButton.addEventListener("click", userSignIn);
 if (signOutButton) signOutButton.addEventListener("click", userSignOut);
 
-// Initialize Materialize modals on DOM ready
+// Initialize Materialize components
 document.addEventListener("DOMContentLoaded", () => {
   M.Modal.init(document.querySelectorAll(".modal"));
   M.Tooltip.init(document.querySelectorAll(".tooltipped"));
@@ -160,15 +158,10 @@ document.addEventListener("DOMContentLoaded", () => {
 // Auth state observer
 // ==========================
 onAuthStateChanged(auth, async (user) => {
-  // Hide spinner once we know auth state
   loadingSpinner.style.display = "none";
 
-  // <-- Place your UID log here -->
   if (user) {
     console.log("Signed in UID:", user.uid);
-  }
-
-  if (user) {
     signInButton.style.display  = "none";
     signOutButton.style.display = "block";
     message.style.display       = "block";
@@ -181,7 +174,7 @@ onAuthStateChanged(auth, async (user) => {
       classes: "green",
     });
   } else {
-    // Signed out UI reset
+    // Signed out
     signInButton.style.display  = "block";
     signOutButton.style.display = "none";
     message.style.display       = "none";

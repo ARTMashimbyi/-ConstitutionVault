@@ -1,4 +1,4 @@
-// public/user signup/signup.js
+// public/user-sign-up/signup.js
 
 // ==========================
 // Import Firebase modules
@@ -10,6 +10,12 @@ import {
   signInWithPopup,
   onAuthStateChanged,
 } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
+import {
+  getFirestore,
+  doc,
+  getDoc,
+  setDoc,
+} from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 
 // ==========================
 // Firebase configuration
@@ -25,22 +31,12 @@ const firebaseConfig = {
 };
 
 // ==========================
-// API base (local or Azure)
+// Initialize Firebase & Firestore
 // ==========================
-
-  const hostname = window.location.hostname;
-  const API_BASE =
-    hostname === "localhost" || hostname.startsWith("127.0.0.1")
-      ? "http://localhost:4000/api"
-      : "https://constitutionvaultapi-acatgth5g9ekg5fv.southafricanorth-01.azurewebsites.net/api";
-  
-
-// ==========================
-// Initialize Firebase
-// ==========================
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
+const app      = initializeApp(firebaseConfig);
+const auth     = getAuth(app);
 const provider = new GoogleAuthProvider();
+const db       = getFirestore(app);
 
 // ==========================
 // DOM Elements
@@ -51,39 +47,48 @@ const loadingSpinner = document.querySelector(".loading-spinner");
 
 let redirectTimer;
 
-// ===============
-// Sign up logic
-// ===============
+// ==========================
+// Helper: create user doc if missing
+// ==========================
+async function ensureUserDoc(user) {
+  const userRef = doc(db, "users", user.uid);
+  const snap    = await getDoc(userRef);
+
+  if (!snap.exists()) {
+    // first time signup: create the doc
+    await setDoc(userRef, {
+      uid:         user.uid,
+      displayName: user.displayName || null,
+      email:       user.email || null,
+      createdAt:   new Date().toISOString(),
+    });
+    console.log("Created new user document in Firestore.");
+  } else {
+    console.log("User document already exists in Firestore.");
+  }
+}
+
+// ==========================
+// Handle Google Sign-Up
+// ==========================
 async function handleGoogleSignup() {
   if (loadingSpinner) loadingSpinner.style.display = "block";
-
   try {
-    // 1) Google popup
+    // 1) Sign in via popup
     const result = await signInWithPopup(auth, provider);
     const user   = result.user;
-    const idToken = await user.getIdToken();
 
-    // 2) Persist in localStorage (so login page can pick it up if needed)
-    localStorage.setItem("currentUserId", user.uid);
+    // 2) Ensure Firestore user doc exists
+    await ensureUserDoc(user);
 
-    // 3) Tell your backend to create or fetch this user
-    const res = await fetch(`${API_BASE}/auth/user-signup`, {
-      method:  "POST",
-      headers: { "Content-Type": "application/json" },
-      body:    JSON.stringify({ idToken })
-    });
-    if (!res.ok) throw new Error("Failed to register user via API");
-    const data = await res.json();
-
-    // 4) Show a little welcome
+    // 3) Show welcome message
     if (message) {
       message.textContent = `Welcome, ${user.displayName || "User"}!`;
       message.style.display = "block";
     }
 
-    // 5) After a short pause, send them back to your login page
+    // 4) After a brief pause, redirect home
     redirectTimer = setTimeout(() => {
-      // adjust the path if your index.html lives elsewhere
       window.location.href = "../../index.html";
     }, 1200);
 
@@ -98,22 +103,25 @@ async function handleGoogleSignup() {
   }
 }
 
-signUpButton.addEventListener("click", handleGoogleSignup);
+// Wire up the button
+if (signUpButton) {
+  signUpButton.addEventListener("click", handleGoogleSignup);
+}
 
-// ===============
-// Keep the button state in sync
-// ===============
+// ==========================
+// Update UI on auth state
+// ==========================
 onAuthStateChanged(auth, user => {
   if (user) {
-    // if they're signed in, hide the signup button
-    signUpButton.style.display = "none";
+    // already signed in → hide the signup button
+    if (signUpButton) signUpButton.style.display = "none";
     if (message) {
-      message.textContent = `Welcome, ${user.displayName || "User"}!`;
+      message.textContent = `Welcome back, ${user.displayName || "User"}!`;
       message.style.display = "block";
     }
   } else {
-    // otherwise show it
-    signUpButton.style.display = "block";
+    // not signed in → show the button
+    if (signUpButton) signUpButton.style.display = "block";
     if (message) message.style.display = "none";
   }
 });
