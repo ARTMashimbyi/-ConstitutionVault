@@ -27,13 +27,11 @@
             <a href="../index.html"
               ><i class="fas fa-sign-out-alt"></i> Logout</a
             >
+            <!-- <a href="profile.html"><i class="fas fa-id-badge"></i> Profile</a> -->
           </menu>
         </menu>
       </nav>
     </header>
-
-    <!-- Error container -->
-    <output id="error-container" class="error" style="display: none"></output>
 
     <main>
       <article class="welcome-container">
@@ -96,14 +94,17 @@
             <i class="fas fa-history"></i> Recently Viewed
           </h2>
           <menu class="section-actions">
-            <a href="history.html">
-              <button class="btn btn-outline">See All</button>
-            </a>
+            <a href="history.html"
+              ><button class="btn btn-outline">See All</button></a
+            >
           </menu>
         </header>
         <p class="section-description">Documents you've accessed recently</p>
-        <!-- Rendered by home.js -->
-        <output class="doc-scroll recently-viewed"></output>
+        <section>
+          <ul class="document-list" id="history">
+            <li class="document-item">Sample document</li>
+          </ul>
+        </section>
       </section>
 
       <section class="document-row">
@@ -122,38 +123,24 @@
       <section class="view-all-container">
         <header class="view-all-header">
           <h2 class="view-all-title">
-            <i class="fas fa-file-alt"></i> All Files
+            <i class="fas fa-file-alt"></i> All Documents
           </h2>
           <menu class="view-all-controls">
-            <a href="../user-interface/user-search.html">
-              <button class="btn btn-outline">
-                <i class="fas fa-list"></i> View All Files
-              </button>
-            </a>
+            <button class="btn btn-outline" onclick="window.location.reload()">
+              <i class="fas fa-sync-alt"></i> Refresh
+            </button>
           </menu>
         </header>
         <output class="documents-grid" id="all-documents-grid"></output>
       </section>
     </main>
 
-    <!-- Inline Modal for Document Viewing -->
-    <dialog id="viewer-dialog">
-      <article>
-        <header class="modal-header">
-          <h3>Document Viewer</h3>
-          <button id="modal-close" class="btn btn-close">
-            <i class="fas fa-times"></i>
-          </button>
-        </header>
-        <section class="modal-body"></section>
-      </article>
-    </dialog>
-
     <footer>
       <p>&copy; 2025 ConstitutionVault</p>
     </footer>
 
     <script type="module" src="home.js"></script>
+    <script type="module" src="history_home.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   </body>
 </html>

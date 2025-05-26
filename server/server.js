@@ -26,35 +26,17 @@ app.use((req, res, next) => {
   next();
 });
 
-// 2) Enable CORS for front-end origins
-//    You can list exact domains in `whitelist` or simply allow all (origin: true)
-const whitelist = [
-  'http://127.0.0.1:3002',
-  'http://localhost:3002',
-  'http://127.0.0.1:5500',
-  'http://localhost:5500',
-  'https://delightful-pebble-09b2bca10.6.azurestaticapps.net'
-];
-
-const corsOptions = {
-  origin: (origin, callback) => {
-    // allow requests with no origin (e.g. mobile apps or curl)
-    if (!origin) return callback(null, true);
-    if (whitelist.includes(origin)) {
-      return callback(null, true);
-    }
-    // To test unrestricted CORS, you can replace the above block with: callback(null, true);
-    callback(new Error(`CORS policy: origin ${origin} not allowed`));
-  },
+// 2) Enable CORS globally (allow all origins)
+//    Change `origin: '*'` to a specific URL or whitelist array once verified
+app.use(cors({
+  origin: '*',
   methods: ['GET','POST','PUT','DELETE','OPTIONS'],
   allowedHeaders: ['Content-Type','Authorization'],
   credentials: true,
-  preflightContinue: false,
-  optionsSuccessStatus: 204
-};
+}));
 
-app.use(cors(corsOptions));     // apply CORS to all routes
-app.options('*', cors(corsOptions)); // explicitly handle preflight
+// Handle preflight OPTIONS for all routes
+app.options('*', cors());
 
 // 3) Parse JSON bodies
 app.use(express.json());
