@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         logoutBtn.addEventListener('click', function() {
             if (confirm('Are you sure you want to logout?')) {
                 // Redirect to login page (or index)
-                window.location.href = '/public/index.html';
+                window.location.href = '../../index.html';
             }
         });
     }
